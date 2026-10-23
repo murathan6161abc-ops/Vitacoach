@@ -509,7 +509,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               subtitle: const Text(
-                'Tüm yerel verileri, bildirimleri ve API anahtarlarını siler.',
+                'Tüm yerel verileri ve bildirimleri siler.',
               ),
               onTap: () => _resetAccount(context),
             ),
