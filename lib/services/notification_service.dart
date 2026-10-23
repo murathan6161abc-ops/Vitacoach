@@ -267,7 +267,8 @@ class NotificationService {
     await _initTimeZone();
     await _plugin.initialize(
       settings: _initSettings,
-      onDidReceiveNotificationResponse: NotificationActions.onForegroundResponse,
+      onDidReceiveNotificationResponse:
+          NotificationActions.onForegroundResponse,
       onDidReceiveBackgroundNotificationResponse: notificationBackgroundHandler,
     );
     _initialized = true;
@@ -339,7 +340,10 @@ class NotificationService {
   Future<void> _migrateStyleIfNeeded() async {
     try {
       final settings = HiveService().getSettingsBox();
-      final version = settings.get('notification_style_version', defaultValue: 1);
+      final version = settings.get(
+        'notification_style_version',
+        defaultValue: 1,
+      );
       if (version is int && version >= _styleVersion) return;
 
       await _plugin.cancelAll();
@@ -505,7 +509,8 @@ class NotificationService {
         title: title,
         body: body,
         summary: 'VitaCoach',
-        payload: NotificationPayload.decode(payload) ??
+        payload:
+            NotificationPayload.decode(payload) ??
             const NotificationPayload(kind: NotificationKind.general),
       ),
     );

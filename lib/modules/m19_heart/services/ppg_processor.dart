@@ -87,7 +87,8 @@ class PpgProcessor {
       if (v <= 0.3 * std) continue;
       if (v < signal[i - 1] || v < signal[i + 1]) continue;
       // Pencere içindeki en yüksek nokta mı?
-      final lo = math.max(0, i - minGap), hi = math.min(signal.length - 1, i + minGap);
+      final lo = math.max(0, i - minGap),
+          hi = math.min(signal.length - 1, i + minGap);
       var isMax = true;
       for (var j = lo; j <= hi; j++) {
         if (signal[j] > v) {
@@ -100,16 +101,18 @@ class PpgProcessor {
       // Parabolik ara değerleme: 30 fps'lik ~33 ms çözünürlüğü iyileştirir.
       final a = signal[i - 1], b = signal[i], c = signal[i + 1];
       final denom = a - 2 * b + c;
-      final offset = denom == 0 ? 0.0 : (0.5 * (a - c) / denom).clamp(-0.5, 0.5);
+      final offset = denom == 0
+          ? 0.0
+          : (0.5 * (a - c) / denom).clamp(-0.5, 0.5);
       final t0 = samples[i].tMs.toDouble();
       final dt = (samples[i + 1].tMs - samples[i - 1].tMs) / 2;
       peaks.add(t0 + offset * dt);
     }
     if (peaks.length < 5) return null;
 
-    final ibis = [for (var i = 1; i < peaks.length; i++) peaks[i] - peaks[i - 1]]
-        .where((ibi) => ibi >= 60000 / maxBpm && ibi <= 60000 / minBpm)
-        .toList();
+    final ibis = [
+      for (var i = 1; i < peaks.length; i++) peaks[i] - peaks[i - 1],
+    ].where((ibi) => ibi >= 60000 / maxBpm && ibi <= 60000 / minBpm).toList();
     if (ibis.length < 4) return null;
     final med = median(ibis);
     // Median'dan %25'ten fazla sapan aralıklar (kaçırılan/fazladan atım) atılır.
@@ -129,7 +132,9 @@ class PpgProcessor {
     }
     final rmssd = diffs.isEmpty
         ? 0.0
-        : math.sqrt(diffs.map((d) => d * d).reduce((a, b) => a + b) / diffs.length);
+        : math.sqrt(
+            diffs.map((d) => d * d).reduce((a, b) => a + b) / diffs.length,
+          );
     final sdnn = _std(valid);
     final validRatio = valid.length / ibis.length;
     final cv = sdnn / meanIbi;
@@ -163,7 +168,8 @@ class PpgProcessor {
     return [
       for (var i = 0; i < x.length; i++)
         () {
-          final lo = math.max(0, i - half), hi = math.min(x.length, i + half + 1);
+          final lo = math.max(0, i - half),
+              hi = math.min(x.length, i + half + 1);
           return (prefix[hi] - prefix[lo]) / (hi - lo);
         }(),
     ];
@@ -172,7 +178,9 @@ class PpgProcessor {
   static double _std(List<double> x) {
     if (x.length < 2) return 0;
     final mean = x.reduce((a, b) => a + b) / x.length;
-    final v = x.map((e) => (e - mean) * (e - mean)).reduce((a, b) => a + b) / (x.length - 1);
+    final v =
+        x.map((e) => (e - mean) * (e - mean)).reduce((a, b) => a + b) /
+        (x.length - 1);
     return math.sqrt(v);
   }
 }
@@ -187,7 +195,8 @@ class FrameStats {
 
   /// Parmak flaşı ve lensi kapattığında görüntü kırmızı, oldukça düzgün
   /// (az desenli) ve orta parlaklıktadır.
-  bool get fingerDetected => brightness > 40 && brightness < 250 && uniformity < 28 && redness > 0.55;
+  bool get fingerDetected =>
+      brightness > 40 && brightness < 250 && uniformity < 28 && redness > 0.55;
 
   /// YUV420: Y düzlemi parlaklık, V (Cr) düzlemi kırmızılık verir.
   /// Performans için merkezdeki bölgeden seyrek örnekleme yapılır.

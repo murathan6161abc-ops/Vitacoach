@@ -732,7 +732,8 @@ class _InteractionBanner extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${w.drugA} + ${w.drugB} '
+                          text:
+                              '${w.drugA} + ${w.drugB} '
                               '(${w.severity.label}): ',
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
@@ -795,7 +796,8 @@ class _ExactAlarmBannerState extends State<_ExactAlarmBanner>
     // İzin yeni verildiyse hatırlatmaları tam zamanlı olarak yeniden kur
     // (kullanıcı Ayarlar'dan kapatmadıysa).
     final enabled =
-        HiveService().getProfileBox().get('medication_reminder_enabled') != false;
+        HiveService().getProfileBox().get('medication_reminder_enabled') !=
+        false;
     if (can && enabled) {
       await context.read<ChronicProvider>().setMedicationRemindersEnabled(true);
     }
@@ -823,7 +825,8 @@ class _ExactAlarmBannerState extends State<_ExactAlarmBanner>
             ),
           ),
           TextButton(
-            onPressed: () => NotificationService().requestExactAlarmPermission(),
+            onPressed: () =>
+                NotificationService().requestExactAlarmPermission(),
             child: const Text('İzin ver'),
           ),
         ],

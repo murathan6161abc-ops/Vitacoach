@@ -60,7 +60,11 @@ class _StartupErrorApp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.lock_outline, size: 56, color: Color(0xFFB3261E)),
+                const Icon(
+                  Icons.lock_outline,
+                  size: 56,
+                  color: Color(0xFFB3261E),
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Uygulama başlatılamadı',

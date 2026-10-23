@@ -204,8 +204,7 @@ class EnvironmentProvider extends ChangeNotifier {
         if (data['status'] == 'success') {
           // API sayıyı double olarak da döndürebilir; int alana doğrudan
           // atamak TypeError fırlatıp "servis kullanılamıyor" gösteriyordu.
-          _aqi = (data['data']['current']['pollution']['aqius'] as num)
-              .round();
+          _aqi = (data['data']['current']['pollution']['aqius'] as num).round();
           _aqiCity = data['data']['city']?.toString();
 
           // Cache

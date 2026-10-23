@@ -81,7 +81,10 @@ void main() {
       expect(e.respond('Normal tansiyon kaç?').text, contains('120/80'));
       expect(e.respond('Ateş nasıl düşürülür?').text, contains('sıvı'));
       expect(e.respond('Kaç saat uyumalıyım?').text, contains('7-9'));
-      expect(e.respond('Doğru tansiyon ölçümü nasıl yapılır?').text, contains('kalp hizasında'));
+      expect(
+        e.respond('Doğru tansiyon ölçümü nasıl yapılır?').text,
+        contains('kalp hizasında'),
+      );
       expect(e.respond('ilacımı almayı unuttum').text, contains('çift doz'));
       expect(e.respond('HRV nedir?').text, contains('değişkenliği'));
     });
@@ -89,8 +92,14 @@ void main() {
     test('benzer kelimeler belirti sanılmaz', () {
       final e = engine();
       expect(e.detectSymptoms('başka bir sorum var'), isEmpty);
-      expect(e.detectSymptoms('gözlerim ağrıyor').map((s) => s.id), contains('eye_pain'));
-      expect(e.detectSymptoms('belim çok ağrıyor').map((s) => s.id), contains('back_pain'));
+      expect(
+        e.detectSymptoms('gözlerim ağrıyor').map((s) => s.id),
+        contains('eye_pain'),
+      );
+      expect(
+        e.detectSymptoms('belim çok ağrıyor').map((s) => s.id),
+        contains('back_pain'),
+      );
     });
 
     test('anlaşılmayan girdi önerilerle döner', () {
@@ -103,10 +112,19 @@ void main() {
     final ctx = AssistantContext(
       name: 'Ayşe Demir',
       heightCm: 164,
-      lastBp: BloodPressureEntry(systolic: 134, diastolic: 84, date: DateTime(2026, 9, 29, 8)),
+      lastBp: BloodPressureEntry(
+        systolic: 134,
+        diastolic: 84,
+        date: DateTime(2026, 9, 29, 8),
+      ),
       lastWeight: HealthEntry(value: 76, date: DateTime(2026, 9, 29)),
       medications: [
-        MedicationReminder(name: 'Coraspin', dosage: '100 mg', hour: 13, minute: 0),
+        MedicationReminder(
+          name: 'Coraspin',
+          dosage: '100 mg',
+          hour: 13,
+          minute: 0,
+        ),
       ],
       drugs: drugs,
     );
@@ -122,7 +140,9 @@ void main() {
     });
 
     test('iki ilaç arasında etkileşim', () {
-      final r = engine(context: ctx).respond('Coraspin ile Nurofen birlikte alınır mı?');
+      final r = engine(
+        context: ctx,
+      ).respond('Coraspin ile Nurofen birlikte alınır mı?');
       expect(r.text, contains('etkileşim'));
       expect(r.text, contains('Mide kanaması'));
     });

@@ -41,14 +41,21 @@ class AssistantLoader {
             group == 'red_flags',
           ),
     ];
-    return AssistantEngine(kb: kb, symptoms: symptoms, flags: flags, context: context);
+    return AssistantEngine(
+      kb: kb,
+      symptoms: symptoms,
+      flags: flags,
+      context: context,
+    );
   }
 
   static Future<AssistantEngine> load() async {
     final engine = fromJson(
       kbJson: await rootBundle.loadString('assets/data/assistant_kb.json'),
       symptomsJson: await rootBundle.loadString('assets/data/symptoms.json'),
-      flagsJson: await rootBundle.loadString('assets/data/emergency_flags.json'),
+      flagsJson: await rootBundle.loadString(
+        'assets/data/emergency_flags.json',
+      ),
     );
     engine.context = await loadContext();
     return engine;
@@ -96,7 +103,8 @@ class AssistantLoader {
       lastSleep: latest(input.sleep, (e) => e.wakeTime),
       sleepAvg7: recentSleep.isEmpty
           ? null
-          : recentSleep.map((s) => s.hours).reduce((a, b) => a + b) / recentSleep.length,
+          : recentSleep.map((s) => s.hours).reduce((a, b) => a + b) /
+                recentSleep.length,
       lastHeart: input.heart.isEmpty ? null : input.heart.first,
       adherence: input.adherence,
       medications: meds,

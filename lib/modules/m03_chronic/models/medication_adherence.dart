@@ -11,7 +11,10 @@ class DoseRecord {
 
   const DoseRecord({required this.status, required this.at});
 
-  Map<String, dynamic> toMap() => {'status': status.name, 'at': at.toIso8601String()};
+  Map<String, dynamic> toMap() => {
+    'status': status.name,
+    'at': at.toIso8601String(),
+  };
 
   static DoseRecord? tryFromMap(dynamic raw) {
     if (raw is! Map) return null;
@@ -73,12 +76,13 @@ class DoseLog {
 
   /// Bu ilaç için kaydedilmiş ilk gün (eski ilaçlarda başlangıç tarihi yok).
   DateTime? firstDayFor(int medicationId) {
-    final days = _days.entries
-        .where((e) => e.value.containsKey(medicationId))
-        .map((e) => DateTime.tryParse(e.key))
-        .whereType<DateTime>()
-        .toList()
-      ..sort();
+    final days =
+        _days.entries
+            .where((e) => e.value.containsKey(medicationId))
+            .map((e) => DateTime.tryParse(e.key))
+            .whereType<DateTime>()
+            .toList()
+          ..sort();
     return days.isEmpty ? null : days.first;
   }
 
@@ -168,7 +172,13 @@ class AdherenceCalculator {
 
       for (var i = days - 1; i >= 0; i--) {
         final day = today.subtract(Duration(days: i));
-        final due = DateTime(day.year, day.month, day.day, med.hour, med.minute);
+        final due = DateTime(
+          day.year,
+          day.month,
+          day.day,
+          med.hour,
+          med.minute,
+        );
         final record = log.get(day, med.notificationId);
         // İlaç eklenmeden / takip başlamadan önceki dozlar sayılmaz.
         if (record == null && due.isBefore(start)) continue;
@@ -220,7 +230,13 @@ class AdherenceCalculator {
     final record = log.get(d, medication.notificationId);
     if (record?.status == DoseStatus.taken) return DoseCellState.taken;
     if (record?.status == DoseStatus.skipped) return DoseCellState.skipped;
-    final due = DateTime(d.year, d.month, d.day, medication.hour, medication.minute);
+    final due = DateTime(
+      d.year,
+      d.month,
+      d.day,
+      medication.hour,
+      medication.minute,
+    );
     if (due.isBefore(_startMoment(medication, log, trackingSince, now))) {
       return DoseCellState.notScheduled;
     }
@@ -271,7 +287,9 @@ class AdherenceCalculator {
 
   static String _missSuggestion(MedicationAdherence s) {
     final weekendMisses = s.missedDays
-        .where((d) => d.weekday == DateTime.saturday || d.weekday == DateTime.sunday)
+        .where(
+          (d) => d.weekday == DateTime.saturday || d.weekday == DateTime.sunday,
+        )
         .length;
     if (s.missed >= 2 && weekendMisses * 2 >= s.missed + 1) {
       return 'Kaçırılan dozların çoğu hafta sonuna denk geliyor; hafta sonu '

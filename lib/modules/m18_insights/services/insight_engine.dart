@@ -113,10 +113,14 @@ class InsightEngine {
 
   // ---------------------------------------------------------------- Tansiyon
   static List<HealthInsight> _bloodPressure(InsightInput input) {
-    final list = input.pressures
-        .where((p) => input.now.difference(p.date).inDays <= 30 && p.systolic > 0)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final list =
+        input.pressures
+            .where(
+              (p) =>
+                  input.now.difference(p.date).inDays <= 30 && p.systolic > 0,
+            )
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
     if (list.isEmpty) return const [];
     final out = <HealthInsight>[];
     final last = list.last;
@@ -148,7 +152,8 @@ class InsightEngine {
           severity: InsightSeverity.warning,
           category: 'Tansiyon',
           title: 'Tansiyon düşük',
-          message: 'Son ölçümünüz ${last.display}; büyük tansiyon 90 mmHg altında.',
+          message:
+              'Son ölçümünüz ${last.display}; büyük tansiyon 90 mmHg altında.',
           suggestion:
               'Baş dönmesi, bayılma hissi varsa oturun/uzanın, sıvı alın ve '
               'tansiyon ilacı kullanıyorsanız doktorunuza danışın.',
@@ -163,8 +168,7 @@ class InsightEngine {
     final window = list
         .where((p) => input.now.difference(p.date).inDays <= 14)
         .toList();
-    if (window.length >= 5 &&
-        _days(window.first.date, window.last.date) >= 4) {
+    if (window.length >= 5 && _days(window.first.date, window.last.date) >= 4) {
       final t0 = window.first.date;
       final xs = [for (final p in window) _days(t0, p.date)];
       final fit = TrendMath.fit(xs, [for (final p in window) p.systolic]);
@@ -205,7 +209,10 @@ class InsightEngine {
                   'Tuzu azaltın, ölçümleri her gün aynı saatte yapın; artış '
                   'sürerse doktorunuza danışın.'
                   '${adherence != null && adherence < 80 ? ' İlaç uyumunuz %$adherence; dozları düzenli almak tansiyonu doğrudan etkiler.' : ''}',
-              evidence: [...evidence, '7 günlük tahmin: ${forecast.round()} mmHg'],
+              evidence: [
+                ...evidence,
+                '7 günlük tahmin: ${forecast.round()} mmHg',
+              ],
               method: _regression,
               route: AppConstants.routeChronic,
             ),
@@ -283,10 +290,13 @@ class InsightEngine {
 
   // ---------------------------------------------------------------- Şeker
   static List<HealthInsight> _sugar(InsightInput input) {
-    final list = input.sugars
-        .where((s) => input.now.difference(s.date).inDays <= 30 && s.value > 0)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final list =
+        input.sugars
+            .where(
+              (s) => input.now.difference(s.date).inDays <= 30 && s.value > 0,
+            )
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
     if (list.isEmpty) return const [];
     final out = <HealthInsight>[];
     final last = list.last;
@@ -330,7 +340,9 @@ class InsightEngine {
     }
 
     if (recent && list.length >= 7) {
-      final reference = [for (final s in list.sublist(0, list.length - 1)) s.value];
+      final reference = [
+        for (final s in list.sublist(0, list.length - 1)) s.value,
+      ];
       final z = TrendMath.modifiedZ(last.value, reference);
       if (z != null && z.abs() >= 3.5 && out.isEmpty) {
         final med = TrendMath.median(reference);
@@ -357,7 +369,9 @@ class InsightEngine {
       }
     }
 
-    final window = list.where((s) => input.now.difference(s.date).inDays <= 14).toList();
+    final window = list
+        .where((s) => input.now.difference(s.date).inDays <= 14)
+        .toList();
     if (window.length >= 3) {
       final avg = TrendMath.mean([for (final s in window) s.value]);
       final evidence = [
@@ -406,10 +420,13 @@ class InsightEngine {
 
   // ---------------------------------------------------------------- Kilo
   static List<HealthInsight> _weight(InsightInput input) {
-    final list = input.weights
-        .where((w) => input.now.difference(w.date).inDays <= 45 && w.value > 0)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final list =
+        input.weights
+            .where(
+              (w) => input.now.difference(w.date).inDays <= 45 && w.value > 0,
+            )
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
     if (list.length < 2) return const [];
     final first = list.first, last = list.last;
     final days = _days(first.date, last.date);
@@ -417,7 +434,9 @@ class InsightEngine {
     final change = last.value - first.value;
     final pct = change / first.value * 100;
     final perWeek = change / days * 7;
-    final wantsLoss = input.goals.any((g) => g.toLowerCase().contains('kilo ver'));
+    final wantsLoss = input.goals.any(
+      (g) => g.toLowerCase().contains('kilo ver'),
+    );
     final evidence = [
       '${_d(first.date)}: ${TrendMath.fmt(first.value)} kg → '
           '${_d(last.date)}: ${TrendMath.fmt(last.value)} kg',
@@ -510,7 +529,9 @@ class InsightEngine {
             suggestion:
                 'Yatış saatinizi 15 dakika erkene çekerek başlayın; yatmadan 1 '
                 'saat önce ekranı bırakın.',
-            evidence: ['Ortalama: ${TrendMath.fmt(avg)} saat (${lastWeek.length} gece)'],
+            evidence: [
+              'Ortalama: ${TrendMath.fmt(avg)} saat (${lastWeek.length} gece)',
+            ],
             method: 'NSF önerisi: yetişkinler için 7-9 saat.',
             route: AppConstants.routeSleep,
           ),
@@ -525,11 +546,20 @@ class InsightEngine {
         pairs.add((s.hours, mood.toDouble()));
       }
     }
-    final short = [for (final p in pairs) if (p.$1 < 7) p.$2];
-    final enough = [for (final p in pairs) if (p.$1 >= 7) p.$2];
+    final short = [
+      for (final p in pairs)
+        if (p.$1 < 7) p.$2,
+    ];
+    final enough = [
+      for (final p in pairs)
+        if (p.$1 >= 7) p.$2,
+    ];
     if (pairs.length >= 6 && short.length >= 3 && enough.length >= 3) {
       final diff = TrendMath.mean(enough) - TrendMath.mean(short);
-      final r = TrendMath.pearson([for (final p in pairs) p.$1], [for (final p in pairs) p.$2]);
+      final r = TrendMath.pearson(
+        [for (final p in pairs) p.$1],
+        [for (final p in pairs) p.$2],
+      );
       if (diff >= 0.5) {
         out.add(
           HealthInsight(
@@ -546,7 +576,8 @@ class InsightEngine {
             evidence: [
               '<7 saat: ${short.length} gün, ortalama ruh hali ${TrendMath.fmt(TrendMath.mean(short))}',
               '≥7 saat: ${enough.length} gün, ortalama ruh hali ${TrendMath.fmt(TrendMath.mean(enough))}',
-              if (r != null) 'Korelasyon (uyku süresi ↔ ruh hali): r = ${TrendMath.fmt(r, 2)}',
+              if (r != null)
+                'Korelasyon (uyku süresi ↔ ruh hali): r = ${TrendMath.fmt(r, 2)}',
             ],
             method: _groups,
             route: AppConstants.routeSleep,
@@ -563,16 +594,29 @@ class InsightEngine {
     input.stepsByDay.forEach((day, steps) {
       final mood = input.moodByDay[day];
       final date = DateTime.tryParse(day);
-      if (mood != null && date != null && input.now.difference(date).inDays <= 30) {
+      if (mood != null &&
+          date != null &&
+          input.now.difference(date).inDays <= 30) {
         pairs.add((steps.toDouble(), mood.toDouble()));
       }
     });
-    final active = [for (final p in pairs) if (p.$1 >= 7000) p.$2];
-    final passive = [for (final p in pairs) if (p.$1 < 7000) p.$2];
-    if (pairs.length < 5 || active.length < 2 || passive.length < 2) return const [];
+    final active = [
+      for (final p in pairs)
+        if (p.$1 >= 7000) p.$2,
+    ];
+    final passive = [
+      for (final p in pairs)
+        if (p.$1 < 7000) p.$2,
+    ];
+    if (pairs.length < 5 || active.length < 2 || passive.length < 2) {
+      return const [];
+    }
     final diff = TrendMath.mean(active) - TrendMath.mean(passive);
     if (diff < 0.5) return const [];
-    final r = TrendMath.pearson([for (final p in pairs) p.$1], [for (final p in pairs) p.$2]);
+    final r = TrendMath.pearson(
+      [for (final p in pairs) p.$1],
+      [for (final p in pairs) p.$2],
+    );
     return [
       HealthInsight(
         id: 'steps_mood',
@@ -582,11 +626,13 @@ class InsightEngine {
         message:
             '7.000 adımı geçtiğiniz günlerde ruh haliniz ortalama '
             '${TrendMath.fmt(diff)} puan daha yüksek.',
-        suggestion: 'Kötü hissettiğiniz günlerde 15 dakikalık kısa bir yürüyüş deneyin.',
+        suggestion:
+            'Kötü hissettiğiniz günlerde 15 dakikalık kısa bir yürüyüş deneyin.',
         evidence: [
           '≥7.000 adım: ${active.length} gün, ruh hali ${TrendMath.fmt(TrendMath.mean(active))}',
           '<7.000 adım: ${passive.length} gün, ruh hali ${TrendMath.fmt(TrendMath.mean(passive))}',
-          if (r != null) 'Korelasyon (adım ↔ ruh hali): r = ${TrendMath.fmt(r, 2)}',
+          if (r != null)
+            'Korelasyon (adım ↔ ruh hali): r = ${TrendMath.fmt(r, 2)}',
         ],
         method: _groups,
         route: AppConstants.routeFitness,
@@ -598,7 +644,9 @@ class InsightEngine {
   static List<HealthInsight> _adherence(InsightInput input) {
     final report = input.adherence;
     final percent = report?.percent;
-    if (report == null || percent == null || report.scheduled < 5) return const [];
+    if (report == null || percent == null || report.scheduled < 5) {
+      return const [];
+    }
     final evidence = [
       'Son ${report.days} gün: ${report.taken}/${report.scheduled} doz alındı',
       for (final m in report.perMedication)
@@ -618,7 +666,8 @@ class InsightEngine {
           message:
               '${pattern?.message ?? 'Son bir haftada dozların bir kısmı kaçırıldı.'} '
               'Etkili tedavi için hedef en az %80 uyumdur.',
-          suggestion: pattern?.suggestion ??
+          suggestion:
+              pattern?.suggestion ??
               "Bildirimdeki 'Aldım' düğmesini kullanmak takibi kolaylaştırır.",
           evidence: evidence,
           method: method,
@@ -629,7 +678,9 @@ class InsightEngine {
     return [
       HealthInsight(
         id: report.patterns.isEmpty ? 'adherence_good' : 'adherence_pattern',
-        severity: report.patterns.isEmpty ? InsightSeverity.positive : InsightSeverity.info,
+        severity: report.patterns.isEmpty
+            ? InsightSeverity.positive
+            : InsightSeverity.info,
         category: 'İlaç',
         title: report.patterns.isEmpty
             ? 'İlaç uyumunuz çok iyi (%$percent)'
@@ -637,7 +688,9 @@ class InsightEngine {
         message: report.patterns.isEmpty
             ? 'Son ${report.days} günde dozlarınızı düzenli aldınız.'
             : report.patterns.first.message,
-        suggestion: report.patterns.isEmpty ? null : report.patterns.first.suggestion,
+        suggestion: report.patterns.isEmpty
+            ? null
+            : report.patterns.first.suggestion,
         evidence: evidence,
         method: method,
         route: AppConstants.routeChronic,
@@ -661,7 +714,9 @@ class InsightEngine {
             id: 'hr_range',
             severity: InsightSeverity.info,
             category: 'Nabız',
-            title: last.bpm > 100 ? 'Dinlenik nabız yüksek' : 'Dinlenik nabız düşük',
+            title: last.bpm > 100
+                ? 'Dinlenik nabız yüksek'
+                : 'Dinlenik nabız düşük',
             message:
                 'Son kamera ölçümünüz ${last.bpm} atım/dk (normal dinlenik aralık '
                 '60-100).',
@@ -675,7 +730,9 @@ class InsightEngine {
         );
       }
       final lastThree = rest.take(3).toList();
-      final highCount = lastThree.where((m) => m.stress == StressLevel.high).length;
+      final highCount = lastThree
+          .where((m) => m.stress == StressLevel.high)
+          .length;
       if (lastThree.length >= 2 && highCount >= 2) {
         out.add(
           HealthInsight(
@@ -693,7 +750,8 @@ class InsightEngine {
               for (final m in lastThree)
                 '${_d(m.date)}: HRV ${m.rmssdMs.round()} ms (${m.stress.label})',
             ],
-            method: 'RMSSD (ardışık atım aralığı farklarının karekök ortalaması); <20 ms yüksek stres göstergesi.',
+            method:
+                'RMSSD (ardışık atım aralığı farklarının karekök ortalaması); <20 ms yüksek stres göstergesi.',
             route: AppConstants.routeHeart,
           ),
         );
@@ -719,7 +777,8 @@ class InsightEngine {
               'Önce: ${before.bpm} atım/dk, HRV ${before.rmssdMs.round()} ms',
               'Sonra: ${after.bpm} atım/dk, HRV ${after.rmssdMs.round()} ms',
             ],
-            method: 'Aynı oturumda (≤30 dk) ölçüm öncesi/sonrası karşılaştırması.',
+            method:
+                'Aynı oturumda (≤30 dk) ölçüm öncesi/sonrası karşılaştırması.',
             route: AppConstants.routeHeart,
           ),
         );

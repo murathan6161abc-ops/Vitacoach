@@ -197,9 +197,9 @@ class _NutritionScreenState extends State<NutritionScreen>
     if (selected == null || !mounted) return;
     await _addFood(selected.toMap());
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${selected.name} eklendi')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${selected.name} eklendi')));
   }
 
   Map<String, List<Food>> _foodsByCategory() {
@@ -254,9 +254,9 @@ class _NutritionScreenState extends State<NutritionScreen>
       await _addFood({...food.toMap(), 'meal_type': meal.mealType});
     }
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${meal.title} günlüğe eklendi')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${meal.title} günlüğe eklendi')));
   }
 
   @override
@@ -431,10 +431,7 @@ class _NutritionScreenState extends State<NutritionScreen>
             color: color,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, color: AppColors.textHint),
-        ),
+        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textHint)),
       ],
     );
   }
@@ -510,7 +507,9 @@ class _NutritionScreenState extends State<NutritionScreen>
                 ),
                 const SizedBox(height: 16),
                 VcButton(
-                  text: plan == null ? 'Öğün Planı Oluştur' : 'Farklı Plan Öner',
+                  text: plan == null
+                      ? 'Öğün Planı Oluştur'
+                      : 'Farklı Plan Öner',
                   onPressed: () => _generateMealPlan(newVariant: plan != null),
                   icon: Icons.autorenew,
                   color: AppColors.secondary,
@@ -524,8 +523,7 @@ class _NutritionScreenState extends State<NutritionScreen>
               borderColor: AppColors.secondary.withValues(alpha: 0.3),
               child: Row(
                 children: [
-                  Icon(Icons.local_fire_department,
-                      color: AppColors.warning),
+                  Icon(Icons.local_fire_department, color: AppColors.warning),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -570,12 +568,13 @@ class _NutritionScreenState extends State<NutritionScreen>
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Row(
                             children: [
-                              Icon(Icons.circle,
-                                  size: 6, color: AppColors.secondary),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text('${f.name} — ${f.portion}'),
+                              Icon(
+                                Icons.circle,
+                                size: 6,
+                                color: AppColors.secondary,
                               ),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text('${f.name} — ${f.portion}')),
                               Text(
                                 '${f.calories}',
                                 style: TextStyle(color: AppColors.textHint),

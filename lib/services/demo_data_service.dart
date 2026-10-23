@@ -81,7 +81,16 @@ class DemoDataService {
       if (i >= 1 && (i % 2 == 0 || i < 3)) {
         sugars.add(
           HealthEntry(
-            value: i == 1 ? 148 : const {12: 98.0, 10: 109.0, 8: 101.0, 6: 112.0, 4: 96.0, 2: 106.0}[i]!,
+            value: i == 1
+                ? 148
+                : const {
+                    12: 98.0,
+                    10: 109.0,
+                    8: 101.0,
+                    6: 112.0,
+                    4: 96.0,
+                    2: 106.0,
+                  }[i]!,
             date: DateTime(day.year, day.month, day.day, 7, 45),
             note: 'Açlık',
           ).toMap(),
@@ -128,12 +137,43 @@ class DemoDataService {
     }
 
     // Kamera ile nabız ölçümleri: dün akşam nefes egzersizi öncesi/sonrası.
-    final yesterdayEvening = DateTime(today.year, today.month, today.day - 1, 21, 0);
+    final yesterdayEvening = DateTime(
+      today.year,
+      today.month,
+      today.day - 1,
+      21,
+      0,
+    );
     final heart = [
-      HeartMeasurement(date: yesterdayEvening.add(const Duration(minutes: 3)), bpm: 72, rmssdMs: 31.4, stress: StressLevel.moderate, quality: 0.91, context: 'after_breathing'),
-      HeartMeasurement(date: yesterdayEvening, bpm: 79, rmssdMs: 17.2, stress: StressLevel.high, quality: 0.88),
-      HeartMeasurement(date: today.subtract(const Duration(days: 3, hours: 2)), bpm: 76, rmssdMs: 22.5, stress: StressLevel.moderate, quality: 0.9),
-      HeartMeasurement(date: today.subtract(const Duration(days: 6, hours: 1)), bpm: 78, rmssdMs: 18.1, stress: StressLevel.high, quality: 0.86),
+      HeartMeasurement(
+        date: yesterdayEvening.add(const Duration(minutes: 3)),
+        bpm: 72,
+        rmssdMs: 31.4,
+        stress: StressLevel.moderate,
+        quality: 0.91,
+        context: 'after_breathing',
+      ),
+      HeartMeasurement(
+        date: yesterdayEvening,
+        bpm: 79,
+        rmssdMs: 17.2,
+        stress: StressLevel.high,
+        quality: 0.88,
+      ),
+      HeartMeasurement(
+        date: today.subtract(const Duration(days: 3, hours: 2)),
+        bpm: 76,
+        rmssdMs: 22.5,
+        stress: StressLevel.moderate,
+        quality: 0.9,
+      ),
+      HeartMeasurement(
+        date: today.subtract(const Duration(days: 6, hours: 1)),
+        bpm: 78,
+        rmssdMs: 18.1,
+        stress: StressLevel.high,
+        quality: 0.86,
+      ),
     ];
 
     // Risk skorları gerçek hesaplayıcılarla (verilerle tutarlı).
@@ -203,26 +243,60 @@ class DemoDataService {
     // ve tansiyon ilacı + ağrı kesici birlikte.
     final started = today.subtract(const Duration(days: 14));
     final meds = [
-      MedicationReminder(notificationId: 20001, name: 'Delix (Ramipril)', dosage: '5 mg', hour: 8, minute: 0, createdAt: started),
-      MedicationReminder(notificationId: 20002, name: 'Coraspin', dosage: '100 mg', hour: 13, minute: 0, createdAt: started),
-      MedicationReminder(notificationId: 20003, name: 'Nurofen', dosage: '400 mg', hour: 20, minute: 0, createdAt: started),
+      MedicationReminder(
+        notificationId: 20001,
+        name: 'Delix (Ramipril)',
+        dosage: '5 mg',
+        hour: 8,
+        minute: 0,
+        createdAt: started,
+      ),
+      MedicationReminder(
+        notificationId: 20002,
+        name: 'Coraspin',
+        dosage: '100 mg',
+        hour: 13,
+        minute: 0,
+        createdAt: started,
+      ),
+      MedicationReminder(
+        notificationId: 20003,
+        name: 'Nurofen',
+        dosage: '400 mg',
+        hour: 20,
+        minute: 0,
+        createdAt: started,
+      ),
     ];
-    await hive.getMedicationBox().put('medications', [for (final m in meds) m.toMap()]);
+    await hive.getMedicationBox().put('medications', [
+      for (final m in meds) m.toMap(),
+    ]);
 
     // İlaç uyumu: sabah ilacı düzenli; akşam ilacı 2 kez kaçırılmış ve
     // genelde ~1,5 saat geç alınmış (örüntü önerisini göstermek için).
     final doseLog = DoseLog.empty();
     for (var i = 6; i >= 0; i--) {
-      final day = DateTime(today.year, today.month, today.day).subtract(Duration(days: i));
+      final day = DateTime(
+        today.year,
+        today.month,
+        today.day,
+      ).subtract(Duration(days: i));
       for (final m in meds) {
         final due = DateTime(day.year, day.month, day.day, m.hour, m.minute);
-        final missed = (m.notificationId == 20002 && i == 4) ||
+        final missed =
+            (m.notificationId == 20002 && i == 4) ||
             (m.notificationId == 20003 && (i == 2 || i == 5));
         if (missed) continue;
-        final delay = m.notificationId == 20003 ? 80 + rnd.nextInt(20) : 5 + rnd.nextInt(20);
+        final delay = m.notificationId == 20003
+            ? 80 + rnd.nextInt(20)
+            : 5 + rnd.nextInt(20);
         final at = due.add(Duration(minutes: delay));
         if (at.isAfter(today)) continue; // henüz gerçekleşmemiş doz
-        doseLog.set(day, m.notificationId, DoseRecord(status: DoseStatus.taken, at: at));
+        doseLog.set(
+          day,
+          m.notificationId,
+          DoseRecord(status: DoseStatus.taken, at: at),
+        );
       }
     }
     await hive.getMedicationBox().put('dose_log', doseLog.toRaw());
@@ -231,7 +305,10 @@ class DemoDataService {
     final mood = hive.getMoodBox();
     const moods = [3, 3, 4, 2, 3, 4, 4, 3, 4, 5, 4, 4];
     for (var i = 0; i < moods.length; i++) {
-      await mood.put(_day(today.subtract(Duration(days: moods.length - 1 - i))), moods[i]);
+      await mood.put(
+        _day(today.subtract(Duration(days: moods.length - 1 - i))),
+        moods[i],
+      );
     }
     await mood.put('test_history', [
       {
@@ -281,16 +358,23 @@ class DemoDataService {
     final fitness = hive.getFitnessBox();
     const steps = [7400, 9100, 5200, 10400, 8800, 11800, 6400];
     for (var i = 0; i < steps.length; i++) {
-      await fitness.put('steps_${_day(today.subtract(Duration(days: 6 - i)))}', steps[i]);
+      await fitness.put(
+        'steps_${_day(today.subtract(Duration(days: 6 - i)))}',
+        steps[i],
+      );
     }
     await fitness.put('workout_history', [
       {
         'exercise_name': 'Yürüyüş',
         'duration_minutes': 35,
         'calories_burned': 146,
-        'date': DateTime(today.year, today.month, today.day, 7, 30)
-            .subtract(const Duration(days: 1))
-            .toIso8601String(),
+        'date': DateTime(
+          today.year,
+          today.month,
+          today.day,
+          7,
+          30,
+        ).subtract(const Duration(days: 1)).toIso8601String(),
       },
       {
         'exercise_name': 'Yoga',

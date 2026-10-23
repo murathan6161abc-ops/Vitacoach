@@ -78,9 +78,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_currentStep == 1) {
       final error = _validatePersonalInfo();
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
         return;
       }
     }

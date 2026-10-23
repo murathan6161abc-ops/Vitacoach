@@ -57,23 +57,26 @@ void main() {
   });
 
   group('Veri dosyaları', () {
-    test('acil durum kurallarındaki tüm belirtiler symptoms.json içinde var', () {
-      final symptoms = json.decode(
-        File('assets/data/symptoms.json').readAsStringSync(),
-      );
-      final ids = {
-        for (final c in symptoms['categories'])
-          for (final s in c['symptoms']) s['id'] as String,
-      };
-      final flags = json.decode(
-        File('assets/data/emergency_flags.json').readAsStringSync(),
-      );
-      final referenced = <String>{
-        for (final group in ['red_flags', 'yellow_flags'])
-          for (final f in flags[group]) ...List<String>.from(f['symptoms']),
-      };
-      expect(referenced.difference(ids), isEmpty);
-    });
+    test(
+      'acil durum kurallarındaki tüm belirtiler symptoms.json içinde var',
+      () {
+        final symptoms = json.decode(
+          File('assets/data/symptoms.json').readAsStringSync(),
+        );
+        final ids = {
+          for (final c in symptoms['categories'])
+            for (final s in c['symptoms']) s['id'] as String,
+        };
+        final flags = json.decode(
+          File('assets/data/emergency_flags.json').readAsStringSync(),
+        );
+        final referenced = <String>{
+          for (final group in ['red_flags', 'yellow_flags'])
+            for (final f in flags[group]) ...List<String>.from(f['symptoms']),
+        };
+        expect(referenced.difference(ids), isEmpty);
+      },
+    );
 
     test('her yemekte beslenme ekranının kullandığı alanlar var', () {
       final foods = json.decode(

@@ -96,7 +96,9 @@ class NotificationActionQueue {
 /// Uygulama kapalıyken veya arka plandayken eylem düğmelerine basıldığında
 /// eklenti tarafından ayrı bir motorda çağrılır.
 @pragma('vm:entry-point')
-Future<void> notificationBackgroundHandler(NotificationResponse response) async {
+Future<void> notificationBackgroundHandler(
+  NotificationResponse response,
+) async {
   DartPluginRegistrant.ensureInitialized();
   try {
     await NotificationActions.handleAction(response, background: true);
@@ -115,7 +117,9 @@ class NotificationActions {
   static void Function(String route)? onOpenRoute;
 
   /// Ana isolate: bildirime veya (iOS'ta) eylem düğmesine dokunuldu.
-  static Future<void> onForegroundResponse(NotificationResponse response) async {
+  static Future<void> onForegroundResponse(
+    NotificationResponse response,
+  ) async {
     final actionId = response.actionId;
     if (actionId == null || actionId.isEmpty) {
       final route = NotificationPayload.decode(response.payload)?.route;

@@ -97,12 +97,7 @@ class MealPlanner {
 
     final breakfastProtein = pool(
       ['breakfast', 'dairy'],
-      only: {
-        'Yumurta (haşlanmış)',
-        'Menemen',
-        'Beyaz peynir',
-        'Kaşar peyniri',
-      },
+      only: {'Yumurta (haşlanmış)', 'Menemen', 'Beyaz peynir', 'Kaşar peyniri'},
     );
     final breads = pool(
       ['grains'],
@@ -211,10 +206,11 @@ class MealPlanner {
           final soup = pick(soups, 5);
           final side = pick(sides, 6);
           final salad = pick(salads, 7);
-          final fixed = [soup, side, salad].whereType<Food>().fold(
-            0,
-            (s, f) => s + f.calories,
-          );
+          final fixed = [
+            soup,
+            side,
+            salad,
+          ].whereType<Food>().fold(0, (s, f) => s + f.calories);
           return [soup, pickClosest(mains, target - fixed, 8), side, salad];
         },
       ),
@@ -225,10 +221,10 @@ class MealPlanner {
         compose: (target) {
           final salad = pick(salads, 9);
           final side = pick(sides, 10);
-          final fixed = [salad, side].whereType<Food>().fold(
-            0,
-            (s, f) => s + f.calories,
-          );
+          final fixed = [
+            salad,
+            side,
+          ].whereType<Food>().fold(0, (s, f) => s + f.calories);
           return [pickClosest(mains, target - fixed, 11), side, salad];
         },
       ),

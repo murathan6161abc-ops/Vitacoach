@@ -55,34 +55,36 @@ class SleepScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                ...provider.entries.take(14).map(
-                  (e) => VcCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(
-                        Icons.nights_stay,
-                        color: AppColors.accentSleep,
-                      ),
-                      title: Text(
-                        '${_date(e.wakeTime)} • ${e.durationLabel}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      subtitle: Text(
-                        '${_time(e.bedTime)} → ${_time(e.wakeTime)} • '
-                        'Kalite: ${_qualityLabels[e.quality]}',
-                      ),
-                      trailing: IconButton(
-                        tooltip: 'Sil',
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: AppColors.danger,
+                ...provider.entries
+                    .take(14)
+                    .map(
+                      (e) => VcCard(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(
+                            Icons.nights_stay,
+                            color: AppColors.accentSleep,
+                          ),
+                          title: Text(
+                            '${_date(e.wakeTime)} • ${e.durationLabel}',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            '${_time(e.bedTime)} → ${_time(e.wakeTime)} • '
+                            'Kalite: ${_qualityLabels[e.quality]}',
+                          ),
+                          trailing: IconButton(
+                            tooltip: 'Sil',
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: AppColors.danger,
+                            ),
+                            onPressed: () => provider.removeEntry(e),
+                          ),
                         ),
-                        onPressed: () => provider.removeEntry(e),
                       ),
                     ),
-                  ),
-                ),
               ],
             ],
           );
@@ -373,8 +375,7 @@ class SleepScreen extends StatelessWidget {
                       (q) => ChoiceChip(
                         label: Text(q.value),
                         selected: quality == q.key,
-                        onSelected: (_) =>
-                            setSheetState(() => quality = q.key),
+                        onSelected: (_) => setSheetState(() => quality = q.key),
                       ),
                     )
                     .toList(),

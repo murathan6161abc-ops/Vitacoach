@@ -171,10 +171,7 @@ class _InfectiousScreenState extends State<InfectiousScreen>
                 if (vaccine['notes'].isNotEmpty)
                   Text(
                     vaccine['notes'],
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textHint,
-                    ),
+                    style: TextStyle(fontSize: 12, color: AppColors.textHint),
                   ),
               ],
             ),

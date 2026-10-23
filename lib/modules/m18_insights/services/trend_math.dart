@@ -81,5 +81,9 @@ class TrendMath {
       v.toStringAsFixed(digits).replaceAll('.', ',');
 
   static String signed(double v, [int digits = 1]) =>
-      '${v > 0 ? '+' : v < 0 ? '−' : ''}${fmt(v.abs(), digits)}';
+      '${v > 0
+          ? '+'
+          : v < 0
+          ? '−'
+          : ''}${fmt(v.abs(), digits)}';
 }

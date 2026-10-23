@@ -21,7 +21,9 @@ DrugInteractionChecker _checker() => DrugInteractionChecker.fromJson(
 );
 
 Map<String, List<Food>> _foods() {
-  final data = json.decode(File('assets/data/foods_tr.json').readAsStringSync());
+  final data = json.decode(
+    File('assets/data/foods_tr.json').readAsStringSync(),
+  );
   return {
     for (final c in data['categories'])
       '${c['id']}': [
@@ -228,15 +230,27 @@ void main() {
 
     test('günlük hedef aktivite ve kilo verme hedefini uygular', () {
       expect(
-        MealPlanner.dailyTarget(bmr: 1400, wantsToLoseWeight: false, isMale: false),
+        MealPlanner.dailyTarget(
+          bmr: 1400,
+          wantsToLoseWeight: false,
+          isMale: false,
+        ),
         1950,
       );
       expect(
-        MealPlanner.dailyTarget(bmr: 1400, wantsToLoseWeight: true, isMale: false),
+        MealPlanner.dailyTarget(
+          bmr: 1400,
+          wantsToLoseWeight: true,
+          isMale: false,
+        ),
         1450,
       );
       expect(
-        MealPlanner.dailyTarget(bmr: 1000, wantsToLoseWeight: true, isMale: false),
+        MealPlanner.dailyTarget(
+          bmr: 1000,
+          wantsToLoseWeight: true,
+          isMale: false,
+        ),
         1200,
       );
       expect(
@@ -289,9 +303,7 @@ void main() {
         info: const EmergencyInfo(
           bloodType: 'A Rh+',
           allergies: 'Penisilin',
-          contacts: [
-            EmergencyContact(name: 'Mehmet', phone: '0500 000 00 00'),
-          ],
+          contacts: [EmergencyContact(name: 'Mehmet', phone: '0500 000 00 00')],
         ),
         conditions: ['Hipertansiyon'],
         medications: List.generate(80, (i) => 'İlaç $i 10 mg'),
@@ -306,7 +318,10 @@ void main() {
       expect(EmergencyContact.isValidPhone('+90 555 123 45 67'), isTrue);
       expect(EmergencyContact.isValidPhone('112'), isFalse);
       expect(
-        const EmergencyContact(name: 'x', phone: '+90 (555) 123-45-67').dialable,
+        const EmergencyContact(
+          name: 'x',
+          phone: '+90 (555) 123-45-67',
+        ).dialable,
         '+905551234567',
       );
     });
@@ -327,40 +342,49 @@ void main() {
       if (dir.existsSync()) await dir.delete(recursive: true);
     });
 
-    test('tutarlı veri yükler ve rozetler gerçek verilerden kazanılır', () async {
-      await DemoDataService.load();
-      expect(HiveService().isOnboardingCompleted, isTrue);
-      expect(HiveService().getProfileBox().get('name'), 'Ayşe Demir');
-      expect(EmergencyInfo.load().bloodType, 'A Rh+');
-      expect(
-        (HiveService().getHealthBox().get('blood_pressure') as List).length,
-        14,
-      );
+    test(
+      'tutarlı veri yükler ve rozetler gerçek verilerden kazanılır',
+      () async {
+        await DemoDataService.load();
+        expect(HiveService().isOnboardingCompleted, isTrue);
+        expect(HiveService().getProfileBox().get('name'), 'Ayşe Demir');
+        expect(EmergencyInfo.load().bloodType, 'A Rh+');
+        expect(
+          (HiveService().getHealthBox().get('blood_pressure') as List).length,
+          14,
+        );
 
-      final progress = ProgressProvider()..loadData();
-      final names = progress.badges.map((b) => b['name']).toSet();
-      expect(progress.moodStreak, 12);
-      expect(names, containsAll(['Başlangıç', 'Hafta Ustası', 'Yarı Maraton']));
-      expect(names, containsAll(['Mental Güç', 'Sağlık Bilgesi', 'Hazırlıklı']));
-      expect(names, contains('Düzenli İlaç'));
-      expect(names, contains('Vitamin Deposu'));
-      expect(progress.healthScores['Uyku'], greaterThan(0));
+        final progress = ProgressProvider()..loadData();
+        final names = progress.badges.map((b) => b['name']).toSet();
+        expect(progress.moodStreak, 12);
+        expect(
+          names,
+          containsAll(['Başlangıç', 'Hafta Ustası', 'Yarı Maraton']),
+        );
+        expect(
+          names,
+          containsAll(['Mental Güç', 'Sağlık Bilgesi', 'Hazırlıklı']),
+        );
+        expect(names, contains('Düzenli İlaç'));
+        expect(names, contains('Vitamin Deposu'));
+        expect(progress.healthScores['Uyku'], greaterThan(0));
 
-      // Akıllı analiz demo verisinde her yöntemi gösterebilmeli.
-      final insightIds = InsightRepository.analyze().map((i) => i.id).toSet();
-      expect(
-        insightIds,
-        containsAll([
-          'sugar_anomaly',
-          'bp_falling',
-          'weight_goal',
-          'sleep_mood',
-          'steps_mood',
-          'hrv_stress',
-          'breathing_effect',
-        ]),
-      );
-      expect(insightIds.any((id) => id.startsWith('adherence_')), isTrue);
-    });
+        // Akıllı analiz demo verisinde her yöntemi gösterebilmeli.
+        final insightIds = InsightRepository.analyze().map((i) => i.id).toSet();
+        expect(
+          insightIds,
+          containsAll([
+            'sugar_anomaly',
+            'bp_falling',
+            'weight_goal',
+            'sleep_mood',
+            'steps_mood',
+            'hrv_stress',
+            'breathing_effect',
+          ]),
+        );
+        expect(insightIds.any((id) => id.startsWith('adherence_')), isTrue);
+      },
+    );
   });
 }

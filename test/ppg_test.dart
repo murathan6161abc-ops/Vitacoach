@@ -26,7 +26,8 @@ List<PpgSample> synthetic({
   final samples = <PpgSample>[];
   final n = (seconds * fps).round();
   for (var i = 0; i < n; i++) {
-    final ms = i * 1000 / fps + rnd.nextDouble() * 4; // kare zamanlama titremesi
+    final ms =
+        i * 1000 / fps + rnd.nextDouble() * 4; // kare zamanlama titremesi
     var v = 150 + 8 * math.sin(2 * math.pi * 0.05 * ms / 1000); // kayma
     for (final b in beats) {
       final d = (ms - b) / 90;
@@ -50,7 +51,9 @@ void main() {
 
     test('solunum aritmisi HRV olarak yakalanır, düz ritimde düşük kalır', () {
       final variable = PpgProcessor.analyze(synthetic(bpm: 65, rsaMs: 60))!;
-      final flat = PpgProcessor.analyze(synthetic(bpm: 65, rsaMs: 0, noise: 0.05))!;
+      final flat = PpgProcessor.analyze(
+        synthetic(bpm: 65, rsaMs: 0, noise: 0.05),
+      )!;
       expect(variable.rmssdMs, greaterThan(flat.rmssdMs));
       expect(variable.rmssdMs, greaterThan(15));
       expect(flat.rmssdMs, lessThan(15));
@@ -64,7 +67,13 @@ void main() {
 
     test('stres düzeyi RMSSD eşiklerine göre', () {
       PpgResult r(double rmssd) => PpgResult(
-        bpm: 70, rmssdMs: rmssd, sdnnMs: 30, beats: 30, quality: 1, ibisMs: const []);
+        bpm: 70,
+        rmssdMs: rmssd,
+        sdnnMs: 30,
+        beats: 30,
+        quality: 1,
+        ibisMs: const [],
+      );
       expect(r(55).stress, StressLevel.low);
       expect(r(30).stress, StressLevel.moderate);
       expect(r(12).stress, StressLevel.high);
@@ -75,14 +84,24 @@ void main() {
     test('düzgün kırmızı kare parmak olarak algılanır', () {
       const w = 64, h = 48;
       final y = Uint8List(w * h)..fillRange(0, w * h, 160);
-      final v = Uint8List((w ~/ 2) * (h ~/ 2))..fillRange(0, (w ~/ 2) * (h ~/ 2), 190);
-      final s = FrameStats.fromYuv(y: y, width: w, height: h, yRowStride: w, v: v, vRowStride: w ~/ 2);
+      final v = Uint8List((w ~/ 2) * (h ~/ 2))
+        ..fillRange(0, (w ~/ 2) * (h ~/ 2), 190);
+      final s = FrameStats.fromYuv(
+        y: y,
+        width: w,
+        height: h,
+        yRowStride: w,
+        v: v,
+        vRowStride: w ~/ 2,
+      );
       expect(s.fingerDetected, isTrue);
     });
 
     test('desenli (parmaksız) kare algılanmaz', () {
       const w = 64, h = 48;
-      final y = Uint8List.fromList([for (var i = 0; i < w * h; i++) (i * 37) % 256]);
+      final y = Uint8List.fromList([
+        for (var i = 0; i < w * h; i++) (i * 37) % 256,
+      ]);
       final s = FrameStats.fromYuv(y: y, width: w, height: h, yRowStride: w);
       expect(s.fingerDetected, isFalse);
     });

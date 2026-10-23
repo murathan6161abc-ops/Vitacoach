@@ -482,10 +482,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           VcCard(
             borderColor: AppColors.danger.withValues(alpha: 0.3),
             child: ListTile(
-              leading: Icon(
-                Icons.delete_forever,
-                color: AppColors.danger,
-              ),
+              leading: Icon(Icons.delete_forever, color: AppColors.danger),
               title: Text(
                 'Hesabı Sıfırla',
                 style: TextStyle(

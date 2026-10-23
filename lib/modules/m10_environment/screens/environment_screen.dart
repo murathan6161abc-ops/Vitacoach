@@ -314,7 +314,8 @@ class EnvironmentScreen extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: SpeakButton(
                     id: 'first-aid-${guide['id']}',
-                    text: '${guide['title']}. ${(guide['steps'] as List).asMap().entries.map((s) => '${s.key + 1}. ${s.value}').join(' ')}',
+                    text:
+                        '${guide['title']}. ${(guide['steps'] as List).asMap().entries.map((s) => '${s.key + 1}. ${s.value}').join(' ')}',
                   ),
                 ),
                 ...(guide['steps'] as List).asMap().entries.map((step) {
@@ -432,10 +433,7 @@ class EnvironmentScreen extends StatelessWidget {
                       : tip['category'] == 'yaya'
                       ? 'Yaya'
                       : 'Bisiklet',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.primary,
-                  ),
+                  style: TextStyle(fontSize: 10, color: AppColors.primary),
                 ),
               ),
               children: [

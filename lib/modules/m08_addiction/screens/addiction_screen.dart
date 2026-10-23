@@ -207,11 +207,7 @@ class AddictionScreen extends StatelessWidget {
                 child: VcCard(
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.savings,
-                        color: AppColors.success,
-                        size: 28,
-                      ),
+                      Icon(Icons.savings, color: AppColors.success, size: 28),
                       const SizedBox(height: 4),
                       Text(
                         '${provider.profile.moneySaved.toStringAsFixed(0)} ₺',
@@ -502,10 +498,7 @@ class AddictionScreen extends StatelessWidget {
             color: AppColors.success,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: AppColors.textHint),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textHint)),
       ],
     );
   }

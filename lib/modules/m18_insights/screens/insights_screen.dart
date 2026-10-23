@@ -82,7 +82,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   Widget _header() {
-    int count(InsightSeverity s) => _insights.where((i) => i.severity == s).length;
+    int count(InsightSeverity s) =>
+        _insights.where((i) => i.severity == s).length;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -126,14 +127,20 @@ class _InsightsScreenState extends State<InsightsScreen> {
               for (final s in InsightSeverity.values)
                 if (count(s) > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${count(s)} ${s.label.toLowerCase()}',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
             ],
@@ -151,7 +158,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
           const SizedBox(height: 12),
           Text(
             'Analiz için biraz daha veri gerekiyor',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -166,15 +177,22 @@ class _InsightsScreenState extends State<InsightsScreen> {
   }
 
   _BpChartData? _bpChartData() {
-    final list = _input.pressures
-        .where((p) => _input.now.difference(p.date).inDays <= 14 && p.systolic > 0)
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
+    final list =
+        _input.pressures
+            .where(
+              (p) =>
+                  _input.now.difference(p.date).inDays <= 14 && p.systolic > 0,
+            )
+            .toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
     if (list.length < 5) return null;
     final t0 = list.first.date;
     double x(DateTime d) => d.difference(t0).inMinutes / (60 * 24);
     final points = [for (final p in list) FlSpot(x(p.date), p.systolic)];
-    final fit = TrendMath.fit([for (final s in points) s.x], [for (final s in points) s.y]);
+    final fit = TrendMath.fit(
+      [for (final s in points) s.x],
+      [for (final s in points) s.y],
+    );
     if (fit == null) return null;
     return _BpChartData(points, fit, x(_input.now));
   }
@@ -195,7 +213,12 @@ class _BpTrendCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fit = data.fit;
     final endX = data.nowX + 7;
-    final ys = [...data.points.map((p) => p.y), fit.predict(0), fit.predict(endX), 140];
+    final ys = [
+      ...data.points.map((p) => p.y),
+      fit.predict(0),
+      fit.predict(endX),
+      140,
+    ];
     final minY = ((ys.reduce((a, b) => a < b ? a : b) - 5) / 10).floor() * 10.0;
     final maxY = ((ys.reduce((a, b) => a > b ? a : b) + 5) / 10).ceil() * 10.0;
     return VcCard(
@@ -204,7 +227,11 @@ class _BpTrendCard extends StatelessWidget {
         children: [
           Text(
             'Büyük tansiyon: eğilim ve 7 günlük tahmin',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -258,7 +285,13 @@ class _BpTrendCard extends StatelessWidget {
                           meta: meta,
                           // Kenardaki "+7 gün" etiketi kırpılmasın.
                           fitInside: SideTitleFitInsideData.fromTitleMeta(meta),
-                          child: Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -273,7 +306,10 @@ class _BpTrendCard extends StatelessWidget {
                         child: Text(
                           '${v.toInt()}',
                           textScaler: TextScaler.noScaling,
-                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -294,7 +330,10 @@ class _BpTrendCard extends StatelessWidget {
                     ),
                   ),
                   LineChartBarData(
-                    spots: [FlSpot(0, fit.predict(0)), FlSpot(data.nowX, fit.predict(data.nowX))],
+                    spots: [
+                      FlSpot(0, fit.predict(0)),
+                      FlSpot(data.nowX, fit.predict(data.nowX)),
+                    ],
                     color: AppColors.primary,
                     barWidth: 2.5,
                     dotData: const FlDotData(show: false),
@@ -347,7 +386,11 @@ class _InsightCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: color.withValues(alpha: 0.14),
-                  child: Icon(insightIcon(insight.severity), color: color, size: 20),
+                  child: Icon(
+                    insightIcon(insight.severity),
+                    color: color,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -355,7 +398,9 @@ class _InsightCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        InputUtils.upperTr('${insight.category} · ${insight.severity.label}'),
+                        InputUtils.upperTr(
+                          '${insight.category} · ${insight.severity.label}',
+                        ),
                         style: TextStyle(
                           fontSize: 11,
                           letterSpacing: 0.5,
@@ -377,7 +422,8 @@ class _InsightCard extends StatelessWidget {
                 ),
                 SpeakButton(
                   id: 'insight-${insight.id}',
-                  text: '${insight.title}. ${insight.message} ${insight.suggestion ?? ''}',
+                  text:
+                      '${insight.title}. ${insight.message} ${insight.suggestion ?? ''}',
                 ),
               ],
             ),
@@ -392,7 +438,11 @@ class _InsightCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.lightbulb_outline, size: 18, color: AppColors.primary),
+                  Icon(
+                    Icons.lightbulb_outline,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -411,7 +461,11 @@ class _InsightCard extends StatelessWidget {
               expandedCrossAxisAlignment: CrossAxisAlignment.start,
               title: Text(
                 'Neden bu sonuç?',
-                style: TextStyle(fontSize: 14, color: AppColors.primary, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               children: [
                 for (final e in insight.evidence)

@@ -50,8 +50,13 @@ class ChronicProvider extends ChangeNotifier {
   /// Bugünkü dozun vakti geldi mi?
   bool isDoseDue(MedicationReminder medication, {DateTime? now}) {
     final t = now ?? DateTime.now();
-    return !DateTime(t.year, t.month, t.day, medication.hour, medication.minute)
-        .isAfter(t);
+    return !DateTime(
+      t.year,
+      t.month,
+      t.day,
+      medication.hour,
+      medication.minute,
+    ).isAfter(t);
   }
 
   // Last 7 days data

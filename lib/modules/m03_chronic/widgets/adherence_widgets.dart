@@ -150,7 +150,10 @@ class MedicationRow extends StatelessWidget {
                 ),
                 Text(
                   '${dosage.isEmpty ? '' : '$dosage · '}${medication.timeDisplay}',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 Text(
                   status,
@@ -194,9 +197,15 @@ class MedicationRow extends StatelessWidget {
             },
             itemBuilder: (_) => [
               if (record == null)
-                const PopupMenuItem(value: 'skip', child: Text('Bugün atladım')),
+                const PopupMenuItem(
+                  value: 'skip',
+                  child: Text('Bugün atladım'),
+                ),
               if (record != null)
-                const PopupMenuItem(value: 'undo', child: Text('İşareti kaldır')),
+                const PopupMenuItem(
+                  value: 'undo',
+                  child: Text('İşareti kaldır'),
+                ),
               const PopupMenuItem(value: 'delete', child: Text('İlacı sil')),
             ],
           ),
@@ -206,7 +215,10 @@ class MedicationRow extends StatelessWidget {
   }
 }
 
-Future<void> showAdherenceDetails(BuildContext context, ChronicProvider provider) {
+Future<void> showAdherenceDetails(
+  BuildContext context,
+  ChronicProvider provider,
+) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -289,7 +301,11 @@ class _AdherenceDetails extends StatelessWidget {
                 TableRow(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                      padding: const EdgeInsets.only(
+                        right: 8,
+                        top: 8,
+                        bottom: 8,
+                      ),
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 120),
                         child: Text(
@@ -301,7 +317,9 @@ class _AdherenceDetails extends StatelessWidget {
                       ),
                     ),
                     for (final d in days)
-                      Center(child: _Cell(provider.doseState(med, d, now: now))),
+                      Center(
+                        child: _Cell(provider.doseState(med, d, now: now)),
+                      ),
                   ],
                 ),
             ],
@@ -334,7 +352,10 @@ class _AdherenceDetails extends StatelessWidget {
               elevation: 0,
               color: AppColors.warning.withValues(alpha: 0.08),
               child: ListTile(
-                leading: Icon(Icons.lightbulb_outline, color: AppColors.warning),
+                leading: Icon(
+                  Icons.lightbulb_outline,
+                  color: AppColors.warning,
+                ),
                 title: Text(p.message),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 4),
@@ -412,7 +433,10 @@ class _Legend extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Transform.scale(scale: 0.7, child: _Cell(state)),
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
       ],
     );
   }

@@ -107,10 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               if (errorText != null) ...[
                 const SizedBox(height: 12),
-                Text(
-                  errorText!,
-                  style: TextStyle(color: AppColors.danger),
-                ),
+                Text(errorText!, style: TextStyle(color: AppColors.danger)),
               ],
             ],
           ),
@@ -323,13 +320,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'Acil Sağlık Kartı',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text('Kan grubu, alerjiler, acil kişiler, QR'),
+                    subtitle: const Text(
+                      'Kan grubu, alerjiler, acil kişiler, QR',
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppConstants.routeEmergencyCard),
                   ),
                   const Divider(height: 1),
                   ListTile(
-                    leading: Icon(Icons.picture_as_pdf, color: AppColors.primary),
+                    leading: Icon(
+                      Icons.picture_as_pdf,
+                      color: AppColors.primary,
+                    ),
                     title: const Text(
                       'Doktor İçin PDF Rapor',
                       style: TextStyle(fontWeight: FontWeight.w600),
@@ -397,11 +399,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final parts = <String>[
       if (_gender.isNotEmpty) _gender,
       if (_height > 0) '${_height.round()} cm',
-      if (_weight > 0) '${_weight.toStringAsFixed(_weight % 1 == 0 ? 0 : 1)} kg',
+      if (_weight > 0)
+        '${_weight.toStringAsFixed(_weight % 1 == 0 ? 0 : 1)} kg',
     ];
-    return parts.isEmpty
-        ? 'Boy ve kilo bilgisi girilmedi'
-        : parts.join(' • ');
+    return parts.isEmpty ? 'Boy ve kilo bilgisi girilmedi' : parts.join(' • ');
   }
 
   Widget _buildBmiCard() {
@@ -495,11 +496,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               if (onEdit != null)
                 IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
+                  icon: Icon(Icons.edit, color: AppColors.primary, size: 20),
                   onPressed: onEdit,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

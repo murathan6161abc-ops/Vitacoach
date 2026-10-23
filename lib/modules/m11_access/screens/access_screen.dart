@@ -207,7 +207,8 @@ class AccessScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => _callWithFeedback(context, provider, '182'),
+                      onPressed: () =>
+                          _callWithFeedback(context, provider, '182'),
                       icon: const Icon(Icons.phone, size: 16),
                       label: const Text('182 Ara'),
                       style: OutlinedButton.styleFrom(
@@ -326,7 +327,8 @@ class AccessScreen extends StatelessWidget {
                 (entry) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: InkWell(
-                    onTap: () => _callWithFeedback(context, provider, entry.value),
+                    onTap: () =>
+                        _callWithFeedback(context, provider, entry.value),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -385,7 +387,6 @@ class AccessScreen extends StatelessWidget {
   }
 }
 
-
 /// Numarayı arar; cihazda arama başlatılamazsa (uygun uygulama yok vb.)
 /// kullanıcıya bunu bildirir. Aksi halde acil bir numarada sessiz
 /// başarısızlık, kullanıcının yardım çağrıldığını sanmasına yol açabilir.
@@ -398,7 +399,9 @@ Future<void> _callWithFeedback(
   if (!started && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Arama başlatılamadı. Lütfen $number numarasını elle arayın.'),
+        content: Text(
+          'Arama başlatılamadı. Lütfen $number numarasını elle arayın.',
+        ),
         backgroundColor: AppColors.danger,
       ),
     );

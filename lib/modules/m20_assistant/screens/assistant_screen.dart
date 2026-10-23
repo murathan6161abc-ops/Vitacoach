@@ -12,7 +12,10 @@ class _Message {
   final String text;
   final AssistantReply? reply;
   _Message.user(this.text) : fromUser = true, reply = null;
-  _Message.assistant(AssistantReply r) : fromUser = false, text = r.text, reply = r;
+  _Message.assistant(AssistantReply r)
+    : fromUser = false,
+      text = r.text,
+      reply = r;
 }
 
 class AssistantScreen extends StatefulWidget {
@@ -85,23 +88,28 @@ class _AssistantScreenState extends State<AssistantScreen> {
         final ok = await AccessProvider().callNumber(action.value);
         if (!ok && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Arama başlatılamadı. Lütfen ${action.value} numarasını elle arayın.')),
+            SnackBar(
+              content: Text(
+                'Arama başlatılamadı. Lütfen ${action.value} numarasını elle arayın.',
+              ),
+            ),
           );
         }
       case AssistantActionType.route:
         await context.push(action.value);
         // Kullanıcı veri eklemiş olabilir: cevaplar güncel verilerle verilsin.
         final engine = _engine;
-        if (engine != null) engine.context = await AssistantLoader.loadContext();
+        if (engine != null) {
+          engine.context = await AssistantLoader.loadContext();
+        }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final lastReply = _messages.lastWhere(
-      (m) => !m.fromUser,
-      orElse: () => _Message.user(''),
-    ).reply;
+    final lastReply = _messages
+        .lastWhere((m) => !m.fromUser, orElse: () => _Message.user(''))
+        .reply;
     return Scaffold(
       appBar: AppBar(
         title: const Column(
@@ -139,7 +147,10 @@ class _AssistantScreenState extends State<AssistantScreen> {
                     for (final q in lastReply.quickReplies)
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: ActionChip(label: Text(q), onPressed: () => _send(q)),
+                        child: ActionChip(
+                          label: Text(q),
+                          onPressed: () => _send(q),
+                        ),
                       ),
                   ],
                 ),
@@ -158,8 +169,13 @@ class _AssistantScreenState extends State<AssistantScreen> {
                       onSubmitted: _send,
                       decoration: InputDecoration(
                         hintText: 'Belirtinizi veya sorunuzu yazın…',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
                     ),
                   ),
@@ -196,7 +212,10 @@ class _AssistantScreenState extends State<AssistantScreen> {
               bottomRight: Radius.circular(4),
             ),
           ),
-          child: Text(m.text, style: const TextStyle(color: Colors.white, fontSize: 15)),
+          child: Text(
+            m.text,
+            style: const TextStyle(color: Colors.white, fontSize: 15),
+          ),
         ),
       );
     }
@@ -209,7 +228,9 @@ class _AssistantScreenState extends State<AssistantScreen> {
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.fromLTRB(14, 10, 6, 8),
         decoration: BoxDecoration(
-          color: urgent ? AppColors.danger.withValues(alpha: 0.08) : AppColors.surface,
+          color: urgent
+              ? AppColors.danger.withValues(alpha: 0.08)
+              : AppColors.surface,
           border: Border.all(
             color: urgent ? AppColors.danger : AppColors.cardBorder,
             width: urgent ? 1.5 : 1,
@@ -232,7 +253,11 @@ class _AssistantScreenState extends State<AssistantScreen> {
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(
                       reply.text,
-                      style: TextStyle(fontSize: 15, color: AppColors.textPrimary, height: 1.35),
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                        height: 1.35,
+                      ),
                     ),
                   ),
                 ),
@@ -249,7 +274,9 @@ class _AssistantScreenState extends State<AssistantScreen> {
                     for (final a in reply.actions)
                       a.type == AssistantActionType.call
                           ? FilledButton.icon(
-                              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.danger,
+                              ),
                               onPressed: () => _runAction(a),
                               icon: const Icon(Icons.call, size: 18),
                               label: Text(a.label),

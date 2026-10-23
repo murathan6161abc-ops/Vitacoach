@@ -72,7 +72,11 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.medical_information, color: Colors.white, size: 40),
+                const Icon(
+                  Icons.medical_information,
+                  color: Colors.white,
+                  size: 40,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -87,7 +91,9 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                         ),
                       ),
                       Text(
-                        profile.age > 0 ? '${profile.age} yaş' : 'Yaş bilinmiyor',
+                        profile.age > 0
+                            ? '${profile.age} yaş'
+                            : 'Yaş bilinmiyor',
                         style: const TextStyle(color: Colors.white70),
                       ),
                     ],
@@ -95,7 +101,10 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                 ),
                 Column(
                   children: [
-                    const Text('Kan grubu', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    const Text(
+                      'Kan grubu',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
                     Text(
                       _info.bloodType == 'Bilinmiyor' ? '?' : _info.bloodType,
                       style: const TextStyle(
@@ -170,7 +179,10 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
                     contentPadding: EdgeInsets.zero,
                     title: Text(c.name),
                     subtitle: Text(
-                      [c.phone, if (c.relation.isNotEmpty) c.relation].join(' • '),
+                      [
+                        c.phone,
+                        if (c.relation.isNotEmpty) c.relation,
+                      ].join(' • '),
                     ),
                     trailing: IconButton(
                       tooltip: 'Ara',
@@ -244,7 +256,10 @@ class _EmergencyCardScreenState extends State<EmergencyCardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 4),
                   Text(body),
                 ],

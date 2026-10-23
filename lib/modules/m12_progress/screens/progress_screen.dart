@@ -493,11 +493,7 @@ class ProgressScreen extends StatelessWidget {
                           ),
                         ),
                         if (!isEarned)
-                          Icon(
-                            Icons.lock,
-                            size: 10,
-                            color: AppColors.textHint,
-                          ),
+                          Icon(Icons.lock, size: 10, color: AppColors.textHint),
                       ],
                     ),
                   ),
@@ -580,10 +576,7 @@ class _SummaryTile extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),

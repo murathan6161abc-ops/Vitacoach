@@ -65,7 +65,13 @@ class _RiskScreenState extends State<RiskScreen> {
 
   @override
   void dispose() {
-    for (final c in [_ageCtrl, _heightCtrl, _weightCtrl, _waistCtrl, _sbpCtrl]) {
+    for (final c in [
+      _ageCtrl,
+      _heightCtrl,
+      _weightCtrl,
+      _waistCtrl,
+      _sbpCtrl,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -481,10 +487,7 @@ class _RiskScreenState extends State<RiskScreen> {
         ),
         if (_framinghamNote != null) ...[
           const SizedBox(height: 16),
-          VcCard(
-            borderColor: AppColors.warning,
-            child: Text(_framinghamNote!),
-          ),
+          VcCard(borderColor: AppColors.warning, child: Text(_framinghamNote!)),
         ],
         if (_framingham != null) ...[
           const SizedBox(height: 16),

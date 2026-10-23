@@ -283,7 +283,9 @@ class _FitnessScreenState extends State<FitnessScreen> {
     if (steps == null) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Adım sayısı 1-100.000 arasında olmalı.')),
+          const SnackBar(
+            content: Text('Adım sayısı 1-100.000 arasında olmalı.'),
+          ),
         );
       }
       return;
@@ -485,10 +487,7 @@ class _FitnessScreenState extends State<FitnessScreen> {
                   ];
                   return Text(
                     '${workout.date.day} ${months[workout.date.month - 1]}',
-                    style: TextStyle(
-                      color: AppColors.textHint,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: AppColors.textHint, fontSize: 12),
                   );
                 },
               ),

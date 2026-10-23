@@ -35,7 +35,9 @@ class _SosScreenState extends State<SosScreen> {
     if (!started && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Arama başlatılamadı. Lütfen $number numarasını elle arayın.'),
+          content: Text(
+            'Arama başlatılamadı. Lütfen $number numarasını elle arayın.',
+          ),
           backgroundColor: AppColors.danger,
         ),
       );

@@ -226,10 +226,7 @@ class _SymptomScreenState extends State<SymptomScreen> {
                   ..._categories.map((cat) => _buildCategory(cat)),
                   if (_triageResult != null) ...[
                     const SizedBox(height: 16),
-                    KeyedSubtree(
-                      key: _resultKey,
-                      child: _buildTriageResult(),
-                    ),
+                    KeyedSubtree(key: _resultKey, child: _buildTriageResult()),
                   ],
                 ],
               ),
