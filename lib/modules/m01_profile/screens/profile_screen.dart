@@ -293,7 +293,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        actions: [
+          IconButton(
+            tooltip: 'Ayarlar',
+            icon: const Icon(Icons.settings),
+            onPressed: () => context.push(AppConstants.routeSettings),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.paddingMD),
         child: Column(

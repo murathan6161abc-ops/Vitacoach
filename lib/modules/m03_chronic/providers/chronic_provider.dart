@@ -186,10 +186,17 @@ class ChronicProvider extends ChangeNotifier {
         DoseRecord(status: status, at: t),
       );
       // Uygulamadan işaretlendiyse ertelenmiş hatırlatma artık gereksiz.
+      // Beklenmeden çalışır; hata olursa yakalanmayan bir hataya dönüşmesin
+      // (doz kaydı zaten yazıldı).
       unawaited(
-        NotificationService().cancelNotification(
-          NotificationIds.snoozeFor(medication.notificationId),
-        ),
+        NotificationService()
+            .cancelNotification(
+              NotificationIds.snoozeFor(medication.notificationId),
+            )
+            .catchError(
+              (Object e) =>
+                  debugPrint('Ertelenen hatırlatma iptal edilemedi: $e'),
+            ),
       );
     }
     _doseLog.prune(t);

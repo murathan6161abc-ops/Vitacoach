@@ -15,11 +15,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigate();
+    // Önceden her açılışta 2 saniye yapay bekleme vardı; veriler main()'de
+    // zaten yüklendiği için ilk karede yönlendirilir.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _navigate());
   }
 
-  Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2));
+  void _navigate() {
     if (!mounted) return;
 
     final hiveService = HiveService();

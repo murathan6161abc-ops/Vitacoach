@@ -30,7 +30,6 @@ import '../../modules/m20_assistant/screens/assistant_screen.dart';
 
 /// Sağlayıcılara servis katmanından erişmek için (ör. bildirim eylemleri).
 final rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
@@ -44,35 +43,59 @@ final appRouter = GoRouter(
       path: AppConstants.routeOnboarding,
       builder: (context, state) => const OnboardingScreen(),
     ),
-    ShellRoute(
-      navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) => MainShell(child: child),
-      routes: [
-        GoRoute(
-          path: AppConstants.routeHome,
-          builder: (context, state) => const HomeScreen(),
+    // Her sekme kendi gezinme yığınını korur: sekme değişince kaydırma
+    // konumu ve ekran durumu kaybolmaz (önceden ShellRoute ekranı yeniden
+    // kuruyordu).
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          MainShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeHome,
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeSymptom,
-          builder: (context, state) => const SymptomScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeSymptom,
+              builder: (context, state) => const SymptomScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeNutrition,
-          builder: (context, state) => const NutritionScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeNutrition,
+              builder: (context, state) => const NutritionScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeProgress,
-          builder: (context, state) => const ProgressScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeProgress,
+              builder: (context, state) => const ProgressScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeProfile,
-          builder: (context, state) => const ProfileScreen(),
-        ),
-        GoRoute(
-          path: AppConstants.routeSettings,
-          builder: (context, state) => const SettingsScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeProfile,
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
         ),
       ],
+    ),
+    // Ayarlar alt menüden çıkarıldı (6 sekme fazlaydı); Profil'den açılır.
+    GoRoute(
+      path: AppConstants.routeSettings,
+      builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
       path: AppConstants.routeChronic,
