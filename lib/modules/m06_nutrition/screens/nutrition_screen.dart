@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../services/hive_service.dart';
@@ -8,6 +7,7 @@ import '../../../shared/widgets/vc_card.dart';
 import '../../../shared/widgets/vc_button.dart';
 import '../../m01_profile/models/user_profile.dart';
 import '../models/food_model.dart';
+import '../providers/nutrition_provider.dart';
 import '../services/meal_planner.dart';
 import '../widgets/food_search_delegate.dart';
 
@@ -21,25 +21,13 @@ class NutritionScreen extends StatefulWidget {
 class _NutritionScreenState extends State<NutritionScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<dynamic> _foodCategories = [];
-  final List<Map<String, dynamic>> _todayMeals = [];
-  int _waterCount = 0;
-  bool _isDiabetic = false;
   MealPlan? _mealPlan;
   int _planSeed = DateTime.now().difference(DateTime(2024)).inDays;
-
-  /// Bellekteki öğün/su verisinin ait olduğu gün. Uygulama açık kalıp gece
-  /// yarısı geçildiğinde bu, dünkü verinin bugünün Hive anahtarına
-  /// yazılmasını önler.
-  String _loadedDay = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadFoods();
-    _loadTodayData();
-    _checkDiabetic();
   }
 
   @override
@@ -48,151 +36,53 @@ class _NutritionScreenState extends State<NutritionScreen>
     super.dispose();
   }
 
-  Future<void> _loadFoods() async {
-    try {
-      final jsonString = await rootBundle.loadString(
-        'assets/data/foods_tr.json',
-      );
-      final data = json.decode(jsonString);
-      if (!mounted) return;
-      setState(() => _foodCategories = data['categories']);
-    } catch (e) {
-      debugPrint('Yemek verisi yükleme hatası: $e');
-    }
-  }
+  // Öğün ve su verisi NutritionProvider'da tek kaynaktan gelir; ekran
+  // kendi kopyasını tutmaz (build'de watch ile dinlenir).
+  NutritionProvider get _nutrition => context.read<NutritionProvider>();
+  List<Map<String, dynamic>> get _foodCategories => _nutrition.foodCategories;
+  List<Map<String, dynamic>> get _todayMeals => _nutrition.todayMeals;
+  int get _waterCount => _nutrition.waterCount;
+  bool get _isDiabetic => _nutrition.isDiabetic;
+  int get _totalCalories => _nutrition.totalCalories;
+  int get _totalProtein => _nutrition.totalProtein;
+  int get _totalCarbs => _nutrition.totalCarbs;
+  int get _totalFat => _nutrition.totalFat;
 
-  void _loadTodayData() {
-    final box = HiveService().getNutritionBox();
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    final meals = box.get('meals_$today', defaultValue: <dynamic>[]);
-    final water = box.get('water_$today', defaultValue: 0);
-    setState(() {
-      _todayMeals.clear();
-      if (meals != null) {
-        for (var meal in meals) {
-          if (meal is Map) {
-            _todayMeals.add(Map<String, dynamic>.from(meal));
-          }
-        }
-      }
-      _waterCount = water ?? 0;
-      _loadedDay = today;
-    });
-  }
-
-  /// Uygulama açıkken gün değişmişse belleği tazeler. Aksi halde dünkü
-  /// öğün/su listesi bugünün Hive anahtarına yazılıp dünle karışır.
-  void _refreshIfDayChanged() {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    if (_loadedDay != today) _loadTodayData();
-  }
-
-  void _checkDiabetic() {
-    final conditions =
-        HiveService().getProfileBox().get(
-          'conditions',
-          defaultValue: <dynamic>[],
-        ) ??
-        [];
-    setState(() => _isDiabetic = conditions.contains('Diyabet'));
-  }
-
-  int get _totalCalories => _todayMeals.fold(
-    0,
-    (sum, m) => sum + ((m['calories'] as num?)?.toInt() ?? 0),
-  );
-  int get _totalProtein => _todayMeals.fold(
-    0,
-    (sum, m) => sum + ((m['protein'] as num?)?.toInt() ?? 0),
-  );
-  int get _totalCarbs => _todayMeals.fold(
-    0,
-    (sum, m) => sum + ((m['carbs'] as num?)?.toInt() ?? 0),
-  );
-  int get _totalFat =>
-      _todayMeals.fold(0, (sum, m) => sum + ((m['fat'] as num?)?.toInt() ?? 0));
-
-  String? _categoryOf(String? name) {
-    if (name == null) return null;
-    for (final category in _foodCategories) {
-      for (final raw in (category['foods'] as List? ?? const [])) {
-        if (raw is Map && raw['name'] == name) return '${category['id']}';
-      }
-    }
-    return null;
-  }
-
-  Future<void> _addFood(Map<String, dynamic> food) async {
-    _refreshIfDayChanged();
-    food = {...food, 'category': food['category'] ?? _categoryOf(food['name'])};
-    _todayMeals.add(food);
-    final box = HiveService().getNutritionBox();
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    await box.put('meals_$today', _todayMeals);
-    _loadedDay = today;
-    if (mounted) setState(() {});
-  }
+  Future<void> _addFood(Map<String, dynamic> food) => _nutrition.addMeal(food);
 
   Future<void> _addWater() async {
-    _refreshIfDayChanged();
-    setState(() => _waterCount++);
-    final box = HiveService().getNutritionBox();
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    await box.put('water_$today', _waterCount);
-    _loadedDay = today;
-
+    await _nutrition.addWater();
+    if (!mounted) return;
     if (_waterCount * AppConstants.waterGlassMl > 4000) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Fazla su tüketimi (su zehirlenmesi) riski! Lütfen dikkatli olun.',
-            ),
-            backgroundColor: AppColors.danger,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Fazla su tüketimi (su zehirlenmesi) riski! Lütfen dikkatli olun.',
           ),
-        );
-      }
+          backgroundColor: AppColors.danger,
+        ),
+      );
     }
   }
 
   /// Yanlışlıkla eklenen öğün önceden gün boyu silinemiyordu.
   Future<void> _removeMeal(int index) async {
-    _refreshIfDayChanged();
-    if (index < 0 || index >= _todayMeals.length) return;
-    final removed = _todayMeals.removeAt(index);
-    final box = HiveService().getNutritionBox();
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    await box.put('meals_$today', _todayMeals);
-    _loadedDay = today;
-    if (!mounted) return;
-    setState(() {});
+    final removed = await _nutrition.removeMeal(index);
+    if (removed == null || !mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${removed['name'] ?? 'Öğün'} silindi')),
     );
   }
 
-  Future<void> _removeWater() async {
-    _refreshIfDayChanged();
-    if (_waterCount <= 0) return;
-    setState(() => _waterCount--);
-    final box = HiveService().getNutritionBox();
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    await box.put('water_$today', _waterCount);
-    _loadedDay = today;
-  }
+  Future<void> _removeWater() => _nutrition.removeWater();
 
   Future<void> _openFoodSearch() async {
-    final foods = <Food>[];
-    for (final category in _foodCategories) {
-      for (final raw in (category['foods'] as List? ?? const [])) {
-        try {
-          foods.add(Food.fromJson(Map<String, dynamic>.from(raw as Map)));
-        } catch (_) {}
-      }
-    }
     final selected = await showSearch<Food?>(
       context: context,
-      delegate: FoodSearchDelegate(foods: foods, isDiabetic: _isDiabetic),
+      delegate: FoodSearchDelegate(
+        foods: _nutrition.allFoods,
+        isDiabetic: _isDiabetic,
+      ),
     );
     if (selected == null || !mounted) return;
     await _addFood(selected.toMap());
@@ -200,21 +90,6 @@ class _NutritionScreenState extends State<NutritionScreen>
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('${selected.name} eklendi')));
-  }
-
-  Map<String, List<Food>> _foodsByCategory() {
-    final result = <String, List<Food>>{};
-    for (final category in _foodCategories) {
-      final id = '${category['id']}';
-      final foods = <Food>[];
-      for (final raw in (category['foods'] as List? ?? const [])) {
-        try {
-          foods.add(Food.fromJson(Map<String, dynamic>.from(raw as Map)));
-        } catch (_) {}
-      }
-      result[id] = foods;
-    }
-    return result;
   }
 
   /// Cihaz üzerinde, profil ve hedeflere göre öğün planı oluşturur.
@@ -241,7 +116,7 @@ class _NutritionScreenState extends State<NutritionScreen>
     if (newVariant) _planSeed++;
     setState(() {
       _mealPlan = MealPlanner.generate(
-        foodsByCategory: _foodsByCategory(),
+        foodsByCategory: _nutrition.foodsByCategory,
         targetCalories: target,
         diabetic: _isDiabetic,
         seed: _planSeed,
@@ -261,6 +136,7 @@ class _NutritionScreenState extends State<NutritionScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<NutritionProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Beslenme'),

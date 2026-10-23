@@ -59,36 +59,3 @@ class FoodCategory {
     foods: (json['foods'] as List).map((f) => Food.fromJson(f)).toList(),
   );
 }
-
-class MealEntry {
-  final Food food;
-  final DateTime dateTime;
-  final String mealType; // kahvalti, ogle, aksam, ara
-
-  MealEntry({
-    required this.food,
-    required this.dateTime,
-    this.mealType = 'ara',
-  });
-
-  Map<String, dynamic> toMap() => {
-    ...food.toMap(),
-    'date': dateTime.toIso8601String(),
-    'meal_type': mealType,
-  };
-
-  factory MealEntry.fromMap(Map<String, dynamic> map) => MealEntry(
-    food: Food(
-      name: map['name'],
-      calories: map['calories'],
-      protein: map['protein'],
-      carbs: map['carbs'],
-      fat: map['fat'],
-      fiber: map['fiber'] ?? 0,
-      gi: map['gi'] ?? 0,
-      portion: map['portion'] ?? '',
-    ),
-    dateTime: DateTime.parse(map['date']),
-    mealType: map['meal_type'] ?? 'ara',
-  );
-}

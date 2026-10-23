@@ -4,12 +4,8 @@ import '../../../core/utils/input_utils.dart';
 import '../models/food_model.dart';
 
 /// Yemek arama ekranı. Seçilen yemeği [close] ile geri döndürür; kaydetmeyi
-/// çağıran ekran yapar.
-///
-/// Önceki sürüm hiçbir yerden açılmıyordu; açılsaydı da seçimi
-/// NutritionProvider üzerinden kendi başına Hive'a yazıyordu. Beslenme
-/// ekranı aynı gün anahtarını kendi listesiyle yönettiği için iki yazıcı
-/// birbirinin kaydını silecekti.
+/// çağıran ekran NutritionProvider üzerinden yapar (öğün kaydının tek
+/// yazıcısı odur).
 class FoodSearchDelegate extends SearchDelegate<Food?> {
   final List<Food> foods;
   final bool isDiabetic;
