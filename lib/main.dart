@@ -23,9 +23,9 @@ void main() async {
 
   AppSettingsService().load();
 
-  // Önceki sürümlerden kalmış yapay zekâ anahtarlarını temizle. Uygulama
-  // artık hiçbir harici yapay zekâ servisine veri göndermiyor.
-  await SecureStorageService().purgeLegacyAiData(
+  // Önceki sürümlerden kalmış, artık kullanılmayan anahtarları (yapay zekâ,
+  // IQAir) temizle.
+  await SecureStorageService().purgeLegacySecrets(
     settingsBox: HiveService().getSettingsBox(),
   );
 

@@ -2,22 +2,43 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import '../../../services/hive_service.dart';
-import '../../../services/secure_storage_service.dart';
 
+typedef ApproximateLocation = ({double lat, double lon});
+
+/// Hava kalitesi: Open-Meteo Hava Kalitesi API'si (CAMS verisi; anahtar
+/// gerekmez). Önceden kullanıcıdan kendi IQAir API anahtarını alması
+/// isteniyordu; sıradan bir kullanıcı için bu özellik fiilen çalışmıyordu.
+///
+/// Gizlilik: yalnızca yaklaşık konum kullanılır ve koordinatlar
+/// gönderilmeden önce 0,1 dereceye (yaklaşık 10 km) yuvarlanır; başka hiçbir
+/// veri gönderilmez.
 class EnvironmentProvider extends ChangeNotifier {
+  EnvironmentProvider({
+    http.Client? client,
+    Future<ApproximateLocation?> Function()? locate,
+  }) : _client = client ?? http.Client(),
+       _locate = locate ?? _approximateLocation;
+
+  final http.Client _client;
+  final Future<ApproximateLocation?> Function() _locate;
+
   int? _aqi;
-  String? _aqiCity;
+  double? _pm25;
   String? _aqiError;
   bool _isLoadingAqi = false;
   List<dynamic> _firstAidGuides = [];
 
   int? get aqi => _aqi;
-  String? get aqiCity => _aqiCity;
+  double? get pm25 => _pm25;
   String? get aqiError => _aqiError;
   bool get isLoadingAqi => _isLoadingAqi;
   List<dynamic> get firstAidGuides => _firstAidGuides;
+
+  static const String attribution =
+      'Veri: Open-Meteo.com (CAMS), CC BY 4.0. Yaklaşık konumunuz için.';
 
   // Trafik güvenliği içerikleri (SDG 3.6)
   static const List<Map<String, dynamic>> trafficSafetyTips = [
@@ -105,13 +126,17 @@ class EnvironmentProvider extends ChangeNotifier {
     return 'Tehlikeli';
   }
 
-  Color get aqiColor {
-    if (_aqi == null) return Colors.grey;
-    if (_aqi! <= 50) return const Color(0xFF2E7D32);
-    if (_aqi! <= 100) return const Color(0xFFF57C00);
-    if (_aqi! <= 150) return const Color(0xFFFF8A65);
-    if (_aqi! <= 200) return const Color(0xFFD32F2F);
-    if (_aqi! <= 300) return const Color(0xFFAB47BC);
+  Color get aqiColor => _aqi == null ? Colors.grey : colorFor(_aqi!);
+
+  /// Standart AQI renk sırası: yeşil, sarı, turuncu, kırmızı, mor, bordo.
+  /// Önceden 101-150 aralığı 51-100'den daha açık bir tonla gösteriliyor,
+  /// kötüleşme renkte görünmüyordu.
+  static Color colorFor(int aqi) {
+    if (aqi <= 50) return const Color(0xFF2E7D32);
+    if (aqi <= 100) return const Color(0xFFF9A825);
+    if (aqi <= 150) return const Color(0xFFEF6C00);
+    if (aqi <= 200) return const Color(0xFFD32F2F);
+    if (aqi <= 300) return const Color(0xFF8E24AA);
     return const Color(0xFF880E4F);
   }
 
@@ -131,24 +156,8 @@ class EnvironmentProvider extends ChangeNotifier {
   }
 
   Future<void> init() async {
-    await _migrateLegacyApiKey();
     await _loadFirstAid();
     _loadCachedAqi();
-  }
-
-  Future<void> _migrateLegacyApiKey() async {
-    final settingsBox = HiveService().getSettingsBox();
-    final legacyKey = settingsBox.get('iqair_api_key');
-    final secureStorage = SecureStorageService();
-    final currentKey = await secureStorage.read(
-      SecureStorageService.iqAirApiKey,
-    );
-    if (currentKey == null &&
-        legacyKey is String &&
-        legacyKey.trim().isNotEmpty) {
-      await secureStorage.write(SecureStorageService.iqAirApiKey, legacyKey);
-    }
-    await settingsBox.delete('iqair_api_key');
   }
 
   Future<void> _loadFirstAid() async {
@@ -167,93 +176,99 @@ class EnvironmentProvider extends ChangeNotifier {
   void _loadCachedAqi() {
     final box = HiveService().getSettingsBox();
     final cached = box.get('cached_aqi');
-    final cachedTime = box.get('cached_aqi_time');
-    if (cached != null && cachedTime != null) {
-      final time = DateTime.tryParse(cachedTime);
-      // Cache valid for 1 hour
-      if (time != null && DateTime.now().difference(time).inHours < 1) {
-        _aqi = (cached as num?)?.round();
-        _aqiCity = box.get('cached_aqi_city')?.toString();
-      }
+    final time = DateTime.tryParse('${box.get('cached_aqi_time') ?? ''}');
+    // Önbellek 1 saat geçerli.
+    if (cached is num &&
+        time != null &&
+        DateTime.now().difference(time).inHours < 1) {
+      _aqi = cached.round();
+      _pm25 = (box.get('cached_pm25') as num?)?.toDouble();
     }
   }
 
-  Future<void> fetchAqi({String? apiKey}) async {
+  /// 0,1 derece (yaklaşık 10 km): hava kalitesi modelinin çözünürlüğü de
+  /// bu düzeyde olduğu için daha hassas konum göndermeye gerek yok.
+  static double roundCoordinate(double value) => (value * 10).round() / 10;
+
+  static Future<ApproximateLocation?> _approximateLocation() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return null;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return null;
+      }
+      try {
+        final p = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.low,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
+        return (lat: p.latitude, lon: p.longitude);
+      } catch (_) {
+        final last = await Geolocator.getLastKnownPosition();
+        return last == null ? null : (lat: last.latitude, lon: last.longitude);
+      }
+    } catch (error) {
+      debugPrint('Konum alınamadı: $error');
+      return null;
+    }
+  }
+
+  Future<void> fetchAqi() async {
     _isLoadingAqi = true;
     _aqiError = null;
     notifyListeners();
 
     try {
-      final key =
-          apiKey?.trim() ??
-          await SecureStorageService().read(SecureStorageService.iqAirApiKey);
-      if (key == null || key.isEmpty) {
+      final location = await _locate();
+      if (location == null) {
         _aqiError =
-            'AQI verisi için IQAir API anahtarı gereklidir. Aşağıdaki düğmeden girebilirsiniz.';
-        _isLoadingAqi = false;
-        notifyListeners();
+            'Hava kalitesi için yaklaşık konumunuz gerekiyor. Konum iznini '
+            'verip tekrar deneyin.';
         return;
       }
-
-      final response = await http
-          .get(Uri.parse('https://api.airvisual.com/v2/nearest_city?key=$key'))
+      final uri =
+          Uri.https('air-quality-api.open-meteo.com', '/v1/air-quality', {
+            'latitude': '${roundCoordinate(location.lat)}',
+            'longitude': '${roundCoordinate(location.lon)}',
+            'current': 'us_aqi,pm2_5',
+            'timezone': 'auto',
+          });
+      final response = await _client
+          .get(uri)
           .timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          // API sayıyı double olarak da döndürebilir; int alana doğrudan
-          // atamak TypeError fırlatıp "servis kullanılamıyor" gösteriyordu.
-          _aqi = (data['data']['current']['pollution']['aqius'] as num).round();
-          _aqiCity = data['data']['city']?.toString();
-
-          // Cache
-          final box = HiveService().getSettingsBox();
-          await box.put('cached_aqi', _aqi);
-          await box.put('cached_aqi_city', _aqiCity);
-          await box.put('cached_aqi_time', DateTime.now().toIso8601String());
-        } else {
-          _aqiError =
-              'API yanıt hatası: ${data['data']?['message'] ?? 'Bilinmeyen hata'}';
-        }
-      } else if (response.statusCode == 429) {
-        // Rate limit — fallback to cached data
-        _loadCachedAqi();
-        if (_aqi == null) {
-          _aqiError =
-              'API istek limiti aşıldı. Lütfen daha sonra tekrar deneyin.';
-        }
-      } else {
-        _aqiError =
-            'Hava kalitesi verisi alınamadı (HTTP ${response.statusCode}).';
+      if (response.statusCode != 200) {
+        throw http.ClientException('HTTP ${response.statusCode}', uri);
       }
-    } on TimeoutException {
-      // Timeout fallback — try cache
+      final current =
+          (json.decode(response.body) as Map<String, dynamic>)['current'];
+      final aqi = (current is Map ? current['us_aqi'] as num? : null)?.round();
+      if (aqi == null) {
+        throw const FormatException('us_aqi yok');
+      }
+      _aqi = aqi;
+      _pm25 = (current['pm2_5'] as num?)?.toDouble();
+      await HiveService().getSettingsBox().putAll({
+        'cached_aqi': _aqi,
+        'cached_pm25': _pm25,
+        'cached_aqi_time': DateTime.now().toIso8601String(),
+      });
+    } catch (error) {
+      debugPrint('Hava kalitesi alınamadı: $error');
       _loadCachedAqi();
       if (_aqi == null) {
         _aqiError =
-            'Bağlantı zaman aşımına uğradı. İnternet bağlantınızı kontrol edin.';
-      }
-    } catch (e) {
-      // Network error fallback — try cache
-      _loadCachedAqi();
-      if (_aqi == null) {
-        _aqiError =
-            'Hava kalitesi servisi şu an kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
+            'Hava kalitesi verisi alınamadı. İnternet bağlantınızı kontrol '
+            'edip tekrar deneyin.';
       }
     } finally {
       _isLoadingAqi = false;
       notifyListeners();
     }
-  }
-
-  Future<void> setApiKey(String key) async {
-    final normalized = key.trim();
-    if (normalized.isEmpty) return;
-    await SecureStorageService().write(
-      SecureStorageService.iqAirApiKey,
-      normalized,
-    );
-    await fetchAqi(apiKey: normalized);
   }
 }
