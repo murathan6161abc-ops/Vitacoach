@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Yapay Zeka Destekli Sağlık Koçunuz',
+              'Kişisel Sağlık Koçunuz',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white.withValues(alpha: 0.8),

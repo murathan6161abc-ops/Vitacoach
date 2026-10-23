@@ -247,7 +247,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Yapay zeka destekli kişisel sağlık koçunuz ile daha sağlıklı bir yaşama adım atın.',
+            'Kişisel sağlık koçunuz ile daha sağlıklı bir yaşama adım atın. '
+            'Verileriniz yalnızca bu telefonda, şifreli olarak saklanır.',
             style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),

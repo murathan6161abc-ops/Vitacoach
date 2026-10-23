@@ -1,5 +1,5 @@
 name: vitacoach
-description: "VitaCoach - AI destekli kisisel saglik kocu"
+description: "VitaCoach - cevrimdisi calisan kisisel saglik kocu"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -17,7 +17,6 @@ dependencies:
   provider: ^6.1.5+1
   hive_flutter: ^1.1.0
   shared_preferences: ^2.5.5
-  google_fonts: ^8.1.0
   fl_chart: ^1.2.0
   flutter_local_notifications: ^21.0.0
   intl: ^0.20.2
@@ -60,6 +59,15 @@ flutter:
     - assets/data/
     - assets/images/
     - assets/fonts/
+
+  # Uygulama yazı tipi uygulamayla birlikte gelir; çalışma anında
+  # internetten yazı tipi indirilmez.
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
 
 dependency_overrides:
   # geolocator_linux -> package_info_plus 10.2.x, AGP 9 + builtInKotlin=false
