@@ -1,0 +1,436 @@
+{
+  "categories": [
+    {
+      "id": "head",
+      "name": "Baş & Yüz",
+      "icon": "head",
+      "symptoms": [
+        {
+          "id": "headache",
+          "name": "Baş ağrısı",
+          "severity": "green",
+          "related": [
+            "fever",
+            "nausea"
+          ]
+        },
+        {
+          "id": "dizziness",
+          "name": "Baş dönmesi",
+          "severity": "yellow",
+          "related": [
+            "nausea",
+            "vision_blur"
+          ]
+        },
+        {
+          "id": "vision_blur",
+          "name": "Görme bulanıklığı",
+          "severity": "yellow",
+          "related": [
+            "headache",
+            "dizziness"
+          ]
+        },
+        {
+          "id": "facial_droop",
+          "name": "Yüzde sarkma",
+          "severity": "red",
+          "related": [
+            "speech_difficulty",
+            "arm_weakness"
+          ]
+        },
+        {
+          "id": "eye_pain",
+          "name": "Göz ağrısı",
+          "severity": "green",
+          "related": [
+            "headache",
+            "vision_blur"
+          ]
+        },
+        {
+          "id": "ear_pain",
+          "name": "Kulak ağrısı",
+          "severity": "green",
+          "related": [
+            "fever",
+            "sore_throat"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chest",
+      "name": "Göğüs & Kalp",
+      "icon": "chest",
+      "symptoms": [
+        {
+          "id": "chest_pain",
+          "name": "Göğüs ağrısı",
+          "severity": "red",
+          "related": [
+            "shortness_breath",
+            "arm_pain_left"
+          ]
+        },
+        {
+          "id": "arm_pain_left",
+          "name": "Sol kolda ağrı",
+          "severity": "yellow",
+          "related": [
+            "chest_pain",
+            "shortness_breath"
+          ]
+        },
+        {
+          "id": "palpitation",
+          "name": "Çarpıntı",
+          "severity": "yellow",
+          "related": [
+            "dizziness",
+            "shortness_breath"
+          ]
+        },
+        {
+          "id": "shortness_breath",
+          "name": "Nefes darlığı",
+          "severity": "red",
+          "related": [
+            "chest_pain",
+            "cough"
+          ]
+        },
+        {
+          "id": "cough",
+          "name": "Öksürük",
+          "severity": "green",
+          "related": [
+            "fever",
+            "sore_throat"
+          ]
+        },
+        {
+          "id": "wheezing",
+          "name": "Hırıltılı solunum",
+          "severity": "yellow",
+          "related": [
+            "shortness_breath",
+            "cough"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abdomen",
+      "name": "Karın & Sindirim",
+      "icon": "abdomen",
+      "symptoms": [
+        {
+          "id": "abdominal_pain",
+          "name": "Karın ağrısı",
+          "severity": "yellow",
+          "related": [
+            "nausea",
+            "diarrhea"
+          ]
+        },
+        {
+          "id": "nausea",
+          "name": "Bulantı",
+          "severity": "green",
+          "related": [
+            "vomiting",
+            "headache"
+          ]
+        },
+        {
+          "id": "vomiting",
+          "name": "Kusma",
+          "severity": "yellow",
+          "related": [
+            "nausea",
+            "abdominal_pain"
+          ]
+        },
+        {
+          "id": "diarrhea",
+          "name": "İshal",
+          "severity": "green",
+          "related": [
+            "abdominal_pain",
+            "fever"
+          ]
+        },
+        {
+          "id": "constipation",
+          "name": "Kabızlık",
+          "severity": "green",
+          "related": [
+            "abdominal_pain"
+          ]
+        },
+        {
+          "id": "blood_stool",
+          "name": "Dışkıda kan",
+          "severity": "red",
+          "related": [
+            "abdominal_pain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "musculoskeletal",
+      "name": "Kas & İskelet",
+      "icon": "bone",
+      "symptoms": [
+        {
+          "id": "back_pain",
+          "name": "Sırt/bel ağrısı",
+          "severity": "green",
+          "related": [
+            "leg_numbness"
+          ]
+        },
+        {
+          "id": "joint_pain",
+          "name": "Eklem ağrısı",
+          "severity": "green",
+          "related": [
+            "swelling",
+            "fever"
+          ]
+        },
+        {
+          "id": "muscle_pain",
+          "name": "Kas ağrısı",
+          "severity": "green",
+          "related": [
+            "fever",
+            "fatigue"
+          ]
+        },
+        {
+          "id": "swelling",
+          "name": "Şişlik",
+          "severity": "yellow",
+          "related": [
+            "joint_pain",
+            "redness"
+          ]
+        },
+        {
+          "id": "leg_numbness",
+          "name": "Bacakta uyuşma",
+          "severity": "yellow",
+          "related": [
+            "back_pain"
+          ]
+        },
+        {
+          "id": "arm_weakness",
+          "name": "Kolda güçsüzlük",
+          "severity": "red",
+          "related": [
+            "facial_droop",
+            "speech_difficulty"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "general",
+      "name": "Genel Belirtiler",
+      "icon": "general",
+      "symptoms": [
+        {
+          "id": "fever",
+          "name": "Ateş",
+          "severity": "yellow",
+          "related": [
+            "cough",
+            "muscle_pain"
+          ]
+        },
+        {
+          "id": "fatigue",
+          "name": "Yorgunluk",
+          "severity": "green",
+          "related": [
+            "fever",
+            "weight_loss"
+          ]
+        },
+        {
+          "id": "weight_loss",
+          "name": "Kilo kaybı",
+          "severity": "yellow",
+          "related": [
+            "fatigue",
+            "appetite_loss"
+          ]
+        },
+        {
+          "id": "appetite_loss",
+          "name": "İştah kaybı",
+          "severity": "green",
+          "related": [
+            "nausea",
+            "weight_loss"
+          ]
+        },
+        {
+          "id": "night_sweats",
+          "name": "Gece terlemesi",
+          "severity": "yellow",
+          "related": [
+            "fever",
+            "weight_loss"
+          ]
+        },
+        {
+          "id": "rash",
+          "name": "Döküntü",
+          "severity": "green",
+          "related": [
+            "fever",
+            "itching"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neurological",
+      "name": "Sinir Sistemi",
+      "icon": "brain",
+      "symptoms": [
+        {
+          "id": "speech_difficulty",
+          "name": "Konuşma güçlüğü",
+          "severity": "red",
+          "related": [
+            "facial_droop",
+            "arm_weakness"
+          ]
+        },
+        {
+          "id": "confusion",
+          "name": "Bilinç bulanıklığı",
+          "severity": "red",
+          "related": [
+            "fever",
+            "headache"
+          ]
+        },
+        {
+          "id": "seizure",
+          "name": "Nöbet/kasılma",
+          "severity": "red",
+          "related": [
+            "confusion",
+            "fever"
+          ]
+        },
+        {
+          "id": "fainting",
+          "name": "Bayılma",
+          "severity": "red",
+          "related": [
+            "dizziness",
+            "palpitation"
+          ]
+        },
+        {
+          "id": "tingling",
+          "name": "Karıncalanma",
+          "severity": "green",
+          "related": [
+            "leg_numbness"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urinary",
+      "name": "İdrar Yolları",
+      "icon": "kidney",
+      "symptoms": [
+        {
+          "id": "painful_urination",
+          "name": "İdrar yaparken yanma",
+          "severity": "green",
+          "related": [
+            "frequent_urination",
+            "fever"
+          ]
+        },
+        {
+          "id": "frequent_urination",
+          "name": "Sık idrara çıkma",
+          "severity": "green",
+          "related": [
+            "painful_urination"
+          ]
+        },
+        {
+          "id": "blood_urine",
+          "name": "İdrarda kan",
+          "severity": "red",
+          "related": [
+            "painful_urination",
+            "abdominal_pain"
+          ]
+        },
+        {
+          "id": "dark_urine",
+          "name": "Koyu renkli idrar",
+          "severity": "yellow",
+          "related": [
+            "fatigue",
+            "abdominal_pain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "skin",
+      "name": "Cilt",
+      "icon": "skin",
+      "symptoms": [
+        {
+          "id": "itching",
+          "name": "Kaşıntı",
+          "severity": "green",
+          "related": [
+            "rash"
+          ]
+        },
+        {
+          "id": "redness",
+          "name": "Kızarıklık",
+          "severity": "green",
+          "related": [
+            "swelling",
+            "itching"
+          ]
+        },
+        {
+          "id": "bruising",
+          "name": "Morarma",
+          "severity": "yellow",
+          "related": []
+        },
+        {
+          "id": "wound_not_healing",
+          "name": "İyileşmeyen yara",
+          "severity": "yellow",
+          "related": [
+            "fatigue"
+          ]
+        }
+      ]
+    }
+  ]
+}

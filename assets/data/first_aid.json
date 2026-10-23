@@ -1,0 +1,153 @@
+{
+  "guides": [
+    {
+      "id": "burn",
+      "title": "Yanık",
+      "icon": "local_fire_department",
+      "severity": "common",
+      "steps": [
+        "Yanık bölgesini hemen soğuk (ılık-serin) su altında en az 10-20 dakika tutun.",
+        "Buz uygulamayın, doğrudan buz cildi daha çok hasarlayabilir.",
+        "Yanık üzerindeki giysileri ve takıları nazikçe çıkarın (yapışmışsa zorlamayın).",
+        "Temiz, yapışmayan bir sargı ile örtün.",
+        "Diş macunu, yağ, yumurta gibi maddeler sürmeyin.",
+        "Ağrı için parasetamol alabilirsiniz.",
+        "Yanık avuç içinden büyükse, yüzde/eklemlerdeyse veya derin ise acile gidin."
+      ]
+    },
+    {
+      "id": "choking",
+      "title": "Boğulma (Heimlich)",
+      "icon": "air",
+      "severity": "emergency",
+      "steps": [
+        "Kişi öksürebiliyorsa öksürmeye teşvik edin.",
+        "Öksüremiyorsa arkasına geçin.",
+        "Bir elinizi yumruk yapıp göbek ile göğüs kafesi arasına yerleştirin.",
+        "Diğer elinizle yumruğunuzu kavrayın.",
+        "Hızlı ve yukarı doğru (J hareketi) 5 kez bastırın.",
+        "Nesne çıkana veya kişi bayılana kadar tekrarlayın.",
+        "Bebeklerde: Yüzüstü tutup sırtına 5 kez vurun, sonra çevirin 5 göğüs bası yapın.",
+        "Kişi bayılırsa 112'yi arayın ve CPR başlatın."
+      ]
+    },
+    {
+      "id": "bleeding",
+      "title": "Kanama Kontrolü",
+      "icon": "water_drop",
+      "severity": "common",
+      "steps": [
+        "Temiz bir bez veya gazlı bezle yaranın üzerine doğrudan basınç uygulayın.",
+        "Basıncı en az 10-15 dakika kesintisiz sürdürün.",
+        "Mümkünse kanayan bölgeyi kalp seviyesinin üstüne kaldırın.",
+        "Bez kanla doyarsa üzerine yeni bez ekleyin (alttakini çıkarmayın).",
+        "Turnike sadece hayatı tehdit eden, durdurulamayan kanamalarda kullanın.",
+        "Kanama 20 dakikada durmuyorsa veya fışkırıyorsa 112'yi arayın."
+      ]
+    },
+    {
+      "id": "fracture",
+      "title": "Kırık/Çıkık Şüphesi",
+      "icon": "accessibility_new",
+      "severity": "common",
+      "steps": [
+        "Yaralı bölgeyi hareket ettirmeyin.",
+        "Şişlik için buz uygulayın (bezi arada tutarak, 20 dk).",
+        "Mümkünse bölgeyi sabiteleyin (atel yapın).",
+        "Açık kırıkta (kemik görünüyorsa) temiz bezle örtün, bastırmayın.",
+        "Ağrı için parasetamol kullanılabilir.",
+        "En kısa sürede acile gidin."
+      ]
+    },
+    {
+      "id": "heart_attack",
+      "title": "Kalp Krizi",
+      "icon": "favorite",
+      "severity": "emergency",
+      "steps": [
+        "Hemen 112'yi arayın.",
+        "Kişiyi oturtun veya rahat pozisyona getirin.",
+        "Aspirin alerjisi yoksa 1 aspirin çiğnetip yutturun.",
+        "Dar giysilerini gevşetin.",
+        "Kişi bilinç kaybederse CPR başlatın.",
+        "CPR: Göğüs ortasına 30 bası + 2 solunum, dakikada 100-120 bası hızında.",
+        "AED (otomatik defibrilatör) varsa kullanın."
+      ]
+    },
+    {
+      "id": "stroke",
+      "title": "İnme (FAST Testi)",
+      "icon": "psychology",
+      "severity": "emergency",
+      "steps": [
+        "FACE (Yüz): Gülümsemesini isteyin. Bir taraf sarkıyor mu?",
+        "ARM (Kol): İki kolunu kaldırmasını isteyin. Biri düşüyor mu?",
+        "SPEECH (Konuşma): Basit bir cümle tekrarlamasını isteyin. Peltek mi?",
+        "TIME (Zaman): Bunlardan biri bile varsa HEMEN 112'yi arayın!",
+        "Kişiyi yatırın, başını hafif yükseltin.",
+        "Ağızdan hiçbir şey vermeyin.",
+        "Belirtilerin başladığı saati not edin (tedavi için kritik)."
+      ]
+    },
+    {
+      "id": "seizure",
+      "title": "Nöbet/Sara Krizi",
+      "icon": "electric_bolt",
+      "severity": "emergency",
+      "steps": [
+        "Panik yapmayın, sakin olun.",
+        "Kişinin etrafındaki sert/keskin nesneleri uzaklaştırın.",
+        "Başının altına yumuşak bir şey koyun.",
+        "Ağzına kesinlikle bir şey koymayın.",
+        "Kişiyi tutmaya veya durdurmaya çalışmayın.",
+        "Nöbet geçince kişiyi yan yatırın (koma pozisyonu).",
+        "Nöbet 5 dakikadan uzun sürerse veya art arda geliyorsa 112'yi arayın."
+      ]
+    },
+    {
+      "id": "poisoning",
+      "title": "Zehirlenme",
+      "icon": "science",
+      "severity": "emergency",
+      "steps": [
+        "114 Zehir Danışma Hattını arayın.",
+        "Kişiyi kusturmayın (asit/yakıcı madde ise zarar verir).",
+        "Zehirli maddenin kutusunu/etiketini saklayın.",
+        "Ne kadar ve ne zaman alındığını not edin.",
+        "Bilinç kaybı varsa koma pozisyonuna alın ve 112'yi arayın.",
+        "Ciltle temas varsa bol su ile yıkayın.",
+        "Göze sıçramışsa 15-20 dakika akan su ile yıkayın."
+      ]
+    },
+    {
+      "id": "heatstroke",
+      "title": "Sıcak Çarpması",
+      "icon": "wb_sunny",
+      "severity": "common",
+      "steps": [
+        "Kişiyi gölge/serin bir yere taşıyın.",
+        "Giysilerini gevşetin veya çıkarın.",
+        "Vücudunu ıslak bezlerle veya su serperek serinletin.",
+        "Boyun, koltuk altı ve kasıklara buz uygulayın.",
+        "Bilinç açıksa serin su içirin (az az).",
+        "Bilinç kapalıysa ağızdan bir şey vermeyin.",
+        "Vücut ısısı 40°C üzerindeyse veya bilinç bulanıksa 112'yi arayın."
+      ]
+    },
+    {
+      "id": "allergic_reaction",
+      "title": "Alerjik Reaksiyon (Anafilaksi)",
+      "icon": "warning",
+      "severity": "emergency",
+      "steps": [
+        "Alerjen kaynağını uzaklaştırın.",
+        "Kişinin adrenalin otoenjektörü (EpiPen) varsa uygulayın (dış uyluk).",
+        "Hemen 112'yi arayın.",
+        "Kişiyi sırt üstü yatırın, bacakları yükseltin.",
+        "Nefes almakta zorlanıyorsa oturtun.",
+        "Bilinç kaybederse koma pozisyonuna alın.",
+        "CPR gerekirse başlatın."
+      ]
+    }
+  ]
+}

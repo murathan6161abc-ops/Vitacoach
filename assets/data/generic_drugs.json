@@ -1,0 +1,29 @@
+{
+  "drugs": [
+    {"original": "Parol", "generic": "Parasetamol", "use": "Ateş düşürücü & ağrı kesici", "savings": "%40-60"},
+    {"original": "Majezik", "generic": "Flurbiprofen", "use": "Ağrı kesici & anti-inflamatuar", "savings": "%30-50"},
+    {"original": "Augmentin", "generic": "Amoksisilin-Klavulanat", "use": "Antibiyotik", "savings": "%50-70"},
+    {"original": "Nexium", "generic": "Esomeprazol", "use": "Mide asidi", "savings": "%60-80"},
+    {"original": "Lipitor", "generic": "Atorvastatin", "use": "Kolesterol", "savings": "%70-80"},
+    {"original": "Coraspin", "generic": "Asetilsalisilik Asit", "use": "Kan sulandırıcı", "savings": "%30-50"},
+    {"original": "Glucophage", "generic": "Metformin", "use": "Diyabet", "savings": "%50-70"},
+    {"original": "Norvasc", "generic": "Amlodipin", "use": "Tansiyon", "savings": "%60-80"},
+    {"original": "Concor", "generic": "Bisoprolol", "use": "Tansiyon & kalp", "savings": "%40-60"},
+    {"original": "Ventolin", "generic": "Salbutamol", "use": "Astım", "savings": "%30-50"},
+    {"original": "Xanax", "generic": "Alprazolam", "use": "Anksiyete", "savings": "%50-70"},
+    {"original": "Cipro", "generic": "Siprofloksasin", "use": "Antibiyotik", "savings": "%60-80"},
+    {"original": "Voltaren", "generic": "Diklofenak", "use": "Ağrı kesici", "savings": "%40-60"},
+    {"original": "Prednol", "generic": "Metilprednizolon", "use": "Kortizon", "savings": "%30-50"},
+    {"original": "Lansor", "generic": "Lansoprazol", "use": "Mide asidi", "savings": "%50-70"},
+    {"original": "Euthyrox", "generic": "Levotiroksin", "use": "Tiroid", "savings": "%30-50"},
+    {"original": "Amoklavin", "generic": "Amoksisilin-Klavulanat", "use": "Antibiyotik", "savings": "%40-60"},
+    {"original": "Arveles", "generic": "Deksketoprofen", "use": "Ağrı kesici", "savings": "%30-50"},
+    {"original": "Calpol", "generic": "Parasetamol", "use": "Çocuk ateş düşürücü", "savings": "%40-60"},
+    {"original": "Nurofen", "generic": "İbuprofen", "use": "Ağrı kesici & anti-inflamatuar", "savings": "%40-60"},
+    {"original": "Beloc", "generic": "Metoprolol", "use": "Tansiyon & kalp", "savings": "%50-70"},
+    {"original": "Delix", "generic": "Ramipril", "use": "Tansiyon", "savings": "%50-70"},
+    {"original": "Glifor", "generic": "Metformin", "use": "Diyabet (Tip 2)", "savings": "%50-70"},
+    {"original": "Lantus", "generic": "İnsülin Glarjin", "use": "Diyabet (İnsülin)", "savings": "%20-30"},
+    {"original": "Plavix", "generic": "Klopidogrel", "use": "Kan sulandırıcı", "savings": "%60-80"}
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "red_flags": [
+    {
+      "id": "stroke",
+      "name": "İnme Şüphesi",
+      "symptoms": ["facial_droop", "arm_weakness", "speech_difficulty"],
+      "min_match": 1,
+      "message": "İNME BELİRTİLERİ! Hemen 112'yi arayın. Her dakika önemlidir.",
+      "action": "call_112"
+    },
+    {
+      "id": "heart_attack",
+      "name": "Kalp Krizi Şüphesi",
+      "symptoms": ["chest_pain", "shortness_breath", "arm_pain_left"],
+      "min_match": 2,
+      "message": "KALP KRİZİ BELİRTİLERİ! Hemen 112'yi arayın. Aspirin alerjiniz veya kanama sorununuz yoksa, 112 görevlisine danışarak 1 aspirin çiğneyebilirsiniz.",
+      "action": "call_112"
+    },
+    {
+      "id": "severe_bleeding",
+      "name": "Ciddi Kanama",
+      "symptoms": ["blood_stool", "blood_urine"],
+      "min_match": 1,
+      "message": "Ciddi kanama belirtisi. Acil servise başvurun veya 112'yi arayın.",
+      "action": "call_112"
+    },
+    {
+      "id": "breathing_emergency",
+      "name": "Solunum Acili",
+      "symptoms": ["shortness_breath", "chest_pain"],
+      "min_match": 2,
+      "message": "Ciddi solunum sorunu! 112'yi arayın.",
+      "action": "call_112"
+    },
+    {
+      "id": "consciousness",
+      "name": "Bilinç Kaybı",
+      "symptoms": ["confusion", "seizure", "fainting"],
+      "min_match": 1,
+      "message": "Bilinç bozukluğu acildir. 112'yi arayın.",
+      "action": "call_112"
+    }
+  ],
+  "yellow_flags": [
+    {
+      "id": "infection_signs",
+      "name": "Enfeksiyon Belirtileri",
+      "symptoms": ["fever", "cough", "muscle_pain"],
+      "min_match": 2,
+      "message": "Enfeksiyon belirtileri var. 24 saat içinde doktora başvurmanız önerilir."
+    },
+    {
+      "id": "dehydration",
+      "name": "Dehidrasyon Riski",
+      "symptoms": ["vomiting", "diarrhea", "dark_urine"],
+      "min_match": 2,
+      "message": "Sıvı kaybı riski var. Bol sıvı alın, düzelmezse doktora gidin."
+    }
+  ],
+  "emergency_numbers": {
+    "ambulance": "112",
+    "poison_control": "114",
+    "mental_health_crisis": "112",
+    "domestic_violence": "183"
+  }
+}

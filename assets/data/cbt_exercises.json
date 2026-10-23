@@ -1,0 +1,134 @@
+{
+  "exercises": [
+    {
+      "id": "thought_record",
+      "title": "Düşünce Kaydı",
+      "category": "cognitive",
+      "duration_minutes": 10,
+      "description": "Olumsuz düşüncelerinizi fark edin ve alternatif düşünceler geliştirin.",
+      "steps": [
+        "Sizi rahatsız eden durumu yazın.",
+        "O anda aklınızdan geçen otomatik düşünceyi yazın.",
+        "Bu düşüncenin size hissettirdiği duyguyu ve yoğunluğunu (0-10) belirleyin.",
+        "Bu düşüncenin kanıtlarını listeleyin (destekleyen ve çürüten).",
+        "Daha dengeli, alternatif bir düşünce oluşturun.",
+        "Şimdi duygunuzun yoğunluğunu tekrar değerlendirin."
+      ],
+      "example": "Durum: Toplantıda sunum yaptım. Otomatik düşünce: 'Berbattı, herkes beni yetersiz buldu.' Alternatif: 'Heyecanlıydım ama bilgileri aktardım. Bazıları sorular sordu, ilgilendiler.'"
+    },
+    {
+      "id": "breathing_478",
+      "title": "4-7-8 Nefes Tekniği",
+      "category": "relaxation",
+      "duration_minutes": 5,
+      "description": "Kaygıyı hızla azaltan kanıta dayalı nefes egzersizi.",
+      "steps": [
+        "Rahat bir pozisyonda oturun, sırtınız dik olsun.",
+        "Dilinizin ucunu üst damağınıza koyun.",
+        "4 saniye boyunca burnunuzdan nefes alın.",
+        "7 saniye boyunca nefesinizi tutun.",
+        "8 saniye boyunca ağızdan yavaşça üfleyerek nefes verin.",
+        "Bu döngüyü 4 kez tekrarlayın.",
+        "Günde 2 kez (sabah ve akşam) uygulayın."
+      ],
+      "example": ""
+    },
+    {
+      "id": "grounding_54321",
+      "title": "5-4-3-2-1 Topraklama",
+      "category": "anxiety",
+      "duration_minutes": 5,
+      "description": "Panik atak veya yoğun kaygı anında şimdiki ana dönmenizi sağlar.",
+      "steps": [
+        "Etrafınızda GÖREBİLDİĞİNİZ 5 şey sayın ve adlandırın.",
+        "DOKUNABİLDİĞİNİZ 4 şeyi fark edin ve hissini tanımlayın.",
+        "DUYABİLDİĞİNİZ 3 ses bulun.",
+        "KOKLAYABILECEĞINIZ 2 şey bulun.",
+        "TADABİLECEĞİNİZ 1 şey fark edin.",
+        "Her adımda yavaş ve derin nefes alın."
+      ],
+      "example": "Görüyorum: masa, pencere, ağaç, kitap, telefon. Dokunuyorum: kumaş, masa yüzeyi, saçım, bardak. Duyuyorum: kuş sesi, trafik, klima."
+    },
+    {
+      "id": "behavioral_activation",
+      "title": "Davranışsal Aktivasyon",
+      "category": "depression",
+      "duration_minutes": 15,
+      "description": "Depresyonda azalan aktivite düzeyini kademeli olarak artırır.",
+      "steps": [
+        "Bugün yapabileceğiniz küçük ve gerçekçi bir aktivite seçin.",
+        "Aktiviteyi çok spesifik tanımlayın (ne, nerede, ne kadar süre).",
+        "Yapmadan önce beklediğiniz keyif düzeyini puanlayın (0-10).",
+        "Aktiviteyi yapın.",
+        "Yaptıktan sonra gerçek keyif düzeyini puanlayın (0-10).",
+        "Farkı not edin — genellikle beklentiden daha iyi hissedersiniz."
+      ],
+      "example": "Aktivite: '15 dakika mahallede yürüyüş yapmak.' Beklenen keyif: 3/10. Gerçek keyif: 6/10."
+    },
+    {
+      "id": "progressive_muscle",
+      "title": "Kademeli Kas Gevşetme",
+      "category": "relaxation",
+      "duration_minutes": 15,
+      "description": "Vücuttaki fiziksel gerilimi sistematik olarak azaltır.",
+      "steps": [
+        "Sessiz bir yerde sırt üstü uzanın veya rahat oturun.",
+        "Ayaklarınızdan başlayın: 5 saniye kasın, 10 saniye gevşetin.",
+        "Baldırlar → Uyluklar → Karın → Göğüs sırasıyla devam edin.",
+        "Eller → Kollar → Omuzlar → Boyun → Yüz ile tamamlayın.",
+        "Her gevşetmede 'gevşiyorum' diye içinizden söyleyin.",
+        "Kasma ve gevşetme arasındaki farkı hissedin.",
+        "Tüm vücudunuzu tarayan bir sıcaklık hayal edin."
+      ],
+      "example": ""
+    },
+    {
+      "id": "worry_time",
+      "title": "Kaygı Saati",
+      "category": "anxiety",
+      "duration_minutes": 20,
+      "description": "Kaygılarınızı kontrollü bir zamana sınırlandırarak gün boyu endişeyi azaltır.",
+      "steps": [
+        "Günde sabit bir 'kaygı saati' belirleyin (örn: 18:00-18:20).",
+        "Gün içinde kaygılı düşünceler geldiğinde 'bunu kaygı saatimde düşüneceğim' deyin.",
+        "Düşünceyi kısa bir not olarak yazın.",
+        "Kaygı saatiniz geldiğinde notlarınızı gözden geçirin.",
+        "Her kaygı için sorun: 'Bu gerçekçi mi? Çözümü var mı? Kontrol edebilir miyim?'",
+        "Süre dolunca durdurun, bir sonraki güne bırakın."
+      ],
+      "example": "Not: 'İş toplantısı kötü geçecek.' Kaygı saatinde değerlendirme: 'Geçen toplantılar iyi geçti. Hazırlık yapabilirim. Bu kontrol edebileceğim bir şey.'"
+    },
+    {
+      "id": "gratitude",
+      "title": "Minnettarlık Günlüğü",
+      "category": "positive",
+      "duration_minutes": 5,
+      "description": "Olumlu deneyimlere dikkat kesilme alışkanlığı geliştirerek ruh halini iyileştirir.",
+      "steps": [
+        "Her gün aynı saatte (tercihen akşam) yapın.",
+        "Bugün minnettar olduğunuz 3 şey yazın.",
+        "Büyük olması gerekmez — küçük şeyler de sayılır.",
+        "Her biri için 'neden' sorusunu cevaplayın.",
+        "O anı zihinizde canlandırın ve hissi tekrar yaşayın.",
+        "Bir hafta sonunda geri dönüp okuyun."
+      ],
+      "example": "1. Güneşli hava — dışarıda yürüyüş yapabildim. 2. Arkadaşımın mesajı — beni düşünmüş. 3. İyi bir kahve — sabaha güzel başladım."
+    },
+    {
+      "id": "cognitive_defusion",
+      "title": "Bilişsel Ayrışma",
+      "category": "cognitive",
+      "duration_minutes": 5,
+      "description": "Düşüncelerinizle aranıza mesafe koyarak etkilerini azaltır.",
+      "steps": [
+        "Sizi rahatsız eden düşünceyi belirleyin.",
+        "Düşüncenin başına 'Fark ediyorum ki şu düşüncem var:' ekleyin.",
+        "Düşünceyi komik bir sesle (çizgi film karakteri gibi) içinizden söyleyin.",
+        "Düşünceyi bir bulut gibi hayal edin — gelip geçiyor.",
+        "Düşünce = gerçek olmadığını kendinize hatırlatın.",
+        "Düşünceye 'teşekkürler zihin' deyip bırakın."
+      ],
+      "example": "Düşünce: 'Başaramayacağım.' → 'Fark ediyorum ki zihnimde başaramayacağım düşüncesi var. Teşekkürler zihin, not aldım.'"
+    }
+  ]
+}

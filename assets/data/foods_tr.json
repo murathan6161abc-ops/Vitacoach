@@ -1,0 +1,127 @@
+{
+  "categories": [
+    {
+      "id": "soups",
+      "name": "Çorbalar",
+      "foods": [
+        {"name": "Mercimek çorbası", "calories": 150, "protein": 9, "carbs": 22, "fat": 3, "fiber": 5, "gi": 44, "portion": "1 kase (250ml)"},
+        {"name": "Ezogelin çorbası", "calories": 130, "protein": 5, "carbs": 20, "fat": 3, "fiber": 3, "gi": 55, "portion": "1 kase (250ml)"},
+        {"name": "Domates çorbası", "calories": 90, "protein": 2, "carbs": 14, "fat": 3, "fiber": 2, "gi": 38, "portion": "1 kase (250ml)"},
+        {"name": "Tarhana çorbası", "calories": 120, "protein": 4, "carbs": 18, "fat": 3, "fiber": 2, "gi": 50, "portion": "1 kase (250ml)"},
+        {"name": "Yayla çorbası", "calories": 110, "protein": 4, "carbs": 12, "fat": 5, "fiber": 1, "gi": 42, "portion": "1 kase (250ml)"},
+        {"name": "İşkembe çorbası", "calories": 170, "protein": 12, "carbs": 8, "fat": 10, "fiber": 0, "gi": 30, "portion": "1 kase (250ml)"},
+        {"name": "Tavuk suyu çorba", "calories": 80, "protein": 6, "carbs": 8, "fat": 2, "fiber": 1, "gi": 35, "portion": "1 kase (250ml)"}
+      ]
+    },
+    {
+      "id": "meat",
+      "name": "Et Yemekleri",
+      "foods": [
+        {"name": "Izgara köfte", "calories": 250, "protein": 22, "carbs": 5, "fat": 16, "fiber": 0, "gi": 0, "portion": "4 adet (120g)"},
+        {"name": "Karnıyarık", "calories": 320, "protein": 15, "carbs": 18, "fat": 22, "fiber": 4, "gi": 35, "portion": "1 porsiyon"},
+        {"name": "Tavuk göğsü (ızgara)", "calories": 165, "protein": 31, "carbs": 0, "fat": 4, "fiber": 0, "gi": 0, "portion": "1 porsiyon (150g)"},
+        {"name": "Etli kuru fasulye", "calories": 280, "protein": 16, "carbs": 30, "fat": 10, "fiber": 8, "gi": 40, "portion": "1 porsiyon"},
+        {"name": "Etli nohut", "calories": 300, "protein": 18, "carbs": 32, "fat": 10, "fiber": 7, "gi": 42, "portion": "1 porsiyon"},
+        {"name": "İskender kebap", "calories": 550, "protein": 30, "carbs": 35, "fat": 32, "fiber": 2, "gi": 65, "portion": "1 porsiyon"},
+        {"name": "Adana kebap", "calories": 350, "protein": 25, "carbs": 2, "fat": 27, "fiber": 0, "gi": 0, "portion": "1 porsiyon (150g)"},
+        {"name": "Tas kebabı", "calories": 280, "protein": 24, "carbs": 12, "fat": 15, "fiber": 2, "gi": 30, "portion": "1 porsiyon"},
+        {"name": "Hünkar beğendi", "calories": 380, "protein": 22, "carbs": 20, "fat": 24, "fiber": 3, "gi": 45, "portion": "1 porsiyon"},
+        {"name": "Izgara balık", "calories": 180, "protein": 28, "carbs": 0, "fat": 7, "fiber": 0, "gi": 0, "portion": "1 porsiyon (200g)"}
+      ]
+    },
+    {
+      "id": "vegetables",
+      "name": "Sebze Yemekleri",
+      "foods": [
+        {"name": "Zeytinyağlı fasulye", "calories": 120, "protein": 4, "carbs": 14, "fat": 6, "fiber": 5, "gi": 30, "portion": "1 porsiyon"},
+        {"name": "İmam bayıldı", "calories": 180, "protein": 3, "carbs": 12, "fat": 14, "fiber": 4, "gi": 25, "portion": "1 porsiyon"},
+        {"name": "Zeytinyağlı enginar", "calories": 150, "protein": 4, "carbs": 16, "fat": 8, "fiber": 6, "gi": 20, "portion": "1 porsiyon"},
+        {"name": "Ispanak yemeği", "calories": 140, "protein": 6, "carbs": 8, "fat": 9, "fiber": 4, "gi": 15, "portion": "1 porsiyon"},
+        {"name": "Kabak mücver", "calories": 200, "protein": 6, "carbs": 18, "fat": 12, "fiber": 2, "gi": 45, "portion": "3 adet"},
+        {"name": "Patlıcan musakka", "calories": 250, "protein": 12, "carbs": 15, "fat": 16, "fiber": 3, "gi": 35, "portion": "1 porsiyon"},
+        {"name": "Türlü", "calories": 160, "protein": 5, "carbs": 18, "fat": 8, "fiber": 5, "gi": 30, "portion": "1 porsiyon"},
+        {"name": "Bamya", "calories": 130, "protein": 4, "carbs": 12, "fat": 7, "fiber": 4, "gi": 20, "portion": "1 porsiyon"},
+        {"name": "Dolma (yaprak)", "calories": 220, "protein": 5, "carbs": 28, "fat": 10, "fiber": 3, "gi": 50, "portion": "5 adet"},
+        {"name": "Çoban salata", "calories": 80, "protein": 2, "carbs": 8, "fat": 5, "fiber": 2, "gi": 15, "portion": "1 porsiyon"}
+      ]
+    },
+    {
+      "id": "grains",
+      "name": "Tahıllar & Ekmek",
+      "foods": [
+        {"name": "Pilav", "calories": 200, "protein": 4, "carbs": 40, "fat": 3, "fiber": 1, "gi": 72, "portion": "1 porsiyon (150g)"},
+        {"name": "Bulgur pilavı", "calories": 180, "protein": 5, "carbs": 34, "fat": 3, "fiber": 5, "gi": 48, "portion": "1 porsiyon (150g)"},
+        {"name": "Beyaz ekmek", "calories": 80, "protein": 3, "carbs": 15, "fat": 1, "fiber": 1, "gi": 75, "portion": "1 dilim (30g)"},
+        {"name": "Tam buğday ekmeği", "calories": 75, "protein": 3, "carbs": 13, "fat": 1, "fiber": 2, "gi": 54, "portion": "1 dilim (30g)"},
+        {"name": "Makarna", "calories": 220, "protein": 8, "carbs": 42, "fat": 2, "fiber": 2, "gi": 55, "portion": "1 porsiyon (200g pişmiş)"},
+        {"name": "Mantı", "calories": 350, "protein": 14, "carbs": 40, "fat": 14, "fiber": 2, "gi": 55, "portion": "1 porsiyon"},
+        {"name": "Lahmacun", "calories": 270, "protein": 12, "carbs": 32, "fat": 10, "fiber": 2, "gi": 60, "portion": "1 adet"},
+        {"name": "Simit", "calories": 280, "protein": 8, "carbs": 48, "fat": 6, "fiber": 2, "gi": 72, "portion": "1 adet"},
+        {"name": "Gözleme (peynirli)", "calories": 300, "protein": 10, "carbs": 35, "fat": 14, "fiber": 2, "gi": 55, "portion": "1 adet"}
+      ]
+    },
+    {
+      "id": "dairy",
+      "name": "Süt Ürünleri",
+      "foods": [
+        {"name": "Süt (tam yağlı)", "calories": 120, "protein": 6, "carbs": 9, "fat": 6, "fiber": 0, "gi": 31, "portion": "1 bardak (200ml)"},
+        {"name": "Yoğurt", "calories": 100, "protein": 5, "carbs": 7, "fat": 6, "fiber": 0, "gi": 36, "portion": "1 kase (200g)"},
+        {"name": "Ayran", "calories": 60, "protein": 3, "carbs": 4, "fat": 3, "fiber": 0, "gi": 30, "portion": "1 bardak (200ml)"},
+        {"name": "Beyaz peynir", "calories": 90, "protein": 6, "carbs": 1, "fat": 7, "fiber": 0, "gi": 0, "portion": "2 dilim (40g)"},
+        {"name": "Kaşar peyniri", "calories": 110, "protein": 7, "carbs": 0, "fat": 9, "fiber": 0, "gi": 0, "portion": "2 dilim (40g)"},
+        {"name": "Cacık", "calories": 70, "protein": 3, "carbs": 5, "fat": 4, "fiber": 1, "gi": 25, "portion": "1 kase (200ml)"}
+      ]
+    },
+    {
+      "id": "fruits",
+      "name": "Meyveler",
+      "foods": [
+        {"name": "Elma", "calories": 95, "protein": 0, "carbs": 25, "fat": 0, "fiber": 4, "gi": 36, "portion": "1 orta boy"},
+        {"name": "Portakal", "calories": 62, "protein": 1, "carbs": 15, "fat": 0, "fiber": 3, "gi": 43, "portion": "1 orta boy"},
+        {"name": "Muz", "calories": 105, "protein": 1, "carbs": 27, "fat": 0, "fiber": 3, "gi": 51, "portion": "1 orta boy"},
+        {"name": "Üzüm", "calories": 70, "protein": 1, "carbs": 18, "fat": 0, "fiber": 1, "gi": 59, "portion": "1 avuç (100g)"},
+        {"name": "Karpuz", "calories": 85, "protein": 2, "carbs": 21, "fat": 0, "fiber": 1, "gi": 72, "portion": "2 dilim (300g)"},
+        {"name": "Çilek", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "fiber": 3, "gi": 40, "portion": "1 kase (150g)"},
+        {"name": "Kayısı", "calories": 50, "protein": 1, "carbs": 12, "fat": 0, "fiber": 2, "gi": 34, "portion": "3 adet"},
+        {"name": "İncir (taze)", "calories": 75, "protein": 1, "carbs": 19, "fat": 0, "fiber": 3, "gi": 61, "portion": "2 adet"}
+      ]
+    },
+    {
+      "id": "snacks",
+      "name": "Atıştırmalıklar",
+      "foods": [
+        {"name": "Baklava", "calories": 330, "protein": 5, "carbs": 38, "fat": 18, "fiber": 1, "gi": 68, "portion": "2 dilim"},
+        {"name": "Sütlaç", "calories": 200, "protein": 5, "carbs": 32, "fat": 6, "fiber": 0, "gi": 60, "portion": "1 kase"},
+        {"name": "Kuru kayısı", "calories": 70, "protein": 1, "carbs": 18, "fat": 0, "fiber": 2, "gi": 30, "portion": "5 adet"},
+        {"name": "Ceviz", "calories": 185, "protein": 4, "carbs": 4, "fat": 18, "fiber": 2, "gi": 15, "portion": "1 avuç (30g)"},
+        {"name": "Badem", "calories": 170, "protein": 6, "carbs": 6, "fat": 15, "fiber": 3, "gi": 15, "portion": "1 avuç (30g)"},
+        {"name": "Poğaça (peynirli)", "calories": 280, "protein": 7, "carbs": 30, "fat": 15, "fiber": 1, "gi": 62, "portion": "1 adet"},
+        {"name": "Açma", "calories": 250, "protein": 5, "carbs": 28, "fat": 13, "fiber": 1, "gi": 65, "portion": "1 adet"}
+      ]
+    },
+    {
+      "id": "beverages",
+      "name": "İçecekler",
+      "foods": [
+        {"name": "Çay (şekersiz)", "calories": 2, "protein": 0, "carbs": 0, "fat": 0, "fiber": 0, "gi": 0, "portion": "1 bardak"},
+        {"name": "Türk kahvesi", "calories": 5, "protein": 0, "carbs": 1, "fat": 0, "fiber": 0, "gi": 0, "portion": "1 fincan"},
+        {"name": "Çay (2 şekerli)", "calories": 32, "protein": 0, "carbs": 8, "fat": 0, "fiber": 0, "gi": 65, "portion": "1 bardak"},
+        {"name": "Taze portakal suyu", "calories": 110, "protein": 2, "carbs": 26, "fat": 0, "fiber": 0, "gi": 50, "portion": "1 bardak (200ml)"},
+        {"name": "Kola", "calories": 140, "protein": 0, "carbs": 35, "fat": 0, "fiber": 0, "gi": 63, "portion": "1 kutu (330ml)"},
+        {"name": "Şalgam suyu", "calories": 20, "protein": 0, "carbs": 4, "fat": 0, "fiber": 1, "gi": 15, "portion": "1 bardak (200ml)"}
+      ]
+    },
+    {
+      "id": "breakfast",
+      "name": "Kahvaltılıklar",
+      "foods": [
+        {"name": "Yumurta (haşlanmış)", "calories": 78, "protein": 6, "carbs": 1, "fat": 5, "fiber": 0, "gi": 0, "portion": "1 adet"},
+        {"name": "Menemen", "calories": 180, "protein": 10, "carbs": 8, "fat": 12, "fiber": 2, "gi": 20, "portion": "1 porsiyon"},
+        {"name": "Bal", "calories": 64, "protein": 0, "carbs": 17, "fat": 0, "fiber": 0, "gi": 58, "portion": "1 yemek kaşığı"},
+        {"name": "Tahin-pekmez", "calories": 100, "protein": 2, "carbs": 14, "fat": 5, "fiber": 1, "gi": 55, "portion": "1 yemek kaşığı"},
+        {"name": "Zeytin", "calories": 40, "protein": 0, "carbs": 1, "fat": 4, "fiber": 1, "gi": 0, "portion": "5 adet"},
+        {"name": "Sucuk (ızgara)", "calories": 150, "protein": 8, "carbs": 1, "fat": 13, "fiber": 0, "gi": 0, "portion": "3 dilim (40g)"}
+      ]
+    }
+  ]
+}

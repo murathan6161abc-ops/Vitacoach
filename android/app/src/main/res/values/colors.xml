@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- VitaCoach marka yeşili (AppColors.primary ile aynı) -->
+    <color name="vc_brand">#2A7D4F</color>
+</resources>

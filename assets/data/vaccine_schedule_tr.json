@@ -1,0 +1,201 @@
+{
+  "child_vaccines": [
+    {
+      "id": "hepb_1",
+      "name": "Hepatit B - 1. Doz",
+      "age_months": 0,
+      "age_label": "Doğumda",
+      "disease": "Hepatit B",
+      "notes": "Doğumdan sonra ilk 24 saat içinde yapılır"
+    },
+    {
+      "id": "hepb_2",
+      "name": "Hepatit B - 2. Doz",
+      "age_months": 1,
+      "age_label": "1. ay sonu",
+      "disease": "Hepatit B",
+      "notes": ""
+    },
+    {
+      "id": "bcg",
+      "name": "BCG",
+      "age_months": 2,
+      "age_label": "2. ay sonu",
+      "disease": "Tüberküloz",
+      "notes": "Tek doz"
+    },
+    {
+      "id": "dtap_ipv_hib_1",
+      "name": "DaBT-İPA-Hib - 1. Doz",
+      "age_months": 2,
+      "age_label": "2. ay sonu",
+      "disease": "Difteri, Boğmaca, Tetanoz, Polio, Hib",
+      "notes": "Beşli karma aşı"
+    },
+    {
+      "id": "pnc_1",
+      "name": "KPA - 1. Doz",
+      "age_months": 2,
+      "age_label": "2. ay sonu",
+      "disease": "Pnömokok",
+      "notes": "Konjuge pnömokok aşısı"
+    },
+    {
+      "id": "dtap_ipv_hib_2",
+      "name": "DaBT-İPA-Hib - 2. Doz",
+      "age_months": 4,
+      "age_label": "4. ay sonu",
+      "disease": "Difteri, Boğmaca, Tetanoz, Polio, Hib",
+      "notes": ""
+    },
+    {
+      "id": "pnc_2",
+      "name": "KPA - 2. Doz",
+      "age_months": 4,
+      "age_label": "4. ay sonu",
+      "disease": "Pnömokok",
+      "notes": ""
+    },
+    {
+      "id": "dtap_ipv_hib_3",
+      "name": "DaBT-İPA-Hib - 3. Doz",
+      "age_months": 6,
+      "age_label": "6. ay sonu",
+      "disease": "Difteri, Boğmaca, Tetanoz, Polio, Hib",
+      "notes": ""
+    },
+    {
+      "id": "hepb_3",
+      "name": "Hepatit B - 3. Doz",
+      "age_months": 6,
+      "age_label": "6. ay sonu",
+      "disease": "Hepatit B",
+      "notes": ""
+    },
+    {
+      "id": "opa_1",
+      "name": "OPA - 1. Doz",
+      "age_months": 6,
+      "age_label": "6. ay sonu",
+      "disease": "Polio (Oral)",
+      "notes": "Oral polio aşısı"
+    },
+    {
+      "id": "kkk_1",
+      "name": "KKK - 1. Doz",
+      "age_months": 12,
+      "age_label": "12. ay sonu",
+      "disease": "Kızamık, Kızamıkçık, Kabakulak",
+      "notes": ""
+    },
+    {
+      "id": "pnc_3",
+      "name": "KPA - Rapel",
+      "age_months": 12,
+      "age_label": "12. ay sonu",
+      "disease": "Pnömokok",
+      "notes": "Rapel doz"
+    },
+    {
+      "id": "varicella",
+      "name": "Suçiçeği",
+      "age_months": 12,
+      "age_label": "12. ay sonu",
+      "disease": "Suçiçeği",
+      "notes": "Tek doz"
+    },
+    {
+      "id": "opa_2",
+      "name": "OPA - 2. Doz",
+      "age_months": 18,
+      "age_label": "18. ay sonu",
+      "disease": "Polio (Oral)",
+      "notes": ""
+    },
+    {
+      "id": "hepa_1",
+      "name": "Hepatit A - 1. Doz",
+      "age_months": 18,
+      "age_label": "18. ay sonu",
+      "disease": "Hepatit A",
+      "notes": ""
+    },
+    {
+      "id": "dtap_ipv_rapel",
+      "name": "DaBT-İPA-Hib - Rapel",
+      "age_months": 18,
+      "age_label": "18. ay sonu",
+      "disease": "Difteri, Boğmaca, Tetanoz, Polio, Hib",
+      "notes": "Rapel doz"
+    },
+    {
+      "id": "hepa_2",
+      "name": "Hepatit A - 2. Doz",
+      "age_months": 24,
+      "age_label": "24. ay sonu",
+      "disease": "Hepatit A",
+      "notes": ""
+    },
+    {
+      "id": "kkk_2",
+      "name": "KKK - 2. Doz",
+      "age_months": 48,
+      "age_label": "48. ay (ilkokul 1. sınıf)",
+      "disease": "Kızamık, Kızamıkçık, Kabakulak",
+      "notes": ""
+    },
+    {
+      "id": "dtap_ipv_48",
+      "name": "DaBT-İPA - Rapel",
+      "age_months": 48,
+      "age_label": "48. ay (ilkokul 1. sınıf)",
+      "disease": "Difteri, Boğmaca, Tetanoz, Polio",
+      "notes": "Okul öncesi rapel"
+    },
+    {
+      "id": "td",
+      "name": "Td",
+      "age_months": 156,
+      "age_label": "13 yaş (8. sınıf)",
+      "disease": "Tetanoz, Difteri",
+      "notes": "Erişkin tipi"
+    }
+  ],
+  "adult_vaccines": [
+    {
+      "id": "flu_annual",
+      "name": "Grip Aşısı",
+      "frequency": "Yıllık",
+      "target_group": "65 yaş üstü, kronik hastalar, sağlık çalışanları, gebeler",
+      "notes": "Her yıl Ekim-Kasım aylarında"
+    },
+    {
+      "id": "pneumococcal_adult",
+      "name": "Pnömokok Aşısı",
+      "frequency": "Tek doz veya rapel",
+      "target_group": "65 yaş üstü, kronik akciğer/kalp hastası",
+      "notes": ""
+    },
+    {
+      "id": "hpv",
+      "name": "HPV Aşısı",
+      "frequency": "2-3 doz",
+      "target_group": "9-26 yaş arası",
+      "notes": "Rahim ağzı kanseri önleme"
+    },
+    {
+      "id": "tetanus_adult",
+      "name": "Tetanoz Rapeli",
+      "frequency": "Her 10 yılda bir",
+      "target_group": "Tüm yetişkinler",
+      "notes": ""
+    },
+    {
+      "id": "shingles",
+      "name": "Zona Aşısı",
+      "frequency": "2 doz",
+      "target_group": "50 yaş üstü",
+      "notes": ""
+    }
+  ]
+}

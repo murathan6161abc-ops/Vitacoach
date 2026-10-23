@@ -1,0 +1,343 @@
+{
+  "_note": "VitaCoach sağlık asistanı bilgi tabanı. Genel bilgilendirme amaçlıdır; tanı/tedavi yerine geçmez. Anahtar kelimeler Türkçe karakterler sadeleştirilerek (ı→i, ş→s ...) eşleştirilir.",
+  "entries": [
+    {
+      "id": "bp_normal",
+      "keywords": [
+        "tansiyon",
+        "kan basinci",
+        "normal tansiyon",
+        "tansiyon kac"
+      ],
+      "answer": "Yetişkinlerde muayenehanede ölçülen tansiyonun 120/80 mmHg'nin altında olması idealdir. 130-139 / 80-89 yüksek-normal, 140/90 ve üzeri hipertansiyon kabul edilir. Evde ölçümde hedef genellikle 135/85 mmHg'nin altıdır. 180/120 ve üzeri, özellikle baş ağrısı, göğüs ağrısı veya nefes darlığıyla birlikteyse acildir.",
+      "route": "/chronic"
+    },
+    {
+      "id": "bp_measure",
+      "keywords": [
+        "tansiyon nasil olculur",
+        "dogru olcum",
+        "olcum nasil",
+        "tansiyon olcmek",
+        "tansiyon olcumu",
+        "dogru tansiyon",
+        "olcum"
+      ],
+      "answer": "Doğru tansiyon ölçümü için: ölçümden 30 dakika önce kahve, sigara ve egzersizden kaçının; 5 dakika sırtınız destekli oturun; kolunuzu kalp hizasında masaya koyun, bacak bacak üstüne atmayın. 1 dakika arayla 2 ölçüm alıp ortalamasını kaydedin. Her gün aynı saatlerde ölçmek eğilimleri doğru gösterir."
+    },
+    {
+      "id": "sugar_normal",
+      "keywords": [
+        "seker",
+        "glikoz",
+        "aclik sekeri",
+        "normal seker",
+        "hba1c",
+        "diyabet"
+      ],
+      "answer": "Açlık kan şekeri 70-99 mg/dL normal, 100-125 mg/dL prediyabet, iki ayrı ölçümde 126 mg/dL ve üzeri diyabet aralığıdır. Tokluk (yemekten 2 saat sonra) değerinin 140 mg/dL altında olması beklenir. HbA1c %5,7-6,4 prediyabet, %6,5 ve üzeri diyabet göstergesidir. Tanı mutlaka doktor tarafından konur.",
+      "route": "/risk"
+    },
+    {
+      "id": "hypoglycemia",
+      "keywords": [
+        "hipoglisemi",
+        "seker dusuklugu",
+        "sekerim dustu",
+        "seker dustu",
+        "titreme terleme"
+      ],
+      "answer": "Kan şekeri 70 mg/dL'nin altına düştüyse 15-15 kuralını uygulayın: 15 gram hızlı şeker alın (yarım bardak meyve suyu veya 3-4 küp şeker), 15 dakika bekleyip tekrar ölçün; hâlâ düşükse tekrarlayın. Bilinç bulanıklığı veya bayılma varsa ağızdan bir şey vermeyin, hemen 112'yi arayın."
+    },
+    {
+      "id": "bmi",
+      "keywords": [
+        "bmi",
+        "vucut kitle",
+        "ideal kilo",
+        "kilo boy"
+      ],
+      "answer": "Vücut kitle indeksi (BKİ) = kilo (kg) ÷ boy² (m). 18,5 altı zayıf, 18,5-24,9 normal, 25-29,9 fazla kilolu, 30 ve üzeri obez kabul edilir. Bel çevresi de önemlidir: kadınlarda 88 cm, erkeklerde 102 cm üstü kalp-damar riskini artırır.",
+      "route": "/profile"
+    },
+    {
+      "id": "water",
+      "keywords": [
+        "su ihtiyaci",
+        "ne kadar su",
+        "kac bardak su",
+        "gunluk su",
+        "su icmek"
+      ],
+      "answer": "Çoğu yetişkin için günde yaklaşık 2-2,5 litre (8-10 bardak) sıvı yeterlidir; sıcak havada ve egzersizde ihtiyaç artar. İdrarınızın açık sarı renkte olması yeterli su içtiğinizin iyi bir göstergesidir. Kalp veya böbrek yetmezliğiniz varsa doktorunuzun önerdiği sıvı miktarına uyun.",
+      "route": "/nutrition"
+    },
+    {
+      "id": "sleep_need",
+      "keywords": [
+        "kac saat uyu",
+        "uyku ihtiyaci",
+        "ne kadar uyu",
+        "uykusuzluk",
+        "uyuyamiyorum"
+      ],
+      "answer": "Yetişkinler için önerilen uyku süresi 7-9 saattir. Uykuya dalmakta zorlanıyorsanız: her gün aynı saatte yatıp kalkın, yatmadan 1 saat önce ekranı bırakın, öğleden sonra kafeini sınırlayın ve yatak odasını serin, karanlık ve sessiz tutun. 3 haftadan uzun süren uykusuzlukta doktorunuza danışın.",
+      "route": "/sleep"
+    },
+    {
+      "id": "exercise",
+      "keywords": [
+        "egzersiz",
+        "spor",
+        "kac adim",
+        "adim hedefi",
+        "yuruyus",
+        "hareket"
+      ],
+      "answer": "Dünya Sağlık Örgütü yetişkinlere haftada en az 150 dakika orta tempolu (ör. tempolu yürüyüş) veya 75 dakika yüksek tempolu aktivite ve haftada 2 gün kas güçlendirme öneriyor. Günde 7.000-10.000 adım iyi bir hedeftir. Kalp hastalığınız varsa yeni bir programa başlamadan önce doktorunuza danışın.",
+      "route": "/fitness"
+    },
+    {
+      "id": "salt",
+      "keywords": [
+        "tuz",
+        "sodyum"
+      ],
+      "answer": "Dünya Sağlık Örgütü günde 5 gramdan (bir çay kaşığı) az tuz öneriyor. Türkiye'de ortalama tüketim bunun yaklaşık iki katıdır. Tuzun büyük kısmı ekmek, peynir, turşu, salça ve hazır gıdalardan gelir. Tuzu azaltmak tansiyonu birkaç hafta içinde düşürebilir."
+    },
+    {
+      "id": "heart_attack",
+      "keywords": [
+        "kalp krizi",
+        "enfarktus",
+        "kalp krizi belirtileri"
+      ],
+      "answer": "Kalp krizi belirtileri: göğüste baskı, sıkışma veya yanma; sol kola, çeneye, sırta yayılan ağrı; nefes darlığı, soğuk terleme, bulantı. Kadınlarda ve diyabetlilerde belirtiler daha belirsiz olabilir. Bu belirtiler varsa hiç beklemeden 112'yi arayın; araç kullanmayın.",
+      "route": "/sos"
+    },
+    {
+      "id": "stroke",
+      "keywords": [
+        "inme",
+        "felc",
+        "beyin kanamasi",
+        "inme belirtileri"
+      ],
+      "answer": "İnme belirtilerini tanımak için YÜZ-KOL-KONUŞMA-ZAMAN: Gülümseyince yüzün bir tarafı düşüyor mu? İki kolu kaldırınca biri aşağı iniyor mu? Konuşma bozuk veya anlaşılmaz mı? Bunlardan biri bile varsa ZAMAN kaybetmeden 112'yi arayın ve belirtilerin başladığı saati not edin.",
+      "route": "/sos"
+    },
+    {
+      "id": "cpr",
+      "keywords": [
+        "kalp masaji",
+        "cpr",
+        "temel yasam",
+        "suni solunum",
+        "nefes almiyor"
+      ],
+      "answer": "Bilinci kapalı ve normal nefes almayan birini görürseniz: 112'yi arayın (hoparlörü açın). Göğsün ortasına iki elinizi üst üste koyup kollarınız düz, dakikada 100-120 hızla ve 5-6 cm derinlikte bastırın. Eğitiminiz varsa 30 bası ve 2 solunum yapın; yoksa yalnızca kesintisiz göğüs basısı yapın. Ekip gelene kadar durmayın.",
+      "route": "/environment"
+    },
+    {
+      "id": "choking",
+      "keywords": [
+        "bogulma",
+        "heimlich",
+        "bogazina kacti",
+        "nefes alamiyor yemek"
+      ],
+      "answer": "Boğulan kişi öksürebiliyorsa öksürmeye teşvik edin. Öksüremiyor, konuşamıyorsa: kişiyi öne eğip kürek kemikleri arasına 5 kez sertçe vurun, ardından arkasına geçip göbek üstüne yumruk yaparak içeri-yukarı 5 kez bastırın (Heimlich). Bilinci kapanırsa 112'yi arayın ve kalp masajına başlayın.",
+      "route": "/environment"
+    },
+    {
+      "id": "burn",
+      "keywords": [
+        "yanik",
+        "yandi",
+        "kaynar su"
+      ],
+      "answer": "Yanık bölgeyi hemen 20 dakika boyunca ılık/serin akan suyun altında tutun. Buz, diş macunu, yoğurt veya yağ sürmeyin; su toplamalarını patlatmayın. Temiz bir örtüyle gevşekçe kapatın. Yüz, el, genital bölge yanıklarında, avuç içinden büyük yanıklarda ve çocuklarda sağlık kuruluşuna başvurun.",
+      "route": "/environment"
+    },
+    {
+      "id": "nosebleed",
+      "keywords": [
+        "burun kanamasi",
+        "burnum kaniyor",
+        "burun kaniyor"
+      ],
+      "answer": "Burun kanamasında başınızı hafifçe öne eğin (geriye yatırmayın), burnun yumuşak kısmını iki parmakla 10 dakika kesintisiz sıkın ve ağızdan nefes alın. 20 dakikada durmazsa, çok yoğunsa veya bir darbe sonrası olduysa acile başvurun. Kan sulandırıcı kullanıyorsanız doktorunuzu bilgilendirin."
+    },
+    {
+      "id": "fever",
+      "keywords": [
+        "ates dusurme",
+        "atesi dusur",
+        "ates nasil",
+        "atesim var",
+        "ates dusur",
+        "ateste ne"
+      ],
+      "answer": "Ateşte bol sıvı alın, ince giyinin ve dinlenin. Ateş düşürücüyü prospektüse veya doktor/eczacı önerisine uygun dozda kullanın; farklı ateş düşürücüleri kendi kendinize karıştırmayın. 3 günden uzun süren, 39,5 °C üzerindeki ateşte, ense sertliği, döküntü, nefes darlığı veya bilinç değişikliği varsa doktora başvurun. 3 aydan küçük bebekte her ateş acildir."
+    },
+    {
+      "id": "flu",
+      "keywords": [
+        "grip",
+        "nezle",
+        "soguk alginligi",
+        "antibiyotik"
+      ],
+      "answer": "Grip ve soğuk algınlığı çoğunlukla virüslerle olur; antibiyotik işe yaramaz ve gereksiz kullanımı direnç gelişimine yol açar. Dinlenme, bol sıvı ve gerekirse ateş düşürücü yeterlidir. 65 yaş üstü, kronik hastalığı olan ve gebeler her yıl grip aşısı olmalıdır.",
+      "route": "/infectious"
+    },
+    {
+      "id": "missed_dose",
+      "keywords": [
+        "ilaci unuttum",
+        "dozu unuttum",
+        "ilacimi almayi unuttum",
+        "doz kacirdim",
+        "ilac unutursam"
+      ],
+      "answer": "Genel kural: Unuttuğunuzu fark ettiğinizde dozu alın; ancak bir sonraki doza az zaman kaldıysa unutulan dozu atlayın. Asla çift doz almayın. Kan sulandırıcı, insülin, epilepsi ilacı gibi ilaçlarda kurallar farklı olabilir; ilacın prospektüsüne bakın veya eczacınıza danışın.",
+      "route": "/chronic"
+    },
+    {
+      "id": "smoking",
+      "keywords": [
+        "sigara birakma",
+        "sigarayi birak",
+        "sigara",
+        "nikotin",
+        "alo 171"
+      ],
+      "answer": "Sigarayı bırakmanın 20 dakika sonra nabız, 1 yıl sonra kalp krizi riski belirgin biçimde düşmeye başlar. ALO 171 Sigara Bırakma Danışma Hattı'nı ücretsiz arayabilir, aile hekiminizden ücretsiz sigara bırakma polikliniğine yönlendirme isteyebilirsiniz. Uygulamadaki Bağımlılık bölümü sigarasız günlerinizi takip eder.",
+      "route": "/addiction"
+    },
+    {
+      "id": "stress",
+      "keywords": [
+        "stres",
+        "kaygi",
+        "anksiyete",
+        "panik",
+        "gerginim",
+        "endise"
+      ],
+      "answer": "Stres anında 4 saniye nefes alıp 6 saniyede vermeyi 1 dakika tekrarlamak sinir sistemini sakinleştirir; uygulamadaki Nabız ve Stres ekranında bunun etkisini HRV ile ölçebilirsiniz. Düzenli uyku ve yürüyüş de kaygıyı azaltır. Kaygınız günlük hayatınızı etkiliyorsa bir ruh sağlığı uzmanına başvurun.",
+      "route": "/heart"
+    },
+    {
+      "id": "depression",
+      "keywords": [
+        "depresyon",
+        "mutsuzum",
+        "keyifsizim",
+        "hicbir sey yapmak istemiyorum",
+        "moralim bozuk"
+      ],
+      "answer": "Böyle hissettiğiniz için üzgünüm. İki haftadan uzun süren çökkünlük, ilgi kaybı, uyku ve iştah değişiklikleri depresyon belirtisi olabilir ve tedavi edilebilir. Ruh Sağlığı bölümündeki PHQ-9 testi bir fikir verebilir; sonucu bir uzmanla paylaşın. Kendinize zarar verme düşünceniz olursa hemen 112'yi arayın.",
+      "route": "/mental"
+    },
+    {
+      "id": "poison",
+      "keywords": [
+        "zehir",
+        "zehirlenme",
+        "114",
+        "ulusal zehir"
+      ],
+      "answer": "Zehirlenme şüphesinde Ulusal Zehir Danışma Merkezi'ni (114) arayın; 7/24 ücretsiz hizmet verir. Kişiyi kusturmaya çalışmayın, ürünün kutusunu yanınızda bulundurun. Bilinç kaybı, nöbet veya nefes sıkıntısı varsa 112'yi arayın.",
+      "route": "/sos"
+    },
+    {
+      "id": "heatstroke",
+      "keywords": [
+        "gunes carpmasi",
+        "sicak carpmasi",
+        "sicaktan fenalik"
+      ],
+      "answer": "Sıcak çarpmasında kişiyi serin ve gölge bir yere alın, fazla giysilerini çıkarın, vücudunu ıslak bezlerle serinletip yelpazeleyin. Bilinci açıksa yudum yudum su verin. Bilinç bulanıklığı, 40 °C üzeri ateş veya terlemenin durması varsa 112'yi arayın."
+    },
+    {
+      "id": "mhrs",
+      "keywords": [
+        "randevu",
+        "mhrs",
+        "182",
+        "hastane randevu",
+        "doktora gitmek"
+      ],
+      "answer": "Devlet hastaneleri ve aile hekimleri için randevuyu MHRS (mhrs.gov.tr), e-Nabız uygulaması veya ALO 182'yi arayarak alabilirsiniz. Uygulamadaki Sağlık Erişimi bölümünden size yakın sağlık kuruluşlarını bulabilirsiniz. Doktorunuz için PDF rapor hazırlamak isterseniz Ayarlar > Doktor İçin PDF Rapor'u kullanın.",
+      "route": "/access"
+    },
+    {
+      "id": "vaccine",
+      "keywords": [
+        "asi",
+        "asi takvimi",
+        "tetanoz",
+        "grip asisi"
+      ],
+      "answer": "Çocuk aşı takvimi ve yetişkin aşıları (grip, pnömokok, tetanoz rapeli, zona) Aşı & Bulaşıcı bölümünde listelenir. Yetişkinlerde tetanoz-difteri rapeli her 10 yılda bir önerilir.",
+      "route": "/infectious"
+    },
+    {
+      "id": "pregnancy",
+      "keywords": [
+        "gebelik",
+        "hamile",
+        "hamilelik",
+        "bebek",
+        "emzirme"
+      ],
+      "answer": "Gebelik haftanızı, haftalık gelişim rehberini ve preeklampsi uyarı belirtilerini Anne & Bebek bölümünde takip edebilirsiniz. Gebelikte şiddetli baş ağrısı, görme bozukluğu, ani ödem, vajinal kanama veya bebek hareketlerinde azalma olursa hemen doktorunuza başvurun.",
+      "route": "/maternal"
+    },
+    {
+      "id": "pulse",
+      "keywords": [
+        "normal nabiz",
+        "nabiz kac",
+        "nabiz olmali",
+        "kalp hizi"
+      ],
+      "answer": "Dinlenik yetişkin nabzı dakikada 60-100 atımdır; düzenli spor yapanlarda 50'lere inebilir. 100'ün üzerindeki dinlenik nabız (taşikardi) veya düzensiz, çarpıntılı ritim doktor değerlendirmesi gerektirebilir. Nabzınızı Nabız ve Stres ekranında kameranızla ölçebilirsiniz.",
+      "route": "/heart"
+    },
+    {
+      "id": "hrv",
+      "keywords": [
+        "hrv",
+        "kalp hizi degiskenligi",
+        "rmssd"
+      ],
+      "answer": "Kalp hızı değişkenliği (HRV), ardışık kalp atımları arasındaki sürelerin ne kadar değiştiğini gösterir. Yüksek HRV genellikle dinlenmiş ve stresle iyi baş eden bir vücudu, düşük HRV ise stres, yorgunluk veya uykusuzluğu işaret eder. VitaCoach bunu RMSSD yöntemiyle, kamera ölçümünden hesaplar.",
+      "route": "/heart"
+    },
+    {
+      "id": "diabetes_risk",
+      "keywords": [
+        "diyabet riski",
+        "seker hastaligi riski",
+        "findrisc",
+        "kalp riski",
+        "risk hesapla"
+      ],
+      "answer": "Risk Analizi bölümünde iki bilimsel skoru hesaplayabilirsiniz: FINDRISC, kan tahlili olmadan önümüzdeki 10 yılda Tip-2 diyabet riskini; Framingham skoru ise 10 yıllık kalp-damar hastalığı riskini ve 'damar yaşınızı' tahmin eder.",
+      "route": "/risk"
+    },
+    {
+      "id": "privacy",
+      "keywords": [
+        "gizlilik",
+        "verilerim",
+        "verilerim nerede",
+        "internet",
+        "guvenli mi"
+      ],
+      "answer": "Sağlık verileriniz yalnızca telefonunuzda, şifrelenmiş olarak saklanır. Analizler, asistan cevapları ve nabız ölçümü tamamen cihazınızda yapılır; hiçbir yapay zekâ servisine veya sunucuya gönderilmez. Verilerinizi yalnızca siz PDF rapor olarak paylaşabilirsiniz."
+    }
+  ]
+}

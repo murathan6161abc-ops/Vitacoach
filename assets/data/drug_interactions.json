@@ -1,0 +1,499 @@
+{
+  "meta": {
+    "note": "Yalnızca sık karşılaşılan ve klinik açıdan önemli, iyi bilinen etkileşimleri içerir; eksiksiz değildir.",
+    "sources": "İlaç prospektüsleri (FDA/EMA) ve temel farmakoloji kaynaklarında tanımlanan etkileşimler."
+  },
+  "groups": [
+    {
+      "id": "warfarin",
+      "name": "Varfarin (kan sulandırıcı)",
+      "aliases": [
+        "varfarin",
+        "warfarin",
+        "coumadin",
+        "orfarin"
+      ]
+    },
+    {
+      "id": "aspirin",
+      "name": "Aspirin (asetilsalisilik asit)",
+      "aliases": [
+        "aspirin",
+        "asetilsalisilik",
+        "coraspin",
+        "ecopirin"
+      ]
+    },
+    {
+      "id": "nsaid",
+      "name": "NSAİİ ağrı kesici",
+      "duplicate_warning": true,
+      "aliases": [
+        "ibuprofen",
+        "nurofen",
+        "brufen",
+        "advil",
+        "pedifen",
+        "flurbiprofen",
+        "majezik",
+        "diklofenak",
+        "diclofenac",
+        "voltaren",
+        "deksketoprofen",
+        "dexketoprofen",
+        "arveles",
+        "naproksen",
+        "naproxen",
+        "apranax",
+        "meloksikam",
+        "meloxicam",
+        "etodolak",
+        "ketoprofen",
+        "indometazin"
+      ]
+    },
+    {
+      "id": "clopidogrel",
+      "name": "Klopidogrel",
+      "aliases": [
+        "klopidogrel",
+        "clopidogrel",
+        "plavix"
+      ]
+    },
+    {
+      "id": "ppi_cyp",
+      "name": "Omeprazol / esomeprazol",
+      "aliases": [
+        "omeprazol",
+        "omeprazole",
+        "esomeprazol",
+        "esomeprazole",
+        "nexium",
+        "losec"
+      ]
+    },
+    {
+      "id": "ssri",
+      "name": "SSRI antidepresan",
+      "duplicate_warning": true,
+      "aliases": [
+        "sertralin",
+        "sertraline",
+        "lustral",
+        "essitalopram",
+        "escitalopram",
+        "cipralex",
+        "sitalopram",
+        "citalopram",
+        "fluoksetin",
+        "fluoxetine",
+        "prozac",
+        "paroksetin",
+        "paroxetine",
+        "paxil",
+        "seroxat",
+        "fluvoksamin"
+      ]
+    },
+    {
+      "id": "tramadol",
+      "name": "Tramadol",
+      "aliases": [
+        "tramadol",
+        "contramal"
+      ]
+    },
+    {
+      "id": "opioid",
+      "name": "Opioid ağrı kesici",
+      "aliases": [
+        "tramadol",
+        "contramal",
+        "kodein",
+        "codeine",
+        "morfin",
+        "morphine",
+        "oksikodon",
+        "oxycodone",
+        "fentanil",
+        "fentanyl"
+      ]
+    },
+    {
+      "id": "benzodiazepine",
+      "name": "Benzodiazepin (sakinleştirici)",
+      "aliases": [
+        "alprazolam",
+        "xanax",
+        "diazepam",
+        "lorazepam",
+        "ativan",
+        "klonazepam",
+        "clonazepam",
+        "rivotril"
+      ]
+    },
+    {
+      "id": "nitrate",
+      "name": "Nitrat (göğüs ağrısı ilacı)",
+      "aliases": [
+        "nitrogliserin",
+        "nitroglycerin",
+        "izosorbid",
+        "isosorbid",
+        "isosorbide",
+        "isordil"
+      ]
+    },
+    {
+      "id": "pde5",
+      "name": "Sildenafil / tadalafil",
+      "aliases": [
+        "sildenafil",
+        "tadalafil",
+        "vardenafil",
+        "viagra",
+        "cialis",
+        "levitra"
+      ]
+    },
+    {
+      "id": "ace_arb",
+      "name": "ACE inhibitörü / ARB (tansiyon)",
+      "duplicate_warning": true,
+      "aliases": [
+        "ramipril",
+        "delix",
+        "perindopril",
+        "coversyl",
+        "enalapril",
+        "lisinopril",
+        "kaptopril",
+        "captopril",
+        "losartan",
+        "valsartan",
+        "irbesartan",
+        "kandesartan",
+        "candesartan",
+        "telmisartan",
+        "olmesartan"
+      ]
+    },
+    {
+      "id": "k_sparing",
+      "name": "Potasyum tutucu diüretik",
+      "aliases": [
+        "spironolakton",
+        "spironolactone",
+        "aldactone",
+        "eplerenon",
+        "eplerenone",
+        "amilorid",
+        "amiloride"
+      ]
+    },
+    {
+      "id": "statin",
+      "name": "Statin (kolesterol)",
+      "duplicate_warning": true,
+      "aliases": [
+        "simvastatin",
+        "atorvastatin",
+        "lipitor",
+        "zocor",
+        "lovastatin"
+      ]
+    },
+    {
+      "id": "macrolide",
+      "name": "Klaritromisin / eritromisin",
+      "aliases": [
+        "klaritromisin",
+        "clarithromycin",
+        "klacid",
+        "eritromisin",
+        "erythromycin"
+      ]
+    },
+    {
+      "id": "quinolone",
+      "name": "Kinolon antibiyotik",
+      "aliases": [
+        "siprofloksasin",
+        "ciprofloxacin",
+        "cipro",
+        "levofloksasin",
+        "levofloxacin",
+        "moksifloksasin"
+      ]
+    },
+    {
+      "id": "methotrexate",
+      "name": "Metotreksat",
+      "aliases": [
+        "metotreksat",
+        "methotrexate"
+      ]
+    },
+    {
+      "id": "lithium",
+      "name": "Lityum",
+      "aliases": [
+        "lityum",
+        "lithium"
+      ]
+    },
+    {
+      "id": "digoxin",
+      "name": "Digoksin",
+      "aliases": [
+        "digoksin",
+        "digoxin",
+        "lanoxin"
+      ]
+    },
+    {
+      "id": "amiodarone",
+      "name": "Amiodaron",
+      "aliases": [
+        "amiodaron",
+        "amiodarone",
+        "cordarone"
+      ]
+    },
+    {
+      "id": "levothyroxine",
+      "name": "Levotiroksin (tiroid)",
+      "aliases": [
+        "levotiroksin",
+        "levothyroxine",
+        "euthyrox",
+        "levotiron"
+      ]
+    },
+    {
+      "id": "mineral",
+      "name": "Kalsiyum / demir / magnezyum / antiasit",
+      "aliases": [
+        "kalsiyum",
+        "calcium",
+        "demir",
+        "ferro",
+        "ferrum",
+        "magnezyum",
+        "magnesium",
+        "antiasit",
+        "rennie"
+      ]
+    },
+    {
+      "id": "corticosteroid",
+      "name": "Kortikosteroid",
+      "aliases": [
+        "metilprednizolon",
+        "methylprednisolone",
+        "prednol",
+        "prednizolon",
+        "prednisolone",
+        "deksametazon",
+        "dexamethasone"
+      ]
+    },
+    {
+      "id": "beta_blocker",
+      "name": "Beta bloker",
+      "aliases": [
+        "bisoprolol",
+        "concor",
+        "metoprolol",
+        "beloc",
+        "atenolol",
+        "nebivolol",
+        "propranolol"
+      ]
+    },
+    {
+      "id": "nondhp_ccb",
+      "name": "Verapamil / diltiazem",
+      "aliases": [
+        "verapamil",
+        "diltiazem"
+      ]
+    },
+    {
+      "id": "allopurinol",
+      "name": "Allopurinol",
+      "aliases": [
+        "allopurinol"
+      ]
+    },
+    {
+      "id": "azathioprine",
+      "name": "Azatioprin",
+      "aliases": [
+        "azatioprin",
+        "azathioprine",
+        "imuran"
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "a": "warfarin",
+      "b": "aspirin",
+      "severity": "high",
+      "message": "Kanama riski belirgin şekilde artar."
+    },
+    {
+      "a": "warfarin",
+      "b": "nsaid",
+      "severity": "high",
+      "message": "Mide-bağırsak ve diğer kanama riskleri ciddi şekilde artar."
+    },
+    {
+      "a": "warfarin",
+      "b": "clopidogrel",
+      "severity": "high",
+      "message": "Kanama riski belirgin şekilde artar."
+    },
+    {
+      "a": "warfarin",
+      "b": "ssri",
+      "severity": "moderate",
+      "message": "Kanama riski artabilir."
+    },
+    {
+      "a": "warfarin",
+      "b": "quinolone",
+      "severity": "moderate",
+      "message": "Varfarinin etkisi (INR) artabilir; kanama riski yükselir."
+    },
+    {
+      "a": "warfarin",
+      "b": "macrolide",
+      "severity": "moderate",
+      "message": "Varfarinin etkisi (INR) artabilir; kanama riski yükselir."
+    },
+    {
+      "a": "aspirin",
+      "b": "nsaid",
+      "severity": "moderate",
+      "message": "Mide kanaması riski artar; ibuprofen aspirinin kalbi koruyucu etkisini azaltabilir."
+    },
+    {
+      "a": "clopidogrel",
+      "b": "aspirin",
+      "severity": "moderate",
+      "message": "Sıklıkla birlikte reçete edilir ancak kanama riski artar; yalnızca doktor önerisiyle kullanın."
+    },
+    {
+      "a": "clopidogrel",
+      "b": "nsaid",
+      "severity": "moderate",
+      "message": "Kanama riski artar."
+    },
+    {
+      "a": "clopidogrel",
+      "b": "ppi_cyp",
+      "severity": "moderate",
+      "message": "Omeprazol/esomeprazol klopidogrelin etkisini azaltabilir."
+    },
+    {
+      "a": "ssri",
+      "b": "tramadol",
+      "severity": "high",
+      "message": "Serotonin sendromu ve nöbet riski."
+    },
+    {
+      "a": "ssri",
+      "b": "nsaid",
+      "severity": "moderate",
+      "message": "Mide-bağırsak kanaması riski artar."
+    },
+    {
+      "a": "nitrate",
+      "b": "pde5",
+      "severity": "high",
+      "message": "Tehlikeli düzeyde tansiyon düşüşüne yol açabilir; birlikte kullanılmamalıdır."
+    },
+    {
+      "a": "ace_arb",
+      "b": "k_sparing",
+      "severity": "high",
+      "message": "Kanda potasyum tehlikeli düzeye yükselebilir (hiperkalemi)."
+    },
+    {
+      "a": "ace_arb",
+      "b": "nsaid",
+      "severity": "moderate",
+      "message": "Böbrek fonksiyonu bozulabilir ve tansiyon ilacının etkisi azalabilir."
+    },
+    {
+      "a": "statin",
+      "b": "macrolide",
+      "severity": "high",
+      "message": "Kas yıkımı (rabdomiyoliz) riski artar."
+    },
+    {
+      "a": "methotrexate",
+      "b": "nsaid",
+      "severity": "high",
+      "message": "Metotreksat toksisitesi riski artar."
+    },
+    {
+      "a": "lithium",
+      "b": "nsaid",
+      "severity": "high",
+      "message": "Kandaki lityum düzeyi toksik seviyeye yükselebilir."
+    },
+    {
+      "a": "lithium",
+      "b": "ace_arb",
+      "severity": "moderate",
+      "message": "Kandaki lityum düzeyi yükselebilir."
+    },
+    {
+      "a": "digoxin",
+      "b": "amiodarone",
+      "severity": "high",
+      "message": "Digoksin düzeyi yükselir; zehirlenme riski."
+    },
+    {
+      "a": "benzodiazepine",
+      "b": "opioid",
+      "severity": "high",
+      "message": "Aşırı sedasyon ve solunumun baskılanması riski."
+    },
+    {
+      "a": "corticosteroid",
+      "b": "nsaid",
+      "severity": "moderate",
+      "message": "Mide ülseri ve kanama riski artar."
+    },
+    {
+      "a": "beta_blocker",
+      "b": "nondhp_ccb",
+      "severity": "moderate",
+      "message": "Kalp hızı aşırı yavaşlayabilir, kalp bloğu gelişebilir."
+    },
+    {
+      "a": "allopurinol",
+      "b": "azathioprine",
+      "severity": "high",
+      "message": "Azatioprinin kan düzeyi yükselir; ciddi kemik iliği baskılanması riski."
+    },
+    {
+      "a": "levothyroxine",
+      "b": "mineral",
+      "severity": "low",
+      "message": "Tiroid ilacının emilimi azalır; en az 4 saat arayla alın."
+    },
+    {
+      "a": "quinolone",
+      "b": "mineral",
+      "severity": "low",
+      "message": "Antibiyotiğin emilimi azalır; antibiyotiği 2 saat önce veya 6 saat sonra alın."
+    }
+  ]
+}

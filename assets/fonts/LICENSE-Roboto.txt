@@ -1,0 +1,5 @@
+Roboto yazı tipi (Roboto-Regular.ttf, Roboto-Bold.ttf)
+Telif Hakkı 2011 Google Inc. Apache License, Version 2.0 ile lisanslanmıştır.
+https://www.apache.org/licenses/LICENSE-2.0
+Kaynak: Flutter SDK material_fonts paketi. VitaCoach'ta yalnızca PDF raporlarında
+Türkçe karakterlerin doğru görüntülenmesi için kullanılır.

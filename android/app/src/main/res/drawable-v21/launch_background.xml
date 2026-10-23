@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 ve öncesi açılış ekranı: marka yeşili üzerinde beyaz logo.
+     Flutter açılış ekranıyla aynı görünüm, kesintisiz geçiş sağlar. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/vc_brand" />
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_launcher_foreground" />
+    </item>
+</layer-list>
