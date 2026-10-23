@@ -1,4 +1,5 @@
 import '../../../core/constants/app_constants.dart';
+import '../../m03_chronic/models/blood_sugar.dart';
 import '../../m03_chronic/models/health_entry.dart';
 import '../../m03_chronic/models/medication_adherence.dart';
 import '../../m15_sleep/models/sleep_entry.dart';
@@ -369,8 +370,16 @@ class InsightEngine {
       }
     }
 
+    // Ortalama açlık eşikleriyle karşılaştırılır; tokluk ve rastgele
+    // ölçümler dahil edilirse normal tokluk değerleri yanlışlıkla
+    // "açlık şekeri yüksek" uyarısı üretir. Zamanı bilinmeyen eski
+    // kayıtlar açlık sayılır.
     final window = list
-        .where((s) => input.now.difference(s.date).inDays <= 14)
+        .where(
+          (s) =>
+              input.now.difference(s.date).inDays <= 14 &&
+              (s.timing == null || s.timing == SugarTiming.fasting.name),
+        )
         .toList();
     if (window.length >= 3) {
       final avg = TrendMath.mean([for (final s in window) s.value]);

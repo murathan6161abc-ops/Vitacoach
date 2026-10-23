@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/notification_service.dart';
+import '../models/blood_sugar.dart';
 import '../models/health_entry.dart';
 import '../models/medication_adherence.dart';
 
@@ -196,8 +197,17 @@ class ChronicProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addBloodSugar(double value, {String? note}) async {
-    final entry = HealthEntry(value: value, date: DateTime.now(), note: note);
+  Future<void> addBloodSugar(
+    double value, {
+    String? note,
+    SugarTiming? timing,
+  }) async {
+    final entry = HealthEntry(
+      value: value,
+      date: DateTime.now(),
+      note: note,
+      timing: timing?.name,
+    );
     _bloodSugarEntries.add(entry);
     await _saveBloodSugar();
     notifyListeners();
@@ -415,10 +425,6 @@ class ChronicProvider extends ChangeNotifier {
   }
 
   // Blood sugar status
-  String bloodSugarStatus(double value) {
-    if (value < 70) return 'Düşük (Hipoglisemi)';
-    if (value < 100) return 'Açlık ölçümünde normal aralık';
-    if (value <= 125) return 'Açlık ölçümünde yüksek aralık';
-    return 'Çok yüksek; uzman değerlendirmesi gerekir';
-  }
+  SugarAssessment assessSugar(HealthEntry entry) =>
+      assessBloodSugar(entry.value, SugarTiming.parse(entry.timing));
 }

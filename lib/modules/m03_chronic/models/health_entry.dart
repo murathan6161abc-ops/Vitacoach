@@ -3,12 +3,21 @@ class HealthEntry {
   final DateTime date;
   final String? note;
 
-  HealthEntry({required this.value, required this.date, this.note});
+  /// Kan şekeri ölçüm zamanı (bkz. SugarTiming); eski kayıtlarda yoktur.
+  final String? timing;
+
+  HealthEntry({
+    required this.value,
+    required this.date,
+    this.note,
+    this.timing,
+  });
 
   Map<String, dynamic> toMap() => {
     'value': value,
     'date': date.toIso8601String(),
     'note': note,
+    if (timing != null) 'timing': timing,
   };
 
   /// Eski/uyumsuz kayıtlarda değer 'value' yerine 'weight' anahtarıyla
@@ -20,6 +29,7 @@ class HealthEntry {
       value: raw is num ? raw.toDouble() : double.tryParse('$raw') ?? 0,
       date: DateTime.tryParse('${map['date']}') ?? DateTime.now(),
       note: map['note'] as String?,
+      timing: map['timing'] as String?,
     );
   }
 }
@@ -39,12 +49,21 @@ class BloodPressureEntry {
 
   String get display => '${systolic.toInt()}/${diastolic.toInt()} mmHg';
 
+  /// Büyük tansiyon 180 veya üstü ya da küçük tansiyon 120 veya üstü:
+  /// hipertansif kriz olabilir. Önceden yalnızca "Evre 2" deniyordu.
+  bool get isCrisis => systolic >= 180 || diastolic >= 120;
+
+  /// 90/60 altı düşük tansiyon sayılır (yüksek tansiyon kategorileri önce
+  /// değerlendirilir: 150/55 düşük değil, Evre 2'dir).
+  bool get isLow => systolic < 90 || diastolic < 60;
+
   String get category {
-    if (systolic < 120 && diastolic < 80) return 'Normal';
-    if (systolic < 130 && diastolic < 80) return 'Yüksek Normal';
-    if (systolic < 140 && diastolic < 90) return 'Evre 1 Hipertansiyon';
+    if (isCrisis) return 'Hipertansif kriz';
     if (systolic >= 140 || diastolic >= 90) return 'Evre 2 Hipertansiyon';
-    return 'Bilinmiyor';
+    if (systolic >= 130 || diastolic >= 80) return 'Evre 1 Hipertansiyon';
+    if (isLow) return 'Düşük tansiyon';
+    if (systolic >= 120) return 'Yüksek Normal';
+    return 'Normal';
   }
 
   Map<String, dynamic> toMap() => {
