@@ -508,9 +508,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: const Text(
-                'Tüm yerel verileri ve bildirimleri siler.',
-              ),
+              subtitle: const Text('Tüm yerel verileri ve bildirimleri siler.'),
               onTap: () => _resetAccount(context),
             ),
           ),
