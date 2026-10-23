@@ -7,6 +7,7 @@ import '../../../services/app_settings_service.dart';
 import '../../../services/app_state_service.dart';
 import '../../../services/demo_data_service.dart';
 import '../../../services/demo_mode.dart';
+import '../widgets/backup_section.dart';
 import '../../../services/tts_service.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/notification_service.dart';
@@ -434,6 +435,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 24),
+          _sectionTitle('Gizlilik ve Veri'),
+          VcCard(
+            padding: EdgeInsets.zero,
+            child: _navTile(
+              icon: Icons.privacy_tip_outlined,
+              color: AppColors.primary,
+              title: 'Gizlilik ve veri kullanımı',
+              subtitle: 'Verileriniz nerede, ne zaman internete bağlanılır',
+              onTap: () => context.push(AppConstants.routePrivacy),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const BackupSection(),
           const SizedBox(height: 24),
           _sectionTitle('Acil Durum ve Raporlar'),
           VcCard(

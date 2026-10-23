@@ -252,6 +252,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 16),
+          Text(
+            'VitaCoach tanı veya tedavi aracı değildir. Acil durumda 112\'yi '
+            'arayın.',
+            style: TextStyle(fontSize: 13, color: AppColors.textHint),
+            textAlign: TextAlign.center,
+          ),
+          TextButton(
+            onPressed: () => context.push(AppConstants.routePrivacy),
+            child: const Text('Gizlilik ve veri kullanımı'),
+          ),
         ],
       ),
     );

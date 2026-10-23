@@ -43,6 +43,7 @@ class AppConstants {
   static const String routeHeart = '/heart';
   static const String routeInsights = '/insights';
   static const String routeAssistant = '/assistant';
+  static const String routePrivacy = '/privacy';
 
   static const String medicalDisclaimer =
       '⚠️ Bu bilgiler tıbbi tavsiye değildir. Lütfen doktorunuza başvurun.';

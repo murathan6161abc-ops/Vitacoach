@@ -18,6 +18,7 @@ import '../../modules/m10_environment/screens/environment_screen.dart';
 import '../../modules/m11_access/screens/access_screen.dart';
 import '../../modules/m12_progress/screens/progress_screen.dart';
 import '../../modules/m13_settings/screens/settings_screen.dart';
+import '../../modules/m13_settings/screens/privacy_screen.dart';
 import '../../modules/m14_risk/screens/risk_screen.dart';
 import '../../modules/m15_sleep/screens/sleep_screen.dart';
 import '../../modules/m16_emergency/screens/emergency_card_screen.dart';
@@ -132,6 +133,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppConstants.routeInsights,
       builder: (context, state) => const InsightsScreen(),
+    ),
+    GoRoute(
+      path: AppConstants.routePrivacy,
+      builder: (context, state) => const PrivacyScreen(),
     ),
     GoRoute(
       path: AppConstants.routeAssistant,
