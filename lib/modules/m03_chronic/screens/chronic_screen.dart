@@ -193,6 +193,27 @@ class ChronicScreen extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            ...provider.bloodSugarEntries.reversed
+                .take(5)
+                .map(
+                  (entry) => ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.water_drop,
+                      color: _sugarColor(entry.value),
+                      size: 20,
+                    ),
+                    title: Text('${entry.value.toInt()} mg/dL'),
+                    subtitle: Text(_shortDate(entry.date)),
+                    trailing: _deleteButton(
+                      context,
+                      label: 'Kan şekeri ölçümü',
+                      remove: () => provider.removeBloodSugar(entry),
+                      restore: () => provider.restoreBloodSugar(entry),
+                    ),
+                  ),
+                ),
           ] else
             Padding(
               padding: EdgeInsets.all(24),
@@ -298,26 +319,12 @@ class ChronicScreen extends StatelessWidget {
                   size: 20,
                 ),
                 title: Text(entry.display),
-                subtitle: Builder(
-                  builder: (context) {
-                    final months = [
-                      'Oca',
-                      'Şub',
-                      'Mar',
-                      'Nis',
-                      'May',
-                      'Haz',
-                      'Tem',
-                      'Ağu',
-                      'Eyl',
-                      'Eki',
-                      'Kas',
-                      'Ara',
-                    ];
-                    return Text(
-                      '${entry.category} • ${entry.date.day} ${months[entry.date.month - 1]} ${entry.date.year}',
-                    );
-                  },
+                subtitle: Text('${entry.category} • ${_shortDate(entry.date)}'),
+                trailing: _deleteButton(
+                  context,
+                  label: 'Tansiyon ölçümü',
+                  remove: () => provider.removeBloodPressure(entry),
+                  restore: () => provider.restoreBloodPressure(entry),
                 ),
               );
             }))
@@ -439,6 +446,53 @@ class ChronicScreen extends StatelessWidget {
     return text.replaceAll('.', ',');
   }
 
+  /// Ölçümü siler; yanlışlıkla silindiyse "Geri al" ile aynı tarihiyle
+  /// geri konur.
+  Widget _deleteButton(
+    BuildContext context, {
+    required String label,
+    required Future<void> Function() remove,
+    required Future<void> Function() restore,
+  }) {
+    return IconButton(
+      tooltip: 'Sil',
+      icon: Icon(Icons.delete_outline, color: AppColors.danger, size: 20),
+      onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        await remove();
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('$label silindi'),
+              action: SnackBarAction(label: 'Geri al', onPressed: restore),
+            ),
+          );
+      },
+    );
+  }
+
+  // Kilo silinince profildeki güncel kilo da değişir; profil ekranı tazelenir.
+  Future<void> _removeWeight(
+    BuildContext context,
+    ChronicProvider provider,
+    HealthEntry entry,
+  ) async {
+    final profile = context.read<ProfileProvider>();
+    await provider.removeWeight(entry);
+    profile.loadProfile();
+  }
+
+  Future<void> _restoreWeight(
+    BuildContext context,
+    ChronicProvider provider,
+    HealthEntry entry,
+  ) async {
+    final profile = context.read<ProfileProvider>();
+    await provider.restoreWeight(entry);
+    profile.loadProfile();
+  }
+
   Widget _buildWeightSection(BuildContext context, ChronicProvider provider) {
     final entries = provider.weightEntries;
     final change = provider.weightChange30Days;
@@ -497,6 +551,12 @@ class ChronicScreen extends StatelessWidget {
                     ),
                     title: Text('${_formatKg(entry.value)} kg'),
                     subtitle: Text(_shortDate(entry.date)),
+                    trailing: _deleteButton(
+                      context,
+                      label: 'Kilo ölçümü',
+                      remove: () => _removeWeight(context, provider, entry),
+                      restore: () => _restoreWeight(context, provider, entry),
+                    ),
                   ),
                 ),
           ],

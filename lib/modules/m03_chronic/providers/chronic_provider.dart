@@ -199,11 +199,81 @@ class ChronicProvider extends ChangeNotifier {
   Future<void> addBloodSugar(double value, {String? note}) async {
     final entry = HealthEntry(value: value, date: DateTime.now(), note: note);
     _bloodSugarEntries.add(entry);
-    await _hiveService.getHealthBox().put(
-      'blood_sugar',
-      _bloodSugarEntries.map((e) => e.toMap()).toList(),
-    );
+    await _saveBloodSugar();
     notifyListeners();
+  }
+
+  // Yanlış girilen ölçümler önceden hiç silinemiyordu. Silinen kayıt
+  // "Geri al" ile aynı tarihiyle geri konabilir.
+
+  Future<void> removeBloodSugar(HealthEntry entry) async {
+    if (!_bloodSugarEntries.remove(entry)) return;
+    await _saveBloodSugar();
+    notifyListeners();
+  }
+
+  Future<void> restoreBloodSugar(HealthEntry entry) async {
+    _insertByDate(_bloodSugarEntries, entry, (e) => e.date);
+    await _saveBloodSugar();
+    notifyListeners();
+  }
+
+  Future<void> removeBloodPressure(BloodPressureEntry entry) async {
+    if (!_bloodPressureEntries.remove(entry)) return;
+    await _saveBloodPressure();
+    notifyListeners();
+  }
+
+  Future<void> restoreBloodPressure(BloodPressureEntry entry) async {
+    _insertByDate(_bloodPressureEntries, entry, (e) => e.date);
+    await _saveBloodPressure();
+    notifyListeners();
+  }
+
+  Future<void> removeWeight(HealthEntry entry) async {
+    if (!_weightEntries.remove(entry)) return;
+    await _saveWeights();
+    notifyListeners();
+  }
+
+  Future<void> restoreWeight(HealthEntry entry) async {
+    _insertByDate(_weightEntries, entry, (e) => e.date);
+    await _saveWeights();
+    notifyListeners();
+  }
+
+  static void _insertByDate<T>(
+    List<T> list,
+    T entry,
+    DateTime Function(T) dateOf,
+  ) {
+    final index = list.indexWhere((e) => dateOf(e).isAfter(dateOf(entry)));
+    list.insert(index < 0 ? list.length : index, entry);
+  }
+
+  Future<void> _saveBloodSugar() => _hiveService.getHealthBox().put(
+    'blood_sugar',
+    _bloodSugarEntries.map((e) => e.toMap()).toList(),
+  );
+
+  Future<void> _saveBloodPressure() => _hiveService.getHealthBox().put(
+    'blood_pressure',
+    _bloodPressureEntries.map((e) => e.toMap()).toList(),
+  );
+
+  /// Kilo geçmişini yazar ve profildeki güncel kiloyu en son ölçüme
+  /// eşitler (BMI ve kalori hesapları aynı değeri kullansın).
+  Future<void> _saveWeights() async {
+    await _hiveService.getHealthBox().put(
+      'weight_history',
+      _weightEntries.map((e) => e.toMap()).toList(),
+    );
+    if (_weightEntries.isNotEmpty) {
+      await _hiveService.getProfileBox().put(
+        'weight',
+        _weightEntries.last.value,
+      );
+    }
   }
 
   Future<void> addBloodPressure(
@@ -218,10 +288,7 @@ class ChronicProvider extends ChangeNotifier {
       note: note,
     );
     _bloodPressureEntries.add(entry);
-    await _hiveService.getHealthBox().put(
-      'blood_pressure',
-      _bloodPressureEntries.map((e) => e.toMap()).toList(),
-    );
+    await _saveBloodPressure();
     notifyListeners();
   }
 
@@ -230,12 +297,8 @@ class ChronicProvider extends ChangeNotifier {
   /// BMI ve kalori hesapları trendle aynı değeri kullansın.
   Future<void> addWeight(double value, {DateTime? at}) async {
     final entry = HealthEntry(value: value, date: at ?? DateTime.now());
-    _weightEntries.add(entry);
-    await _hiveService.getHealthBox().put(
-      'weight_history',
-      _weightEntries.map((e) => e.toMap()).toList(),
-    );
-    await _hiveService.getProfileBox().put('weight', value);
+    _insertByDate(_weightEntries, entry, (e) => e.date);
+    await _saveWeights();
     notifyListeners();
   }
 
