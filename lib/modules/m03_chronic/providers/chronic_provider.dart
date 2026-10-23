@@ -70,6 +70,17 @@ class ChronicProvider extends ChangeNotifier {
     return _bloodSugarEntries.where((e) => e.date.isAfter(cutoff)).toList();
   }
 
+  /// Son ölçüm ile ondan önceki 30 gün içindeki ilk ölçüm arasındaki fark
+  /// (kg). Karşılaştırılacak ikinci bir ölçüm yoksa null.
+  double? get weightChange30Days {
+    if (_weightEntries.length < 2) return null;
+    final latest = _weightEntries.last;
+    final cutoff = latest.date.subtract(const Duration(days: 30));
+    final window = _weightEntries.where((e) => !e.date.isBefore(cutoff));
+    if (window.length < 2) return null;
+    return latest.value - window.first.value;
+  }
+
   /// Hive'daki bir listeyi kayıt kayıt çözer. Eski/bozuk biçimli tek bir
   /// kayıt tüm modülü çökertmemeli; yalnızca kendisi atlanmalıdır.
   static List<T> _parseList<T>(
@@ -214,13 +225,17 @@ class ChronicProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addWeight(double value) async {
-    final entry = HealthEntry(value: value, date: DateTime.now());
+  /// Kilo geçmişinin tek yazıcısı. Profil düzenleme ve ilk kurulum da
+  /// buradan geçer; profildeki güncel kilo da en son ölçüme eşitlenir ki
+  /// BMI ve kalori hesapları trendle aynı değeri kullansın.
+  Future<void> addWeight(double value, {DateTime? at}) async {
+    final entry = HealthEntry(value: value, date: at ?? DateTime.now());
     _weightEntries.add(entry);
     await _hiveService.getHealthBox().put(
       'weight_history',
       _weightEntries.map((e) => e.toMap()).toList(),
     );
+    await _hiveService.getProfileBox().put('weight', value);
     notifyListeners();
   }
 

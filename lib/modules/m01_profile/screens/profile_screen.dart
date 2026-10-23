@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/input_utils.dart';
 import '../../../services/hive_service.dart';
 import '../../../shared/widgets/vc_card.dart';
+import '../../m03_chronic/providers/chronic_provider.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -74,6 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : (v == v.roundToDouble() ? v.toInt().toString() : v.toString());
     final heightCtrl = TextEditingController(text: format(_height));
     final weightCtrl = TextEditingController(text: format(_weight));
+    final chronic = context.read<ChronicProvider>();
     String? errorText;
 
     final result = await showDialog<bool>(
@@ -138,9 +140,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   return;
                 }
-                final box = _hiveService.getProfileBox();
-                await box.put('height', h);
-                await box.put('weight', w);
+                await _hiveService.getProfileBox().put('height', h);
+                // Kilo yalnızca profile yazılıyor, geçmişe hiç işlenmiyordu;
+                // kilo trendi, PDF rapor ve asistan boş kalıyordu.
+                if (w != _weight) await chronic.addWeight(w);
                 if (ctx.mounted) {
                   setState(() {
                     _height = h;

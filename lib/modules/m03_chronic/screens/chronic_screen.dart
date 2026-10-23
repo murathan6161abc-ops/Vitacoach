@@ -7,6 +7,7 @@ import '../../../core/utils/input_utils.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../shared/widgets/vc_card.dart';
+import '../../m01_profile/providers/profile_provider.dart';
 import '../providers/chronic_provider.dart';
 import '../models/health_entry.dart';
 import '../services/drug_interaction_service.dart';
@@ -31,6 +32,8 @@ class ChronicScreen extends StatelessWidget {
                 _buildSugarSection(context, provider),
                 const SizedBox(height: 24),
                 _buildPressureSection(context, provider),
+                const SizedBox(height: 24),
+                _buildWeightSection(context, provider),
                 const SizedBox(height: 24),
                 _buildMedicationSection(context, provider),
                 const SizedBox(height: 24),
@@ -407,6 +410,151 @@ class ChronicScreen extends StatelessWidget {
       return;
     }
     await provider.addBloodPressure(sys, dia);
+  }
+
+  static const _shortMonths = [
+    'Oca',
+    'Şub',
+    'Mar',
+    'Nis',
+    'May',
+    'Haz',
+    'Tem',
+    'Ağu',
+    'Eyl',
+    'Eki',
+    'Kas',
+    'Ara',
+  ];
+
+  static String _shortDate(DateTime d) =>
+      '${d.day} ${_shortMonths[d.month - 1]} ${d.year}';
+
+  /// 72.5 -> "72,5", 72.0 -> "72"; Türkçe ondalık virgülüyle.
+  static String _formatKg(double value) {
+    final rounded = (value * 10).round() / 10;
+    final text = rounded == rounded.roundToDouble()
+        ? rounded.toInt().toString()
+        : rounded.toStringAsFixed(1);
+    return text.replaceAll('.', ',');
+  }
+
+  Widget _buildWeightSection(BuildContext context, ChronicProvider provider) {
+    final entries = provider.weightEntries;
+    final change = provider.weightChange30Days;
+    return VcCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Kilo',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                tooltip: 'Kilo ekle',
+                onPressed: () => _addWeight(context, provider),
+                icon: Icon(Icons.add_circle, color: AppColors.primary),
+              ),
+            ],
+          ),
+          if (entries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Text(
+                  'Henüz kayıt yok',
+                  style: TextStyle(color: AppColors.textHint),
+                ),
+              ),
+            )
+          else ...[
+            Text(
+              '${_formatKg(entries.last.value)} kg',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            if (change != null)
+              Text(
+                'Son 30 günde ${change > 0 ? '+' : ''}${_formatKg(change)} kg',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            const SizedBox(height: 8),
+            ...entries.reversed
+                .take(5)
+                .map(
+                  (entry) => ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.monitor_weight,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    title: Text('${_formatKg(entry.value)} kg'),
+                    subtitle: Text(_shortDate(entry.date)),
+                  ),
+                ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addWeight(
+    BuildContext context,
+    ChronicProvider provider,
+  ) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kilo Ekle'),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Kilo (kg)',
+            hintText: 'Örn: 72,5',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    );
+    if (result == null || result.trim().isEmpty) return;
+
+    final value = InputUtils.inRange(
+      InputUtils.parseDecimal(result),
+      20.0,
+      350.0,
+    );
+    if (value == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Geçersiz değer. Kilo 20-350 kg arasında olmalı.'),
+          ),
+        );
+      }
+      return;
+    }
+    await provider.addWeight(value);
+    // Profil ekranı ve BMI aynı güncel kiloyu göstersin.
+    if (context.mounted) context.read<ProfileProvider>().loadProfile();
   }
 
   Widget _buildMedicationSection(

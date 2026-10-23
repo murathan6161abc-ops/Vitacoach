@@ -43,28 +43,4 @@ class ProfileProvider extends ChangeNotifier {
     await box.put('notifications_enabled', profile.notificationsEnabled);
     notifyListeners();
   }
-
-  Future<void> updateWeight(double weight) async {
-    _profile = UserProfile(
-      name: _profile.name,
-      birthDate: _profile.birthDate,
-      gender: _profile.gender,
-      height: _profile.height,
-      weight: weight,
-      conditions: _profile.conditions,
-      goals: _profile.goals,
-      notificationsEnabled: _profile.notificationsEnabled,
-    );
-    await _hiveService.getProfileBox().put('weight', weight);
-
-    // Also log weight history.
-    // Not: ChronicProvider aynı kutuyu HealthEntry şemasıyla okur; bu yüzden
-    // değer 'weight' değil 'value' anahtarıyla yazılmalıdır.
-    final healthBox = _hiveService.getHealthBox();
-    List<dynamic> history =
-        healthBox.get('weight_history', defaultValue: <dynamic>[]) ?? [];
-    history.add({'value': weight, 'date': DateTime.now().toIso8601String()});
-    await healthBox.put('weight_history', history);
-    notifyListeners();
-  }
 }
