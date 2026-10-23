@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pedometer/pedometer.dart';
@@ -6,9 +7,15 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../services/hive_service.dart';
 import '../models/fitness_model.dart';
+import '../services/step_history.dart';
 
 class FitnessProvider extends ChangeNotifier {
+  FitnessProvider({StepHistory? stepHistory})
+    : _stepHistory = stepHistory ?? StepHistory();
+
   final _hiveService = HiveService();
+  final StepHistory _stepHistory;
+  DateTime? _lastHistorySync;
 
   int _todaySteps = 0;
   List<int> _weeklySteps = List.filled(7, 0);
@@ -54,25 +61,89 @@ class FitnessProvider extends ChangeNotifier {
   }
 
   Future<void> startStepTracking() async {
-    if (_trackingStarted) return;
-    _trackingStarted = true;
-    final status = await Permission.activityRecognition.request();
-    if (status.isGranted) {
-      await _stepCountStream?.cancel();
-      _stepCountStream = Pedometer.stepCountStream.listen(
-        (StepCount event) {
-          _stepEventQueue = _stepEventQueue.then(
-            (_) => _handleDeviceStepCount(event.steps),
-          );
-        },
-        onError: (error) {
-          debugPrint('Pedometer hatası: $error');
-        },
-      );
+    if (_trackingStarted) {
+      unawaited(syncDeviceHistory());
+      return;
     }
+    // İzin reddedilirse bayrak kalkmaz; ekran yeniden açıldığında tekrar
+    // denenir. Önceden ilk denemede kalıcı olarak kapanıyordu.
+    if (!await _requestMotionPermission()) return;
+    _trackingStarted = true;
+    await _hiveService.getFitnessBox().put('step_tracking_enabled', true);
+    await syncDeviceHistory();
+    await _stepCountStream?.cancel();
+    _stepCountStream = Pedometer.stepCountStream.listen(
+      (StepCount event) {
+        _stepEventQueue = _stepEventQueue.then(
+          (_) => handleDeviceStepCount(event.steps),
+        );
+      },
+      onError: (error) {
+        debugPrint('Pedometer hatası: $error');
+      },
+    );
   }
 
-  Future<void> _handleDeviceStepCount(int deviceSteps) async {
+  /// permission_handler'ın activityRecognition izni yalnızca Android'de
+  /// vardır; iOS'ta her zaman "kalıcı olarak reddedildi" döndüğü için adım
+  /// takibi iOS'ta hiç başlamıyordu. iOS'ta Hareket ve Fitness izni,
+  /// CoreMotion'a ilk erişimde sistem tarafından sorulur.
+  static Future<bool> _requestMotionPermission() async {
+    if (!Platform.isAndroid) return true;
+    return (await Permission.activityRecognition.request()).isGranted;
+  }
+
+  /// Takip daha önce açıldıysa (ör. uygulama öne gelince) cihaz kaydını
+  /// yeniden okur; izin hiç verilmediyse istem göstermez.
+  Future<void> syncIfTrackingEnabled() async {
+    final enabled = _hiveService.getFitnessBox().get('step_tracking_enabled');
+    if (enabled == true) await syncDeviceHistory();
+  }
+
+  /// Cihazın adım kaydındaki gün toplamlarını işler. Bir günün cihaz
+  /// adımı yalnızca artabilir: kayıt yeni başladıysa veya eksikse sensörle
+  /// sayılmış adımlar korunur.
+  Future<void> syncDeviceHistory() async {
+    _lastHistorySync = DateTime.now();
+    final totals = await _stepHistory.dailyTotals(days: 7);
+    if (totals == null || totals.isEmpty) return;
+    final box = _hiveService.getFitnessBox();
+    var changed = false;
+    for (final entry in totals.entries) {
+      if (entry.value > _deviceStepsOf(box, entry.key)) {
+        await _setDeviceSteps(box, entry.key, entry.value);
+        changed = true;
+      }
+    }
+    if (!changed) return;
+    _refreshStepHistory(box, force: true);
+    notifyListeners();
+  }
+
+  static int _stored(Box<dynamic> box, String key) =>
+      (box.get(key) as num?)?.toInt() ?? 0;
+
+  /// Cihazdan sayılan adımlar. Eski sürümler yalnızca toplamı tutuyordu;
+  /// ayrım yoksa toplamın tamamı cihaz adımı sayılır.
+  static int _deviceStepsOf(Box<dynamic> box, String day) =>
+      box.containsKey('device_steps_$day')
+      ? _stored(box, 'device_steps_$day')
+      : _stored(box, 'steps_$day') - _stored(box, 'manual_steps_$day');
+
+  /// Toplam (`steps_<gün>`) diğer modüllerin okuduğu anahtardır; cihaz ve
+  /// elle eklenen adımlar ayrı tutulur ki senkron elle girileni silmesin.
+  static Future<void> _setDeviceSteps(
+    Box<dynamic> box,
+    String day,
+    int steps,
+  ) => box.putAll({
+    'device_steps_$day': steps,
+    'steps_$day': steps + _stored(box, 'manual_steps_$day'),
+  });
+
+  /// Adım sensörünün olayı: açılıştan beri sayılan toplam adım.
+  @visibleForTesting
+  Future<void> handleDeviceStepCount(int deviceSteps) async {
     final box = _hiveService.getFitnessBox();
     final currentDate = _today;
     final dateChanged = _refreshStepHistory(box);
@@ -92,9 +163,24 @@ class FitnessProvider extends ChangeNotifier {
     });
 
     if (delta > 0) {
-      await addSteps(delta);
+      await _setDeviceSteps(
+        box,
+        currentDate,
+        _deviceStepsOf(box, currentDate) + delta,
+      );
+      _refreshStepHistory(box, force: true);
+      notifyListeners();
     } else if (dateChanged) {
       notifyListeners();
+    }
+
+    // Gün değişiminde sensör farkı sıfırlanır; uygulama açılmadan önce
+    // atılan adımlar cihazın kendi kaydından gelir.
+    final last = _lastHistorySync;
+    if (dateChanged ||
+        last == null ||
+        DateTime.now().difference(last) > const Duration(minutes: 1)) {
+      await syncDeviceHistory();
     }
   }
 
@@ -119,13 +205,19 @@ class FitnessProvider extends ChangeNotifier {
     super.dispose();
   }
 
+  /// Elle eklenen adımlar (ör. telefon yanınızda değilken yürüdüyseniz).
   Future<void> addSteps(int steps) async {
     if (steps <= 0) return;
     final box = _hiveService.getFitnessBox();
-    _refreshStepHistory(box);
-    _todaySteps += steps;
-    await box.put('steps_$_today', _todaySteps);
-    _weeklySteps[6] = _todaySteps;
+    final day = _today;
+    final device = _deviceStepsOf(box, day);
+    final manual = _stored(box, 'manual_steps_$day') + steps;
+    await box.putAll({
+      'device_steps_$day': device,
+      'manual_steps_$day': manual,
+      'steps_$day': device + manual,
+    });
+    _refreshStepHistory(box, force: true);
     notifyListeners();
   }
 

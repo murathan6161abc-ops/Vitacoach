@@ -37,16 +37,29 @@ class _VitaCoachAppState extends State<VitaCoachApp>
     NotificationActions.onDataChanged = _refreshAfterNotificationAction;
     NotificationActions.onOpenRoute = _openRouteFromNotification;
     // Uygulama kapalıyken bildirimden "Aldım" / "+1 bardak" basılmış olabilir.
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => NotificationActions.applyPending(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationActions.applyPending();
+      _syncSteps();
+    });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       NotificationActions.applyPending();
+      _syncSteps();
     }
+  }
+
+  /// Uygulama kapalıyken atılan adımlar cihazın adım kaydından okunur;
+  /// ana sayfa ve ilerleme ekranı da güncel toplamı görür.
+  Future<void> _syncSteps() async {
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) return;
+    final fitness = context.read<FitnessProvider>();
+    final progress = context.read<ProgressProvider>();
+    await fitness.syncIfTrackingEnabled();
+    progress.loadData();
   }
 
   void _refreshAfterNotificationAction() {
