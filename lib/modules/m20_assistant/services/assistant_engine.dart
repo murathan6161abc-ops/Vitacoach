@@ -1,5 +1,6 @@
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/input_utils.dart';
+import '../../m02_symptom/services/triage.dart';
 import '../../m03_chronic/models/health_entry.dart';
 import '../../m03_chronic/models/medication_adherence.dart';
 import '../../m03_chronic/services/drug_interaction_service.dart';
@@ -7,6 +8,8 @@ import '../../m15_sleep/models/sleep_entry.dart';
 import '../../m18_insights/services/insight_engine.dart';
 import '../../m19_heart/models/heart_measurement.dart';
 import '../../m19_heart/services/ppg_processor.dart';
+
+export '../../m02_symptom/services/triage.dart' show FlagRule;
 
 enum AssistantActionType { call, route }
 
@@ -58,24 +61,6 @@ class SymptomDef {
   final String name;
   final String severity;
   const SymptomDef(this.id, this.name, this.severity);
-}
-
-/// Acil durum kuralı (emergency_flags.json).
-class FlagRule {
-  final String id;
-  final String name;
-  final List<String> symptoms;
-  final int minMatch;
-  final String message;
-  final bool red;
-  const FlagRule(
-    this.id,
-    this.name,
-    this.symptoms,
-    this.minMatch,
-    this.message,
-    this.red,
-  );
 }
 
 /// Kullanıcının cihazdaki verilerinden bir anlık görüntü.
@@ -489,8 +474,7 @@ class AssistantEngine {
 
   List<FlagRule> _matchingFlags(Set<String> ids, {required bool red}) => [
     for (final f in flags)
-      if (f.red == red && f.symptoms.where(ids.contains).length >= f.minMatch)
-        f,
+      if (f.red == red && f.matches(ids)) f,
   ];
 
   AssistantReply _startFlow(List<SymptomDef> found) {

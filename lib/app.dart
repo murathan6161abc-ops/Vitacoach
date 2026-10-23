@@ -5,14 +5,12 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'core/router/app_router.dart';
 import 'modules/m01_profile/providers/profile_provider.dart';
-import 'modules/m02_symptom/providers/symptom_provider.dart';
 import 'modules/m03_chronic/providers/chronic_provider.dart';
 import 'modules/m04_maternal/providers/maternal_provider.dart';
 import 'modules/m05_mental/providers/mental_provider.dart';
 import 'modules/m06_nutrition/providers/nutrition_provider.dart';
 import 'modules/m07_fitness/providers/fitness_provider.dart';
 import 'modules/m08_addiction/providers/addiction_provider.dart';
-import 'modules/m09_infectious/providers/infectious_provider.dart';
 import 'modules/m10_environment/providers/environment_provider.dart';
 import 'modules/m11_access/providers/access_provider.dart';
 import 'modules/m12_progress/providers/progress_provider.dart';
@@ -126,9 +124,6 @@ class _VitaCoachAppState extends State<VitaCoachApp>
           ChangeNotifierProvider(
             create: (_) => ProfileProvider()..loadProfile(),
           ),
-          ChangeNotifierProvider(
-            create: (_) => SymptomProvider()..loadSymptoms(),
-          ),
           ChangeNotifierProvider(create: (_) => ChronicProvider()..loadData()),
           ChangeNotifierProvider(create: (_) => MaternalProvider()..init()),
           ChangeNotifierProvider(create: (_) => MentalProvider()..init()),
@@ -136,9 +131,6 @@ class _VitaCoachAppState extends State<VitaCoachApp>
           ChangeNotifierProvider(create: (_) => FitnessProvider()..loadData()),
           ChangeNotifierProvider(
             create: (_) => AddictionProvider()..loadData(),
-          ),
-          ChangeNotifierProvider(
-            create: (_) => InfectiousProvider()..loadData(),
           ),
           ChangeNotifierProvider(create: (_) => EnvironmentProvider()..init()),
           ChangeNotifierProvider(create: (_) => AccessProvider()..init()),

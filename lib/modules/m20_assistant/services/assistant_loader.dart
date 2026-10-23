@@ -28,19 +28,9 @@ class AssistantLoader {
         for (final s in (c['symptoms'] as List))
           SymptomDef('${s['id']}', '${s['name']}', '${s['severity']}'),
     ];
-    final flagsRaw = jsonDecode(flagsJson) as Map<String, dynamic>;
-    final flags = <FlagRule>[
-      for (final group in const ['red_flags', 'yellow_flags'])
-        for (final f in (flagsRaw[group] as List? ?? const []))
-          FlagRule(
-            '${f['id']}',
-            '${f['name']}',
-            List<String>.from(f['symptoms'] ?? const []),
-            (f['min_match'] as num?)?.toInt() ?? 1,
-            '${f['message']}',
-            group == 'red_flags',
-          ),
-    ];
+    final flags = FlagRule.listFromJson(
+      jsonDecode(flagsJson) as Map<String, dynamic>,
+    );
     return AssistantEngine(
       kb: kb,
       symptoms: symptoms,

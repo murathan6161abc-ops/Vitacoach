@@ -8,6 +8,7 @@ import '../../../shared/widgets/vc_button.dart';
 import '../../../shared/widgets/speak_button.dart';
 import '../../../shared/widgets/vc_card.dart';
 import '../../../modules/m11_access/providers/access_provider.dart';
+import '../services/triage.dart';
 
 class SymptomScreen extends StatefulWidget {
   const SymptomScreen({super.key});
@@ -26,11 +27,8 @@ class _SymptomScreenState extends State<SymptomScreen> {
   // görmeyebilir.
   final GlobalKey _resultKey = GlobalKey();
 
-  // emergency_flags.json'daki kombinasyon kuralları: tek başına belirtiler
-  // düşük riskli görünse bile birlikte görüldüklerinde acil olabilirler
-  // (ör. göğüs ağrısı + sol kolda ağrı -> kalp krizi şüphesi).
-  List<Map<String, dynamic>> _redFlags = [];
-  List<Map<String, dynamic>> _yellowFlags = [];
+  // emergency_flags.json'daki kombinasyon kuralları (bkz. FlagRule).
+  List<FlagRule> _flags = const [];
 
   @override
   void initState() {
@@ -59,36 +57,10 @@ class _SymptomScreenState extends State<SymptomScreen> {
       );
       final data = json.decode(jsonString) as Map<String, dynamic>;
       if (!mounted) return;
-      setState(() {
-        _redFlags = List<Map<String, dynamic>>.from(
-          (data['red_flags'] as List? ?? []).map(
-            (f) => Map<String, dynamic>.from(f as Map),
-          ),
-        );
-        _yellowFlags = List<Map<String, dynamic>>.from(
-          (data['yellow_flags'] as List? ?? []).map(
-            (f) => Map<String, dynamic>.from(f as Map),
-          ),
-        );
-      });
+      setState(() => _flags = FlagRule.listFromJson(data));
     } catch (e) {
       debugPrint('Acil durum kuralları yüklenemedi: $e');
     }
-  }
-
-  /// [flags] içinden seçili belirtilerle eşleşen ilk kuralı döndürür.
-  /// Bir kural, kendi 'symptoms' listesinden en az 'min_match' kadarı
-  /// seçiliyse tetiklenir (tek başına düşük riskli belirtilerin
-  /// kombinasyon halinde acil olabileceği durumlar için).
-  Map<String, dynamic>? _matchFlag(List<Map<String, dynamic>> flags) {
-    final selectedIds = _selectedSymptoms.map((s) => s['id']).toSet();
-    for (final flag in flags) {
-      final required = List<String>.from(flag['symptoms'] ?? []);
-      final minMatch = (flag['min_match'] as num?)?.toInt() ?? 1;
-      final hits = required.where(selectedIds.contains).length;
-      if (hits >= minMatch) return flag;
-    }
-    return null;
   }
 
   void _toggleSymptom(Map<String, dynamic> symptom) {
@@ -106,56 +78,44 @@ class _SymptomScreenState extends State<SymptomScreen> {
   void _performTriage() {
     if (_selectedSymptoms.isEmpty) return;
 
-    final hasRed = _selectedSymptoms.any((s) => s['severity'] == 'red');
-    final hasYellow = _selectedSymptoms.any((s) => s['severity'] == 'yellow');
-    // Kombinasyon kuralları tek tek belirtilerin severity'sinden daha
-    // önceliklidir: bazı acil durumlar yalnızca birden fazla belirti bir
-    // arada görüldüğünde ortaya çıkar (ör. göğüs ağrısı + sol kolda ağrı).
-    final redFlag = _matchFlag(_redFlags);
-    final yellowFlag = _matchFlag(_yellowFlags);
+    // Kombinasyon kuralları tek tek belirtilerin önem derecesinden daha
+    // önceliklidir (bkz. assessSymptoms).
+    final result = assessSymptoms(
+      severityById: {
+        for (final s in _selectedSymptoms) '${s['id']}': '${s['severity']}',
+      },
+      flags: _flags,
+    );
+    final flag = result.flag;
 
     setState(() {
-      if (redFlag != null) {
-        _triageResult = {
-          'level': 'red',
-          'title': 'ACİL DURUM',
-          'message': redFlag['message'] ?? '',
-          'flagName': redFlag['name'],
-          'color': AppColors.danger,
-        };
-      } else if (hasRed) {
-        _triageResult = {
+      _triageResult = switch (result.level) {
+        TriageLevel.red => {
           'level': 'red',
           'title': 'ACİL DURUM',
           'message':
+              flag?.message ??
               'Seçtiğiniz belirtiler acil müdahale gerektirebilir. Hemen 112\'yi arayın!',
+          'flagName': flag?.name,
           'color': AppColors.danger,
-        };
-      } else if (yellowFlag != null) {
-        _triageResult = {
-          'level': 'yellow',
-          'title': 'DİKKAT',
-          'message': yellowFlag['message'] ?? '',
-          'flagName': yellowFlag['name'],
-          'color': AppColors.warning,
-        };
-      } else if (hasYellow) {
-        _triageResult = {
+        },
+        TriageLevel.yellow => {
           'level': 'yellow',
           'title': 'DİKKAT',
           'message':
+              flag?.message ??
               'Belirtileriniz tıbbi değerlendirme gerektirebilir. 24 saat içinde doktora başvurmanız önerilir.',
+          'flagName': flag?.name,
           'color': AppColors.warning,
-        };
-      } else {
-        _triageResult = {
+        },
+        TriageLevel.green => {
           'level': 'green',
           'title': 'DÜŞÜK RİSK',
           'message':
               'Belirtileriniz şu an için düşük riskli görünüyor. Şikayetleriniz artarsa doktora başvurun.',
           'color': AppColors.success,
-        };
-      }
+        },
+      };
     });
 
     _saveTriageToHistory();
