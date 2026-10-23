@@ -32,7 +32,10 @@ class InsightRepository {
     final moodByDay = <String, int>{};
     final stepsByDay = <String, int>{};
     for (var i = 0; i < 30; i++) {
-      final key = t.subtract(Duration(days: i)).toIso8601String().substring(0, 10);
+      final key = t
+          .subtract(Duration(days: i))
+          .toIso8601String()
+          .substring(0, 10);
       final mood = moodBox.get(key);
       if (mood is int) moodByDay[key] = mood;
       final steps = fitness.get('steps_$key');
@@ -46,21 +49,28 @@ class InsightRepository {
             medications: meds,
             log: DoseLog.fromRaw(medBox.get('dose_log')),
             now: t,
-            trackingSince: DateTime.tryParse('${medBox.get('adherence_since') ?? ''}'),
+            trackingSince: DateTime.tryParse(
+              '${medBox.get('adherence_since') ?? ''}',
+            ),
           );
 
     final goals = hive.getProfileBox().get('goals');
 
     return InsightInput(
       now: t,
-      pressures: _parse(health.get('blood_pressure'), BloodPressureEntry.fromMap),
+      pressures: _parse(
+        health.get('blood_pressure'),
+        BloodPressureEntry.fromMap,
+      ),
       sugars: _parse(health.get('blood_sugar'), HealthEntry.fromMap),
       weights: _parse(health.get('weight_history'), HealthEntry.fromMap),
       sleep: SleepEntry.parseList(health.get('sleep_log')),
       moodByDay: moodByDay,
       stepsByDay: stepsByDay,
       adherence: adherence,
-      heart: HeartMeasurement.parseList(health.get(HeartMeasurement.storageKey)),
+      heart: HeartMeasurement.parseList(
+        health.get(HeartMeasurement.storageKey),
+      ),
       goals: goals is List ? goals.map((g) => '$g').toList() : const [],
     );
   }

@@ -25,9 +25,20 @@ void main() {
       final log = DoseLog.empty();
       for (var i = 0; i < 7; i++) {
         final day = DateTime(2026, 9, 30 - i);
-        log.set(day, 1, DoseRecord(status: DoseStatus.taken, at: day.add(const Duration(hours: 8, minutes: 10))));
+        log.set(
+          day,
+          1,
+          DoseRecord(
+            status: DoseStatus.taken,
+            at: day.add(const Duration(hours: 8, minutes: 10)),
+          ),
+        );
       }
-      final r = AdherenceCalculator.compute(medications: [m], log: log, now: now);
+      final r = AdherenceCalculator.compute(
+        medications: [m],
+        log: log,
+        now: now,
+      );
       expect(r.scheduled, 7);
       expect(r.percent, 100);
       expect(r.patterns, isEmpty);
@@ -35,14 +46,22 @@ void main() {
 
     test('saati gelmemiş bugünkü doz sayılmaz', () {
       final m = med(1, 22, createdAt: started); // bugün 22:00 henüz gelmedi
-      final r = AdherenceCalculator.compute(medications: [m], log: DoseLog.empty(), now: now);
+      final r = AdherenceCalculator.compute(
+        medications: [m],
+        log: DoseLog.empty(),
+        now: now,
+      );
       expect(r.scheduled, 6);
       expect(r.taken, 0);
     });
 
     test('eklenmeden önceki dozlar sayılmaz', () {
       final m = med(1, 8, createdAt: DateTime(2026, 9, 29, 12));
-      final r = AdherenceCalculator.compute(medications: [m], log: DoseLog.empty(), now: now);
+      final r = AdherenceCalculator.compute(
+        medications: [m],
+        log: DoseLog.empty(),
+        now: now,
+      );
       // 29 Eylül 08:00 eklenmeden önceydi; yalnızca 30 Eylül 08:00 sayılır.
       expect(r.scheduled, 1);
     });
@@ -65,11 +84,25 @@ void main() {
       for (var i = 1; i <= 6; i++) {
         if (i == 2 || i == 5) continue; // kaçırıldı
         final day = DateTime(2026, 9, 30 - i);
-        log.set(day, 3, DoseRecord(status: DoseStatus.taken, at: day.add(const Duration(hours: 21, minutes: 30))));
+        log.set(
+          day,
+          3,
+          DoseRecord(
+            status: DoseStatus.taken,
+            at: day.add(const Duration(hours: 21, minutes: 30)),
+          ),
+        );
       }
-      final r = AdherenceCalculator.compute(medications: [m], log: log, now: now);
+      final r = AdherenceCalculator.compute(
+        medications: [m],
+        log: log,
+        now: now,
+      );
       expect(r.perMedication.single.missed, 3); // 2 gün + bugünkü 20:00
-      expect(r.patterns.map((p) => p.message).join(' '), contains('kaçırdınız'));
+      expect(
+        r.patterns.map((p) => p.message).join(' '),
+        contains('kaçırdınız'),
+      );
       final late = r.patterns.firstWhere((p) => p.message.contains('geç'));
       expect(late.message, contains('90 dakika'));
       expect(late.suggestion, contains('21:30'));
@@ -77,7 +110,11 @@ void main() {
 
     test('doz kaydı Hive biçimine gidip gelir ve bozuk girdiyi atlar', () {
       final log = DoseLog.empty();
-      log.set(DateTime(2026, 9, 30), 5, DoseRecord(status: DoseStatus.skipped, at: now));
+      log.set(
+        DateTime(2026, 9, 30),
+        5,
+        DoseRecord(status: DoseStatus.skipped, at: now),
+      );
       final raw = log.toRaw();
       raw['bozuk'] = 'x';
       final back = DoseLog.fromRaw(raw);
@@ -87,13 +124,25 @@ void main() {
     test('tablo hücre durumları', () {
       final m = med(1, 8, createdAt: started);
       final log = DoseLog.empty();
-      log.set(DateTime(2026, 9, 29), 1, DoseRecord(status: DoseStatus.taken, at: now));
-      DoseCellState cell(DateTime d, {DateTime? at}) => AdherenceCalculator.cellState(
-        medication: m, log: log, day: d, now: at ?? now);
+      log.set(
+        DateTime(2026, 9, 29),
+        1,
+        DoseRecord(status: DoseStatus.taken, at: now),
+      );
+      DoseCellState cell(DateTime d, {DateTime? at}) =>
+          AdherenceCalculator.cellState(
+            medication: m,
+            log: log,
+            day: d,
+            now: at ?? now,
+          );
       expect(cell(DateTime(2026, 9, 29)), DoseCellState.taken);
       expect(cell(DateTime(2026, 9, 28)), DoseCellState.missed);
       expect(cell(DateTime(2026, 10, 1)), DoseCellState.notScheduled);
-      expect(cell(DateTime(2026, 9, 30), at: DateTime(2026, 9, 30, 7)), DoseCellState.upcoming);
+      expect(
+        cell(DateTime(2026, 9, 30), at: DateTime(2026, 9, 30, 7)),
+        DoseCellState.upcoming,
+      );
     });
   });
 
@@ -141,7 +190,9 @@ void main() {
     });
 
     test('su bildirimleri her saat için farklı metin içerir', () {
-      final titles = {for (var i = 0; i < 3; i++) NotificationContent.water(i).title};
+      final titles = {
+        for (var i = 0; i < 3; i++) NotificationContent.water(i).title,
+      };
       expect(titles.length, 3);
     });
   });

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
   AppTheme._();
+
+  /// Uygulamaya gömülü yazı tipi (pubspec.yaml > fonts). Önceden Nunito
+  /// çalışma anında Google sunucularından indiriliyordu: "hiçbir veri
+  /// cihazdan çıkmaz" vaadiyle çelişiyor ve çevrimdışı ilk açılışta yazı
+  /// tipi yüklenemiyordu.
+  static const String fontFamily = 'Roboto';
 
   /// [dark] ve [highContrast] için tema üretir. Önce [AppColors.configure]
   /// çağrılmalıdır; tema renkleri oradaki etkin palete göre okunur.
@@ -11,7 +16,8 @@ class AppTheme {
     AppColors.configure(dark: dark, highContrast: highContrast);
     final brightness = dark ? Brightness.dark : Brightness.light;
     final base = dark ? ThemeData.dark() : ThemeData.light();
-    final textTheme = GoogleFonts.nunitoTextTheme(base.textTheme).apply(
+    final textTheme = base.textTheme.apply(
+      fontFamily: fontFamily,
       bodyColor: AppColors.textPrimary,
       displayColor: AppColors.textPrimary,
     );
@@ -20,6 +26,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: fontFamily,
       brightness: brightness,
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF2A7D4F),
@@ -38,7 +45,8 @@ class AppTheme {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: const TextStyle(
+          fontFamily: fontFamily,
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: Colors.white,
@@ -58,7 +66,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),

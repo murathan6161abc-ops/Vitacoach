@@ -8,7 +8,11 @@ class SecureStorageService {
   SecureStorageService._internal();
 
   static const String hiveEncryptionKey = 'hive_encryption_key_v1';
-  static const String iqAirApiKey = 'iqair_api_key_v1';
+
+  // Hava kalitesi artık anahtarsız bir servisten geliyor; eski sürümlerde
+  // kullanıcının girdiği IQAir anahtarı açılışta silinir.
+  static const String _legacyIqAirKey = 'iqair_api_key_v1';
+  static const String _legacyIqAirPrefsKey = 'iqair_api_key';
 
   // Uygulama artık hiçbir yapay zekâ servisine bağlanmıyor. Önceki
   // sürümlerde kaydedilmiş olabilecek Gemini anahtarları açılışta silinir.
@@ -44,11 +48,18 @@ class SecureStorageService {
 
   Future<void> delete(String key) => _storage.delete(key: key);
 
-  /// Eski sürümlerden kalan yapay zekâ anahtarlarını ve rıza kaydını siler.
-  /// Hata olursa açılışı engellemez.
-  Future<void> purgeLegacyAiData({dynamic settingsBox}) async {
+  /// Eski sürümlerden kalan, artık kullanılmayan anahtarları (Gemini,
+  /// IQAir) ve yapay zekâ rıza kaydını siler. Hata olursa açılışı
+  /// engellemez.
+  Future<void> purgeLegacySecrets({dynamic settingsBox}) async {
     try {
       await delete(_legacyGeminiSecureKey);
+    } catch (_) {}
+    try {
+      await delete(_legacyIqAirKey);
+    } catch (_) {}
+    try {
+      await settingsBox?.delete(_legacyIqAirPrefsKey);
     } catch (_) {}
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -60,6 +71,9 @@ class SecureStorageService {
   }
 
   Future<void> clearUserSecrets() async {
-    await Future.wait([delete(iqAirApiKey), delete(_legacyGeminiSecureKey)]);
+    await Future.wait([
+      delete(_legacyIqAirKey),
+      delete(_legacyGeminiSecureKey),
+    ]);
   }
 }

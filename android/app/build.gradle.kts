@@ -68,6 +68,8 @@ kotlin {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // Adım geçmişi: Kayıt API'si (uygulama kapalıyken de adım kaydı).
+    implementation("com.google.android.gms:play-services-fitness:21.2.0")
 }
 
 flutter {

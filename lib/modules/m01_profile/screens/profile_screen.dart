@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/input_utils.dart';
 import '../../../services/hive_service.dart';
 import '../../../shared/widgets/vc_card.dart';
+import '../../m03_chronic/providers/chronic_provider.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -74,6 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : (v == v.roundToDouble() ? v.toInt().toString() : v.toString());
     final heightCtrl = TextEditingController(text: format(_height));
     final weightCtrl = TextEditingController(text: format(_weight));
+    final chronic = context.read<ChronicProvider>();
     String? errorText;
 
     final result = await showDialog<bool>(
@@ -107,10 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               if (errorText != null) ...[
                 const SizedBox(height: 12),
-                Text(
-                  errorText!,
-                  style: TextStyle(color: AppColors.danger),
-                ),
+                Text(errorText!, style: TextStyle(color: AppColors.danger)),
               ],
             ],
           ),
@@ -141,9 +140,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   return;
                 }
-                final box = _hiveService.getProfileBox();
-                await box.put('height', h);
-                await box.put('weight', w);
+                await _hiveService.getProfileBox().put('height', h);
+                // Kilo yalnızca profile yazılıyor, geçmişe hiç işlenmiyordu;
+                // kilo trendi, PDF rapor ve asistan boş kalıyordu.
+                if (w != _weight) await chronic.addWeight(w);
                 if (ctx.mounted) {
                   setState(() {
                     _height = h;
@@ -293,7 +293,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        actions: [
+          IconButton(
+            tooltip: 'Ayarlar',
+            icon: const Icon(Icons.settings),
+            onPressed: () => context.push(AppConstants.routeSettings),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.paddingMD),
         child: Column(
@@ -323,13 +332,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'Acil Sağlık Kartı',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    subtitle: const Text('Kan grubu, alerjiler, acil kişiler, QR'),
+                    subtitle: const Text(
+                      'Kan grubu, alerjiler, acil kişiler, QR',
+                    ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppConstants.routeEmergencyCard),
                   ),
                   const Divider(height: 1),
                   ListTile(
-                    leading: Icon(Icons.picture_as_pdf, color: AppColors.primary),
+                    leading: Icon(
+                      Icons.picture_as_pdf,
+                      color: AppColors.primary,
+                    ),
                     title: const Text(
                       'Doktor İçin PDF Rapor',
                       style: TextStyle(fontWeight: FontWeight.w600),
@@ -397,11 +411,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final parts = <String>[
       if (_gender.isNotEmpty) _gender,
       if (_height > 0) '${_height.round()} cm',
-      if (_weight > 0) '${_weight.toStringAsFixed(_weight % 1 == 0 ? 0 : 1)} kg',
+      if (_weight > 0)
+        '${_weight.toStringAsFixed(_weight % 1 == 0 ? 0 : 1)} kg',
     ];
-    return parts.isEmpty
-        ? 'Boy ve kilo bilgisi girilmedi'
-        : parts.join(' • ');
+    return parts.isEmpty ? 'Boy ve kilo bilgisi girilmedi' : parts.join(' • ');
   }
 
   Widget _buildBmiCard() {
@@ -495,11 +508,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               if (onEdit != null)
                 IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
+                  icon: Icon(Icons.edit, color: AppColors.primary, size: 20),
                   onPressed: onEdit,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

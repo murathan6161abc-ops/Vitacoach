@@ -7,7 +7,10 @@ import '../../../core/utils/input_utils.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../shared/widgets/vc_card.dart';
+import '../../m01_profile/providers/profile_provider.dart';
 import '../providers/chronic_provider.dart';
+import '../../m11_access/providers/access_provider.dart';
+import '../models/blood_sugar.dart';
 import '../models/health_entry.dart';
 import '../services/drug_interaction_service.dart';
 import '../widgets/adherence_widgets.dart';
@@ -31,6 +34,8 @@ class ChronicScreen extends StatelessWidget {
                 _buildSugarSection(context, provider),
                 const SizedBox(height: 24),
                 _buildPressureSection(context, provider),
+                const SizedBox(height: 24),
+                _buildWeightSection(context, provider),
                 const SizedBox(height: 24),
                 _buildMedicationSection(context, provider),
                 const SizedBox(height: 24),
@@ -68,6 +73,7 @@ class ChronicScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               IconButton(
+                tooltip: 'Kan şekeri ekle',
                 onPressed: () => _addBloodSugar(context, provider),
                 icon: Icon(Icons.add_circle, color: AppColors.primary),
               ),
@@ -173,23 +179,50 @@ class ChronicScreen extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: _sugarColor(
-                      provider.bloodSugarEntries.last.value,
+                      provider.assessSugar(provider.bloodSugarEntries.last),
                     ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    provider.bloodSugarStatus(
-                      provider.bloodSugarEntries.last.value,
-                    ),
+                    provider.assessSugar(provider.bloodSugarEntries.last).label,
                     style: TextStyle(
                       fontSize: 12,
-                      color: _sugarColor(provider.bloodSugarEntries.last.value),
+                      color: _sugarColor(
+                        provider.assessSugar(provider.bloodSugarEntries.last),
+                      ),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 8),
+            ...provider.bloodSugarEntries.reversed
+                .take(5)
+                .map(
+                  (entry) => ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.water_drop,
+                      color: _sugarColor(provider.assessSugar(entry)),
+                      size: 20,
+                    ),
+                    title: Text('${entry.value.toInt()} mg/dL'),
+                    subtitle: Text(
+                      [
+                        if (SugarTiming.parse(entry.timing) case final t?)
+                          t.label,
+                        _shortDate(entry.date),
+                      ].join(' • '),
+                    ),
+                    trailing: _deleteButton(
+                      context,
+                      label: 'Kan şekeri ölçümü',
+                      remove: () => provider.removeBloodSugar(entry),
+                      restore: () => provider.restoreBloodSugar(entry),
+                    ),
+                  ),
+                ),
           ] else
             Padding(
               padding: EdgeInsets.all(24),
@@ -205,43 +238,72 @@ class ChronicScreen extends StatelessWidget {
     );
   }
 
-  Color _sugarColor(double value) {
-    // Eşikler ChronicProvider.bloodSugarStatus ile aynı olmalı: 100 mg/dL
-    // "yüksek aralık" metniyle birlikte yeşil gösteriliyordu.
-    if (value < 70) return AppColors.warning;
-    if (value < 100) return AppColors.success;
-    if (value <= 125) return AppColors.warning;
-    return AppColors.danger;
-  }
+  /// Renk, durum etiketiyle aynı değerlendirmeden gelir. Hipoglisemi
+  /// önceden turuncu gösteriliyordu; anlık tehlikesi yüksek olduğu için
+  /// kırmızıdır.
+  Color _sugarColor(SugarAssessment assessment) => switch (assessment.level) {
+    SugarLevel.normal => AppColors.success,
+    SugarLevel.elevated => AppColors.warning,
+    SugarLevel.severeLow ||
+    SugarLevel.low ||
+    SugarLevel.high ||
+    SugarLevel.veryHigh => AppColors.danger,
+  };
 
   Future<void> _addBloodSugar(
     BuildContext context,
     ChronicProvider provider,
   ) async {
     final controller = TextEditingController();
+    var timing = SugarTiming.fasting;
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Kan Şekeri Ekle'),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Değer (mg/dL)',
-            hintText: 'Örn: 95',
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Kan Şekeri Ekle'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Değer (mg/dL)',
+                  hintText: 'Örn: 95',
+                ),
+                autofocus: true,
+              ),
+              const SizedBox(height: 16),
+              const Text('Ölçüm zamanı'),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final t in SugarTiming.values)
+                    ChoiceChip(
+                      label: Text(t.label),
+                      selected: timing == t,
+                      onSelected: (_) => setDialogState(() => timing = t),
+                    ),
+                ],
+              ),
+            ],
           ),
-          autofocus: true,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: const Text('Kaydet'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Kaydet'),
-          ),
-        ],
       ),
     );
 
@@ -264,7 +326,65 @@ class ChronicScreen extends StatelessWidget {
       }
       return;
     }
-    await provider.addBloodSugar(value);
+    await provider.addBloodSugar(value, timing: timing);
+    if (!context.mounted) return;
+    final assessment = assessBloodSugar(value, timing);
+    if (assessment.isLow) {
+      await _showUrgentAdvice(
+        context,
+        title: assessment.level == SugarLevel.severeLow
+            ? 'Ciddi düşük kan şekeri'
+            : 'Düşük kan şekeri',
+        message:
+            '15-15 kuralı: Hemen 15 gram hızlı etkili şeker alın (yarım su '
+            'bardağı meyve suyu, 3-4 küp şeker ya da 1 yemek kaşığı bal). '
+            "15 dakika sonra tekrar ölçün; hâlâ 70 mg/dL'nin altındaysa "
+            'tekrarlayın.\n\nBilinç bulanıklığı, nöbet veya yutamama varsa '
+            "ağızdan bir şey vermeyin ve hemen 112'yi arayın.",
+      );
+    } else if (assessment.level == SugarLevel.veryHigh) {
+      await _showUrgentAdvice(
+        context,
+        title: 'Çok yüksek kan şekeri',
+        message:
+            'Bol su için ve doktorunuza hemen ulaşın.\n\nBulantı-kusma, '
+            'karın ağrısı, hızlı nefes alma, nefeste meyve kokusu veya '
+            "bilinç bulanıklığı varsa 112'yi arayın; bunlar ketoasidoz "
+            'belirtisi olabilir.',
+      );
+    }
+  }
+
+  /// Tehlikeli ölçümden hemen sonra gösterilen yönlendirme. Önceden yalnızca
+  /// listedeki etiket değişiyordu.
+  Future<void> _showUrgentAdvice(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(Icons.warning_amber_rounded, color: AppColors.danger),
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tamam'),
+          ),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () {
+              Navigator.pop(ctx);
+              AccessProvider().callNumber(AppConstants.emergencyNumber);
+            },
+            icon: const Icon(Icons.call),
+            label: const Text("112'yi Ara"),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPressureSection(BuildContext context, ChronicProvider provider) {
@@ -280,6 +400,7 @@ class ChronicScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               IconButton(
+                tooltip: 'Tansiyon ekle',
                 onPressed: () => _addBloodPressure(context, provider),
                 icon: Icon(Icons.add_circle, color: AppColors.primary),
               ),
@@ -295,26 +416,12 @@ class ChronicScreen extends StatelessWidget {
                   size: 20,
                 ),
                 title: Text(entry.display),
-                subtitle: Builder(
-                  builder: (context) {
-                    final months = [
-                      'Oca',
-                      'Şub',
-                      'Mar',
-                      'Nis',
-                      'May',
-                      'Haz',
-                      'Tem',
-                      'Ağu',
-                      'Eyl',
-                      'Eki',
-                      'Kas',
-                      'Ara',
-                    ];
-                    return Text(
-                      '${entry.category} • ${entry.date.day} ${months[entry.date.month - 1]} ${entry.date.year}',
-                    );
-                  },
+                subtitle: Text('${entry.category} • ${_shortDate(entry.date)}'),
+                trailing: _deleteButton(
+                  context,
+                  label: 'Tansiyon ölçümü',
+                  remove: () => provider.removeBloodPressure(entry),
+                  restore: () => provider.restoreBloodPressure(entry),
                 ),
               );
             }))
@@ -407,6 +514,233 @@ class ChronicScreen extends StatelessWidget {
       return;
     }
     await provider.addBloodPressure(sys, dia);
+    if (!context.mounted) return;
+    final entry = BloodPressureEntry(
+      systolic: sys,
+      diastolic: dia,
+      date: DateTime.now(),
+    );
+    if (entry.isCrisis) {
+      await _showUrgentAdvice(
+        context,
+        title: 'Tansiyonunuz çok yüksek',
+        message:
+            'Hipertansif kriz olabilir. 5 dakika oturup dinlendikten sonra '
+            'tekrar ölçün.\n\nGöğüs ağrısı, nefes darlığı, şiddetli baş '
+            'ağrısı, görme bozukluğu, konuşma güçlüğü, kolda veya bacakta '
+            "güçsüzlük ya da bilinç bulanıklığı varsa hemen 112'yi arayın. "
+            'Belirti yoksa ve değer yine yüksekse aynı gün doktorunuza '
+            'başvurun.',
+      );
+    } else if (entry.isLow) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          duration: Duration(seconds: 8),
+          content: Text(
+            'Tansiyonunuz düşük. Baş dönmesi veya halsizlik varsa uzanıp '
+            "bacaklarınızı yükseltin; bayılma varsa 112'yi arayın.",
+          ),
+        ),
+      );
+    }
+  }
+
+  static const _shortMonths = [
+    'Oca',
+    'Şub',
+    'Mar',
+    'Nis',
+    'May',
+    'Haz',
+    'Tem',
+    'Ağu',
+    'Eyl',
+    'Eki',
+    'Kas',
+    'Ara',
+  ];
+
+  static String _shortDate(DateTime d) =>
+      '${d.day} ${_shortMonths[d.month - 1]} ${d.year}';
+
+  /// 72.5 -> "72,5", 72.0 -> "72"; Türkçe ondalık virgülüyle.
+  static String _formatKg(double value) {
+    final rounded = (value * 10).round() / 10;
+    final text = rounded == rounded.roundToDouble()
+        ? rounded.toInt().toString()
+        : rounded.toStringAsFixed(1);
+    return text.replaceAll('.', ',');
+  }
+
+  /// Ölçümü siler; yanlışlıkla silindiyse "Geri al" ile aynı tarihiyle
+  /// geri konur.
+  Widget _deleteButton(
+    BuildContext context, {
+    required String label,
+    required Future<void> Function() remove,
+    required Future<void> Function() restore,
+  }) {
+    return IconButton(
+      tooltip: 'Sil',
+      icon: Icon(Icons.delete_outline, color: AppColors.danger, size: 20),
+      onPressed: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        await remove();
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text('$label silindi'),
+              action: SnackBarAction(label: 'Geri al', onPressed: restore),
+            ),
+          );
+      },
+    );
+  }
+
+  // Kilo silinince profildeki güncel kilo da değişir; profil ekranı tazelenir.
+  Future<void> _removeWeight(
+    BuildContext context,
+    ChronicProvider provider,
+    HealthEntry entry,
+  ) async {
+    final profile = context.read<ProfileProvider>();
+    await provider.removeWeight(entry);
+    profile.loadProfile();
+  }
+
+  Future<void> _restoreWeight(
+    BuildContext context,
+    ChronicProvider provider,
+    HealthEntry entry,
+  ) async {
+    final profile = context.read<ProfileProvider>();
+    await provider.restoreWeight(entry);
+    profile.loadProfile();
+  }
+
+  Widget _buildWeightSection(BuildContext context, ChronicProvider provider) {
+    final entries = provider.weightEntries;
+    final change = provider.weightChange30Days;
+    return VcCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Kilo',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                tooltip: 'Kilo ekle',
+                onPressed: () => _addWeight(context, provider),
+                icon: Icon(Icons.add_circle, color: AppColors.primary),
+              ),
+            ],
+          ),
+          if (entries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Text(
+                  'Henüz kayıt yok',
+                  style: TextStyle(color: AppColors.textHint),
+                ),
+              ),
+            )
+          else ...[
+            Text(
+              '${_formatKg(entries.last.value)} kg',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            if (change != null)
+              Text(
+                'Son 30 günde ${change > 0 ? '+' : ''}${_formatKg(change)} kg',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            const SizedBox(height: 8),
+            ...entries.reversed
+                .take(5)
+                .map(
+                  (entry) => ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.monitor_weight,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    title: Text('${_formatKg(entry.value)} kg'),
+                    subtitle: Text(_shortDate(entry.date)),
+                    trailing: _deleteButton(
+                      context,
+                      label: 'Kilo ölçümü',
+                      remove: () => _removeWeight(context, provider, entry),
+                      restore: () => _restoreWeight(context, provider, entry),
+                    ),
+                  ),
+                ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addWeight(
+    BuildContext context,
+    ChronicProvider provider,
+  ) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kilo Ekle'),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Kilo (kg)',
+            hintText: 'Örn: 72,5',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    );
+    if (result == null || result.trim().isEmpty) return;
+
+    final value = InputUtils.inRange(
+      InputUtils.parseDecimal(result),
+      20.0,
+      350.0,
+    );
+    if (value == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Geçersiz değer. Kilo 20-350 kg arasında olmalı.'),
+          ),
+        );
+      }
+      return;
+    }
+    await provider.addWeight(value);
+    // Profil ekranı ve BMI aynı güncel kiloyu göstersin.
+    if (context.mounted) context.read<ProfileProvider>().loadProfile();
   }
 
   Widget _buildMedicationSection(
@@ -732,7 +1066,8 @@ class _InteractionBanner extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${w.drugA} + ${w.drugB} '
+                          text:
+                              '${w.drugA} + ${w.drugB} '
                               '(${w.severity.label}): ',
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
@@ -795,7 +1130,8 @@ class _ExactAlarmBannerState extends State<_ExactAlarmBanner>
     // İzin yeni verildiyse hatırlatmaları tam zamanlı olarak yeniden kur
     // (kullanıcı Ayarlar'dan kapatmadıysa).
     final enabled =
-        HiveService().getProfileBox().get('medication_reminder_enabled') != false;
+        HiveService().getProfileBox().get('medication_reminder_enabled') !=
+        false;
     if (can && enabled) {
       await context.read<ChronicProvider>().setMedicationRemindersEnabled(true);
     }
@@ -823,7 +1159,8 @@ class _ExactAlarmBannerState extends State<_ExactAlarmBanner>
             ),
           ),
           TextButton(
-            onPressed: () => NotificationService().requestExactAlarmPermission(),
+            onPressed: () =>
+                NotificationService().requestExactAlarmPermission(),
             child: const Text('İzin ver'),
           ),
         ],

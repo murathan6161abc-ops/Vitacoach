@@ -4,7 +4,8 @@ import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart' show openAppSettings;
+import 'package:permission_handler/permission_handler.dart'
+    show openAppSettings;
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -14,7 +15,15 @@ import '../models/heart_measurement.dart';
 import '../services/ppg_processor.dart';
 import '../widgets/breathing_exercise.dart';
 
-enum _Phase { intro, starting, placeFinger, measuring, analyzing, result, failed }
+enum _Phase {
+  intro,
+  starting,
+  placeFinger,
+  measuring,
+  analyzing,
+  result,
+  failed,
+}
 
 class HeartRateScreen extends StatefulWidget {
   const HeartRateScreen({super.key});
@@ -124,7 +133,8 @@ class _HeartRateScreenState extends State<HeartRateScreen>
       setState(() => _phase = _Phase.placeFinger);
       await controller.startImageStream(_onFrame);
     } on CameraException catch (e) {
-      final denied = e.code.startsWith('CameraAccessDenied') ||
+      final denied =
+          e.code.startsWith('CameraAccessDenied') ||
           e.code == 'CameraAccessRestricted' ||
           e.code == 'cameraPermission';
       await _stopCamera();
@@ -282,7 +292,11 @@ class _HeartRateScreenState extends State<HeartRateScreen>
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              Text(_phase == _Phase.starting ? 'Kamera açılıyor…' : 'Sinyal çözümleniyor…'),
+              Text(
+                _phase == _Phase.starting
+                    ? 'Kamera açılıyor…'
+                    : 'Sinyal çözümleniyor…',
+              ),
             ],
           ),
         );
@@ -310,7 +324,11 @@ class _HeartRateScreenState extends State<HeartRateScreen>
                   shape: BoxShape.circle,
                   color: AppColors.accentRisk.withValues(alpha: 0.12),
                 ),
-                child: Icon(Icons.fingerprint, size: 56, color: AppColors.accentRisk),
+                child: Icon(
+                  Icons.fingerprint,
+                  size: 56,
+                  color: AppColors.accentRisk,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -333,7 +351,11 @@ class _HeartRateScreenState extends State<HeartRateScreen>
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle_outline, size: 20, color: AppColors.primary),
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(child: Text(step)),
                     ],
@@ -363,7 +385,10 @@ class _HeartRateScreenState extends State<HeartRateScreen>
     final measuring = _phase == _Phase.measuring;
     final elapsed = _fingerSinceMs == null
         ? 0
-        : (_clock.elapsedMilliseconds - _fingerSinceMs! - _warmupMs).clamp(0, _measureMs);
+        : (_clock.elapsedMilliseconds - _fingerSinceMs! - _warmupMs).clamp(
+            0,
+            _measureMs,
+          );
     final progress = measuring ? elapsed / _measureMs : 0.0;
     final remaining = ((_measureMs - elapsed) / 1000).ceil();
     final camera = _camera;
@@ -386,7 +411,9 @@ class _HeartRateScreenState extends State<HeartRateScreen>
                     value: progress,
                     strokeWidth: 8,
                     color: AppColors.accentRisk,
-                    backgroundColor: AppColors.accentRisk.withValues(alpha: 0.15),
+                    backgroundColor: AppColors.accentRisk.withValues(
+                      alpha: 0.15,
+                    ),
                   ),
                 ),
                 if (camera != null && camera.value.isInitialized)
@@ -518,10 +545,14 @@ class _HeartRateScreenState extends State<HeartRateScreen>
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Text('atım/dk', style: TextStyle(color: AppColors.textSecondary)),
+                  Text(
+                    'atım/dk',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                   SpeakButton(
                     id: 'heart-result',
-                    text: 'Nabzınız dakikada $bpm. $bpmNote Stres göstergesi '
+                    text:
+                        'Nabzınız dakikada $bpm. $bpmNote Stres göstergesi '
                         '${r.stress.label.toLowerCase()}. $stressNote',
                   ),
                 ],
@@ -599,7 +630,8 @@ class _HeartRateScreenState extends State<HeartRateScreen>
     String signed(num v, [int digits = 0]) =>
         '${v >= 0 ? '+' : ''}${v.toStringAsFixed(digits)}';
     return VcCard(
-      borderColor: (improved ? AppColors.success : AppColors.warning).withValues(alpha: 0.5),
+      borderColor: (improved ? AppColors.success : AppColors.warning)
+          .withValues(alpha: 0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -616,7 +648,9 @@ class _HeartRateScreenState extends State<HeartRateScreen>
             'HRV: ${before.rmssdMs.toStringAsFixed(0)} → '
             '${after.rmssdMs.toStringAsFixed(0)} ms (${signed(dHrv)})',
           ),
-          Text('Nabız: ${before.bpm} → ${after.bpm.round()} atım/dk (${signed(dBpm)})'),
+          Text(
+            'Nabız: ${before.bpm} → ${after.bpm.round()} atım/dk (${signed(dBpm)})',
+          ),
           const SizedBox(height: 6),
           Text(
             improved
@@ -696,12 +730,18 @@ class _HeartRateScreenState extends State<HeartRateScreen>
                     child: Text(
                       '${two(m.date.day)}.${two(m.date.month)} ${two(m.date.hour)}:${two(m.date.minute)}'
                       '${m.afterBreathing ? ' · nefes sonrası' : ''}',
-                      style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                   Text(
                     '${m.bpm} atım/dk · HRV ${m.rmssdMs.toStringAsFixed(0)} ms',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -764,7 +804,9 @@ class _WavePainter extends CustomPainter {
     final path = Path();
     for (var i = 0; i < detrended.length; i++) {
       final x = size.width * i / (detrended.length - 1);
-      final y = size.height * (1 - (detrended[i] - lo) / range) * 0.9 + size.height * 0.05;
+      final y =
+          size.height * (1 - (detrended[i] - lo) / range) * 0.9 +
+          size.height * 0.05;
       if (i == 0) {
         path.moveTo(x, y);
       } else {

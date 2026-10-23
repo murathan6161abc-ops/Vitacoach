@@ -6,6 +6,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../services/app_settings_service.dart';
 import '../../../services/app_state_service.dart';
 import '../../../services/demo_data_service.dart';
+import '../../../services/demo_mode.dart';
+import '../widgets/backup_section.dart';
 import '../../../services/tts_service.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/notification_service.dart';
@@ -434,6 +436,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 24),
+          _sectionTitle('Gizlilik ve Veri'),
+          VcCard(
+            padding: EdgeInsets.zero,
+            child: _navTile(
+              icon: Icons.privacy_tip_outlined,
+              color: AppColors.primary,
+              title: 'Gizlilik ve veri kullanımı',
+              subtitle: 'Verileriniz nerede, ne zaman internete bağlanılır',
+              onTap: () => context.push(AppConstants.routePrivacy),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const BackupSection(),
+          const SizedBox(height: 24),
           _sectionTitle('Acil Durum ve Raporlar'),
           VcCard(
             padding: EdgeInsets.zero,
@@ -457,18 +473,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
-          _sectionTitle('Sunum'),
-          VcCard(
-            padding: EdgeInsets.zero,
-            child: _navTile(
-              icon: Icons.slideshow,
-              color: AppColors.accentProgress,
-              title: 'Jüri Demo Verisi Yükle',
-              subtitle: 'Uygulamayı 2 haftalık örnek verilerle doldurur',
-              onTap: _loadDemoData,
+          if (DemoMode.isAvailable()) ...[
+            const SizedBox(height: 24),
+            _sectionTitle('Sunum'),
+            VcCard(
+              padding: EdgeInsets.zero,
+              child: _navTile(
+                icon: Icons.slideshow,
+                color: AppColors.accentProgress,
+                title: 'Jüri Demo Verisi Yükle',
+                subtitle: 'Uygulamayı 2 haftalık örnek verilerle doldurur',
+                onTap: _loadDemoData,
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 24),
           Text(
             'Hesap Yönetimi',
@@ -482,10 +500,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           VcCard(
             borderColor: AppColors.danger.withValues(alpha: 0.3),
             child: ListTile(
-              leading: Icon(
-                Icons.delete_forever,
-                color: AppColors.danger,
-              ),
+              leading: Icon(Icons.delete_forever, color: AppColors.danger),
               title: Text(
                 'Hesabı Sıfırla',
                 style: TextStyle(
@@ -493,14 +508,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: const Text(
-                'Tüm yerel verileri, bildirimleri ve API anahtarlarını siler.',
-              ),
+              subtitle: const Text('Tüm yerel verileri ve bildirimleri siler.'),
               onTap: () => _resetAccount(context),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: GestureDetector(
+              onTap: _onVersionTap,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  '${AppConstants.appName} ${AppConstants.appVersion}',
+                  style: TextStyle(color: AppColors.textHint),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  int _versionTaps = 0;
+
+  /// Sunum (jüri demo) bölümü yayın sürümünde gizlidir; sürüm yazısına
+  /// arka arkaya dokunulunca açılır.
+  Future<void> _onVersionTap() async {
+    if (DemoMode.isAvailable()) return;
+    _versionTaps++;
+    if (_versionTaps < DemoMode.tapsToUnlock) return;
+    await DemoMode.unlock();
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Sunum bölümü açıldı.')));
   }
 }

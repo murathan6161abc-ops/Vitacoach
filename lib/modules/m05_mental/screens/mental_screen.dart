@@ -314,10 +314,7 @@ class _MentalScreenState extends State<MentalScreen>
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            description,
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
+          Text(description, style: TextStyle(color: AppColors.textSecondary)),
           const SizedBox(height: 16),
           ...questions.asMap().entries.map((entry) {
             return VcCard(

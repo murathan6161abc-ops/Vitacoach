@@ -23,9 +23,9 @@ void main() async {
 
   AppSettingsService().load();
 
-  // Önceki sürümlerden kalmış yapay zekâ anahtarlarını temizle. Uygulama
-  // artık hiçbir harici yapay zekâ servisine veri göndermiyor.
-  await SecureStorageService().purgeLegacyAiData(
+  // Önceki sürümlerden kalmış, artık kullanılmayan anahtarları (yapay zekâ,
+  // IQAir) temizle.
+  await SecureStorageService().purgeLegacySecrets(
     settingsBox: HiveService().getSettingsBox(),
   );
 
@@ -60,7 +60,11 @@ class _StartupErrorApp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.lock_outline, size: 56, color: Color(0xFFB3261E)),
+                const Icon(
+                  Icons.lock_outline,
+                  size: 56,
+                  color: Color(0xFFB3261E),
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Uygulama başlatılamadı',

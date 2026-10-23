@@ -35,7 +35,10 @@ void main() {
     });
 
     test('Pearson', () {
-      expect(TrendMath.pearson([1, 2, 3, 4, 5], [2, 4, 6, 8, 10]), closeTo(1, 1e-9));
+      expect(
+        TrendMath.pearson([1, 2, 3, 4, 5], [2, 4, 6, 8, 10]),
+        closeTo(1, 1e-9),
+      );
       expect(TrendMath.pearson([1, 2, 3, 4], [1, 1, 1, 1]), isNull);
     });
   });
@@ -52,29 +55,51 @@ void main() {
     });
 
     test('düşen eğilim olumlu bulgu', () {
-      expect(ids(InsightInput(now: now, pressures: bp((i) => 150 - i * 1.0))),
-          contains('bp_falling'));
+      expect(
+        ids(InsightInput(now: now, pressures: bp((i) => 150 - i * 1.0))),
+        contains('bp_falling'),
+      );
     });
 
     test('kriz eşiği acil uyarı verir', () {
       final list = bp((i) => 130)
-        ..add(BloodPressureEntry(systolic: 185, diastolic: 110, date: daysAgo(0, 19)));
-      final result = InsightEngine.analyze(InsightInput(now: now, pressures: list));
+        ..add(
+          BloodPressureEntry(
+            systolic: 185,
+            diastolic: 110,
+            date: daysAgo(0, 19),
+          ),
+        );
+      final result = InsightEngine.analyze(
+        InsightInput(now: now, pressures: list),
+      );
       expect(result.first.id, 'bp_crisis');
       expect(result.first.severity, InsightSeverity.alert);
     });
 
     test('olağandışı tek ölçüm', () {
       final list = bp((i) => 130 + (i % 3).toDouble())
-        ..add(BloodPressureEntry(systolic: 162, diastolic: 95, date: daysAgo(0, 19)));
-      expect(ids(InsightInput(now: now, pressures: list)), contains('bp_anomaly'));
+        ..add(
+          BloodPressureEntry(
+            systolic: 162,
+            diastolic: 95,
+            date: daysAgo(0, 19),
+          ),
+        );
+      expect(
+        ids(InsightInput(now: now, pressures: list)),
+        contains('bp_anomaly'),
+      );
     });
 
     test('eski veride uyarı üretilmez', () {
       final old = [
         BloodPressureEntry(systolic: 190, diastolic: 125, date: daysAgo(40)),
       ];
-      expect(InsightEngine.analyze(InsightInput(now: now, pressures: old)), isEmpty);
+      expect(
+        InsightEngine.analyze(InsightInput(now: now, pressures: old)),
+        isEmpty,
+      );
     });
   });
 
@@ -85,21 +110,27 @@ void main() {
     ];
 
     test('hipoglisemi acil', () {
-      final r = InsightEngine.analyze(InsightInput(now: now, sugars: sugars([95, 92, 64])));
+      final r = InsightEngine.analyze(
+        InsightInput(now: now, sugars: sugars([95, 92, 64])),
+      );
       expect(r.first.id, 'sugar_low');
     });
 
     test('anomali ve prediyabet ortalaması', () {
-      final r = ids(InsightInput(
-        now: now,
-        sugars: sugars([104, 106, 101, 108, 103, 105, 107, 102, 150]),
-      ));
+      final r = ids(
+        InsightInput(
+          now: now,
+          sugars: sugars([104, 106, 101, 108, 103, 105, 107, 102, 150]),
+        ),
+      );
       expect(r, containsAll(['sugar_anomaly', 'sugar_avg_prediabetes']));
     });
 
     test('diyabet aralığı ortalaması', () {
-      expect(ids(InsightInput(now: now, sugars: sugars([130, 135, 128]))),
-          contains('sugar_avg_diabetes'));
+      expect(
+        ids(InsightInput(now: now, sugars: sugars([130, 135, 128]))),
+        contains('sugar_avg_diabetes'),
+      );
     });
   });
 
@@ -109,12 +140,17 @@ void main() {
       HealthEntry(value: to, date: daysAgo(0)),
     ];
     test('hedefle uyumlu kilo kaybı olumlu', () {
-      final r = InsightEngine.analyze(InsightInput(now: now, weights: w(78, 76), goals: ['Kilo ver']));
+      final r = InsightEngine.analyze(
+        InsightInput(now: now, weights: w(78, 76), goals: ['Kilo ver']),
+      );
       expect(r.single.id, 'weight_goal');
       expect(r.single.severity, InsightSeverity.positive);
     });
     test('istemsiz kilo kaybı uyarı', () {
-      expect(ids(InsightInput(now: now, weights: w(80, 74))), contains('weight_unintended_loss'));
+      expect(
+        ids(InsightInput(now: now, weights: w(80, 74))),
+        contains('weight_unintended_loss'),
+      );
     });
   });
 
@@ -126,39 +162,64 @@ void main() {
       final moodByDay = <String, int>{};
       for (var i = 0; i < hours.length; i++) {
         final wake = daysAgo(i, 7);
-        sleep.add(SleepEntry(
-          bedTime: wake.subtract(Duration(minutes: (hours[i] * 60).round())),
-          wakeTime: wake,
-          quality: 3,
-        ));
+        sleep.add(
+          SleepEntry(
+            bedTime: wake.subtract(Duration(minutes: (hours[i] * 60).round())),
+            wakeTime: wake,
+            quality: 3,
+          ),
+        );
         moodByDay[key(i)] = moods[i];
       }
-      final r = InsightEngine.analyze(InsightInput(now: now, sleep: sleep, moodByDay: moodByDay));
+      final r = InsightEngine.analyze(
+        InsightInput(now: now, sleep: sleep, moodByDay: moodByDay),
+      );
       final insight = r.firstWhere((i) => i.id == 'sleep_mood');
       expect(insight.message, contains('7 saatten az'));
       expect(insight.evidence.last, contains('r ='));
     });
 
     test('adım ve ruh hali', () {
-      final steps = {key(0): 9000, key(1): 3000, key(2): 11000, key(3): 2500, key(4): 8000};
+      final steps = {
+        key(0): 9000,
+        key(1): 3000,
+        key(2): 11000,
+        key(3): 2500,
+        key(4): 8000,
+      };
       final moods = {key(0): 4, key(1): 2, key(2): 5, key(3): 3, key(4): 4};
-      expect(ids(InsightInput(now: now, stepsByDay: steps, moodByDay: moods)), contains('steps_mood'));
+      expect(
+        ids(InsightInput(now: now, stepsByDay: steps, moodByDay: moods)),
+        contains('steps_mood'),
+      );
     });
   });
 
   group('Nabız', () {
-    HeartMeasurement m(int minutesAgo, int bpm, double rmssd, {bool after = false}) =>
-        HeartMeasurement(
-          date: now.subtract(Duration(minutes: minutesAgo)),
-          bpm: bpm,
-          rmssdMs: rmssd,
-          stress: rmssd < 20 ? StressLevel.high : rmssd < 40 ? StressLevel.moderate : StressLevel.low,
-          quality: 0.9,
-          context: after ? 'after_breathing' : 'rest',
-        );
+    HeartMeasurement m(
+      int minutesAgo,
+      int bpm,
+      double rmssd, {
+      bool after = false,
+    }) => HeartMeasurement(
+      date: now.subtract(Duration(minutes: minutesAgo)),
+      bpm: bpm,
+      rmssdMs: rmssd,
+      stress: rmssd < 20
+          ? StressLevel.high
+          : rmssd < 40
+          ? StressLevel.moderate
+          : StressLevel.low,
+      quality: 0.9,
+      context: after ? 'after_breathing' : 'rest',
+    );
 
     test('nefes egzersizi etkisi ve yüksek stres', () {
-      final heart = [m(5, 70, 31, after: true), m(10, 76, 16), m(60 * 24, 78, 14)];
+      final heart = [
+        m(5, 70, 31, after: true),
+        m(10, 76, 16),
+        m(60 * 24, 78, 14),
+      ];
       final r = ids(InsightInput(now: now, heart: heart));
       expect(r, containsAll(['breathing_effect', 'hrv_stress']));
     });

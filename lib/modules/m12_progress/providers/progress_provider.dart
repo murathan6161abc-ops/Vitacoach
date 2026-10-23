@@ -245,7 +245,9 @@ class ProgressProvider extends ChangeNotifier {
     final risks = _hiveService.getHealthBox().get('risk_history');
     if (risks is List && risks.isNotEmpty) add('Sağlık Bilgesi');
     final produce = todayMeals
-        .where((m) => m['category'] == 'fruits' || m['category'] == 'vegetables')
+        .where(
+          (m) => m['category'] == 'fruits' || m['category'] == 'vegetables',
+        )
         .length;
     if (produce >= 2) add('Vitamin Deposu');
     if (todayMeals.isNotEmpty &&

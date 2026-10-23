@@ -26,8 +26,10 @@ class PregnancyProfile {
     return due.difference(DateTime.now()).inDays;
   }
 
+  /// 1. trimester 13. haftanın sonuna kadar sürer (önceden 12'de
+  /// bitiyordu).
   int get trimester {
-    if (currentWeek <= 12) return 1;
+    if (currentWeek <= 13) return 1;
     if (currentWeek <= 27) return 2;
     return 3;
   }

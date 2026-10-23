@@ -18,6 +18,7 @@ import '../../modules/m10_environment/screens/environment_screen.dart';
 import '../../modules/m11_access/screens/access_screen.dart';
 import '../../modules/m12_progress/screens/progress_screen.dart';
 import '../../modules/m13_settings/screens/settings_screen.dart';
+import '../../modules/m13_settings/screens/privacy_screen.dart';
 import '../../modules/m14_risk/screens/risk_screen.dart';
 import '../../modules/m15_sleep/screens/sleep_screen.dart';
 import '../../modules/m16_emergency/screens/emergency_card_screen.dart';
@@ -29,7 +30,6 @@ import '../../modules/m20_assistant/screens/assistant_screen.dart';
 
 /// Sağlayıcılara servis katmanından erişmek için (ör. bildirim eylemleri).
 final rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
   navigatorKey: rootNavigatorKey,
@@ -43,35 +43,59 @@ final appRouter = GoRouter(
       path: AppConstants.routeOnboarding,
       builder: (context, state) => const OnboardingScreen(),
     ),
-    ShellRoute(
-      navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) => MainShell(child: child),
-      routes: [
-        GoRoute(
-          path: AppConstants.routeHome,
-          builder: (context, state) => const HomeScreen(),
+    // Her sekme kendi gezinme yığınını korur: sekme değişince kaydırma
+    // konumu ve ekran durumu kaybolmaz (önceden ShellRoute ekranı yeniden
+    // kuruyordu).
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) =>
+          MainShell(navigationShell: navigationShell),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeHome,
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeSymptom,
-          builder: (context, state) => const SymptomScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeSymptom,
+              builder: (context, state) => const SymptomScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeNutrition,
-          builder: (context, state) => const NutritionScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeNutrition,
+              builder: (context, state) => const NutritionScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeProgress,
-          builder: (context, state) => const ProgressScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeProgress,
+              builder: (context, state) => const ProgressScreen(),
+            ),
+          ],
         ),
-        GoRoute(
-          path: AppConstants.routeProfile,
-          builder: (context, state) => const ProfileScreen(),
-        ),
-        GoRoute(
-          path: AppConstants.routeSettings,
-          builder: (context, state) => const SettingsScreen(),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: AppConstants.routeProfile,
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
         ),
       ],
+    ),
+    // Ayarlar alt menüden çıkarıldı (6 sekme fazlaydı); Profil'den açılır.
+    GoRoute(
+      path: AppConstants.routeSettings,
+      builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
       path: AppConstants.routeChronic,
@@ -132,6 +156,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppConstants.routeInsights,
       builder: (context, state) => const InsightsScreen(),
+    ),
+    GoRoute(
+      path: AppConstants.routePrivacy,
+      builder: (context, state) => const PrivacyScreen(),
     ),
     GoRoute(
       path: AppConstants.routeAssistant,

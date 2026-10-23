@@ -62,10 +62,9 @@ class DrugInteractionChecker {
           '${g['id']}',
           '${g['name']}',
           g['duplicate_warning'] == true,
-          List<String>.from(g['aliases'] ?? const [])
-              .map((a) => _tokens(a))
-              .where((t) => t.isNotEmpty)
-              .toList(),
+          List<String>.from(
+            g['aliases'] ?? const [],
+          ).map((a) => _tokens(a)).where((t) => t.isNotEmpty).toList(),
         ),
       );
     }
@@ -138,8 +137,7 @@ class DrugInteractionChecker {
     return found.toList();
   }
 
-  String groupName(String id) =>
-      _groups.firstWhere((g) => g.id == id).name;
+  String groupName(String id) => _groups.firstWhere((g) => g.id == id).name;
 
   /// İki ilaç arasındaki uyarılar.
   List<InteractionWarning> checkPair(String a, String b) {

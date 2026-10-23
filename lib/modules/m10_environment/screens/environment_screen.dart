@@ -75,20 +75,13 @@ class EnvironmentScreen extends StatelessWidget {
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                       const SizedBox(height: 12),
-                      if (provider.aqiError!.contains('API anahtarı'))
-                        ElevatedButton.icon(
-                          onPressed: () => _showApiKeyDialog(context, provider),
-                          icon: const Icon(Icons.key),
-                          label: const Text('API Anahtarı Gir'),
-                        )
-                      else
-                        // Ağ/zaman aşımı hatalarında önceden hiçbir düğme
-                        // yoktu; kullanıcı ekrandan çıkıp girmek zorundaydı.
-                        ElevatedButton.icon(
-                          onPressed: () => provider.fetchAqi(),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Tekrar Dene'),
-                        ),
+                      // Ağ/zaman aşımı hatalarında önceden hiçbir düğme
+                      // yoktu; kullanıcı ekrandan çıkıp girmek zorundaydı.
+                      ElevatedButton.icon(
+                        onPressed: () => provider.fetchAqi(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Tekrar Dene'),
+                      ),
                     ],
                   )
                 else
@@ -100,11 +93,13 @@ class EnvironmentScreen extends StatelessWidget {
                         label: const Text('Hava Kalitesini Kontrol Et'),
                       ),
                       const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => _showApiKeyDialog(context, provider),
-                        child: const Text(
-                          'API Anahtarı Ayarla',
-                          style: TextStyle(fontSize: 12),
+                      Text(
+                        'Yalnızca yaklaşık konumunuz (yaklaşık 10 km) hava '
+                        'kalitesi servisine gönderilir.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textHint,
                         ),
                       ),
                     ],
@@ -141,11 +136,6 @@ class EnvironmentScreen extends StatelessWidget {
   Widget _buildAqiDisplay(EnvironmentProvider provider) {
     return Column(
       children: [
-        if (provider.aqiCity != null)
-          Text(
-            provider.aqiCity!,
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
         const SizedBox(height: 8),
         Text(
           '${provider.aqi}',
@@ -169,68 +159,40 @@ class EnvironmentScreen extends StatelessWidget {
             ),
           ),
         ),
+        if (provider.pm25 != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'PM2,5: ${provider.pm25!.toStringAsFixed(1).replaceAll('.', ',')} µg/m³',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+        ],
         const SizedBox(height: 12),
         TextButton.icon(
           onPressed: () => provider.fetchAqi(),
           icon: const Icon(Icons.refresh, size: 16),
           label: const Text('Güncelle'),
         ),
+        Text(
+          EnvironmentProvider.attribution,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 11, color: AppColors.textHint),
+        ),
       ],
     );
-  }
-
-  Future<void> _showApiKeyDialog(
-    BuildContext context,
-    EnvironmentProvider provider,
-  ) async {
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('IQAir API Anahtarı'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Ücretsiz API anahtarı almak için iqair.com adresine kayıt olun.',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'API Anahtarı',
-                hintText: 'xxxxxxxx-xxxx-xxxx-xxxx',
-              ),
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Kaydet'),
-          ),
-        ],
-      ),
-    );
-    if (result != null && result.isNotEmpty) {
-      await provider.setApiKey(result);
-    }
   }
 
   Widget _buildAqiLegend() {
     final levels = [
       {'range': '0-50', 'label': 'İyi', 'color': const Color(0xFF2E7D32)},
-      {'range': '51-100', 'label': 'Orta', 'color': const Color(0xFFF57C00)},
+      {
+        'range': '51-100',
+        'label': 'Orta',
+        'color': EnvironmentProvider.colorFor(100),
+      },
       {
         'range': '101-150',
         'label': 'Hassas Gruplar',
-        'color': const Color(0xFFFF8A65),
+        'color': EnvironmentProvider.colorFor(150),
       },
       {
         'range': '151-200',
@@ -240,7 +202,7 @@ class EnvironmentScreen extends StatelessWidget {
       {
         'range': '201-300',
         'label': 'Çok Sağlıksız',
-        'color': const Color(0xFFAB47BC),
+        'color': EnvironmentProvider.colorFor(300),
       },
       {'range': '300+', 'label': 'Tehlikeli', 'color': const Color(0xFF880E4F)},
     ];
@@ -314,7 +276,8 @@ class EnvironmentScreen extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: SpeakButton(
                     id: 'first-aid-${guide['id']}',
-                    text: '${guide['title']}. ${(guide['steps'] as List).asMap().entries.map((s) => '${s.key + 1}. ${s.value}').join(' ')}',
+                    text:
+                        '${guide['title']}. ${(guide['steps'] as List).asMap().entries.map((s) => '${s.key + 1}. ${s.value}').join(' ')}',
                   ),
                 ),
                 ...(guide['steps'] as List).asMap().entries.map((step) {
@@ -432,10 +395,7 @@ class EnvironmentScreen extends StatelessWidget {
                       : tip['category'] == 'yaya'
                       ? 'Yaya'
                       : 'Bisiklet',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.primary,
-                  ),
+                  style: TextStyle(fontSize: 10, color: AppColors.primary),
                 ),
               ),
               children: [

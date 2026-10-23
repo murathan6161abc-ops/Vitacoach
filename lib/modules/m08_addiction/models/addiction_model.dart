@@ -12,8 +12,7 @@ class SmokingProfile {
   /// Bırakma tarihi ileri bir güne planlanmışsa henüz başlamamıştır.
   /// Önceden fark negatif çıkıyor ve ekranda "-3 Gün", "-150 ₺" gibi
   /// değerler görünüyordu.
-  bool get isScheduled =>
-      quitDate != null && quitDate!.isAfter(DateTime.now());
+  bool get isScheduled => quitDate != null && quitDate!.isAfter(DateTime.now());
 
   int get daysUntilQuit {
     if (!isScheduled) return 0;

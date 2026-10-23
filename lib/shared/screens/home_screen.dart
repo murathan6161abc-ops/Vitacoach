@@ -9,6 +9,7 @@ import '../../modules/m03_chronic/providers/chronic_provider.dart';
 import '../../modules/m15_sleep/providers/sleep_provider.dart';
 import '../../modules/m18_insights/screens/insights_screen.dart';
 import '../../modules/m18_insights/services/insight_repository.dart';
+import '../widgets/today_card.dart';
 import '../widgets/vc_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -49,6 +50,8 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildGreeting(context),
+            const SizedBox(height: 12),
+            const TodayCard(),
             const SizedBox(height: 12),
             const _AssistantBar(),
             const _InsightBanner(),
@@ -416,7 +419,10 @@ class _InsightBanner extends StatelessWidget {
                     top.message,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),

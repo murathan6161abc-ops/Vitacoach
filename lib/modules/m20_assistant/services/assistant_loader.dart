@@ -28,27 +28,24 @@ class AssistantLoader {
         for (final s in (c['symptoms'] as List))
           SymptomDef('${s['id']}', '${s['name']}', '${s['severity']}'),
     ];
-    final flagsRaw = jsonDecode(flagsJson) as Map<String, dynamic>;
-    final flags = <FlagRule>[
-      for (final group in const ['red_flags', 'yellow_flags'])
-        for (final f in (flagsRaw[group] as List? ?? const []))
-          FlagRule(
-            '${f['id']}',
-            '${f['name']}',
-            List<String>.from(f['symptoms'] ?? const []),
-            (f['min_match'] as num?)?.toInt() ?? 1,
-            '${f['message']}',
-            group == 'red_flags',
-          ),
-    ];
-    return AssistantEngine(kb: kb, symptoms: symptoms, flags: flags, context: context);
+    final flags = FlagRule.listFromJson(
+      jsonDecode(flagsJson) as Map<String, dynamic>,
+    );
+    return AssistantEngine(
+      kb: kb,
+      symptoms: symptoms,
+      flags: flags,
+      context: context,
+    );
   }
 
   static Future<AssistantEngine> load() async {
     final engine = fromJson(
       kbJson: await rootBundle.loadString('assets/data/assistant_kb.json'),
       symptomsJson: await rootBundle.loadString('assets/data/symptoms.json'),
-      flagsJson: await rootBundle.loadString('assets/data/emergency_flags.json'),
+      flagsJson: await rootBundle.loadString(
+        'assets/data/emergency_flags.json',
+      ),
     );
     engine.context = await loadContext();
     return engine;
@@ -96,7 +93,8 @@ class AssistantLoader {
       lastSleep: latest(input.sleep, (e) => e.wakeTime),
       sleepAvg7: recentSleep.isEmpty
           ? null
-          : recentSleep.map((s) => s.hours).reduce((a, b) => a + b) / recentSleep.length,
+          : recentSleep.map((s) => s.hours).reduce((a, b) => a + b) /
+                recentSleep.length,
       lastHeart: input.heart.isEmpty ? null : input.heart.first,
       adherence: input.adherence,
       medications: meds,

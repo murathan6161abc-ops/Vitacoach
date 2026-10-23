@@ -279,7 +279,8 @@ class FraminghamCalculator {
   }
 
   static double _risk(_Coefficients c, double sum) {
-    return 1 - math.pow(c.baselineSurvival, math.exp(sum - c.meanSum)).toDouble();
+    return 1 -
+        math.pow(c.baselineSurvival, math.exp(sum - c.meanSum)).toDouble();
   }
 }
 

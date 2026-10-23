@@ -1,5 +1,6 @@
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/input_utils.dart';
+import '../../m02_symptom/services/triage.dart';
 import '../../m03_chronic/models/health_entry.dart';
 import '../../m03_chronic/models/medication_adherence.dart';
 import '../../m03_chronic/services/drug_interaction_service.dart';
@@ -8,14 +9,18 @@ import '../../m18_insights/services/insight_engine.dart';
 import '../../m19_heart/models/heart_measurement.dart';
 import '../../m19_heart/services/ppg_processor.dart';
 
+export '../../m02_symptom/services/triage.dart' show FlagRule;
+
 enum AssistantActionType { call, route }
 
 class AssistantAction {
   final String label;
   final AssistantActionType type;
   final String value;
-  const AssistantAction.call(this.label, this.value) : type = AssistantActionType.call;
-  const AssistantAction.route(this.label, this.value) : type = AssistantActionType.route;
+  const AssistantAction.call(this.label, this.value)
+    : type = AssistantActionType.call;
+  const AssistantAction.route(this.label, this.value)
+    : type = AssistantActionType.route;
 }
 
 class AssistantReply {
@@ -56,17 +61,6 @@ class SymptomDef {
   final String name;
   final String severity;
   const SymptomDef(this.id, this.name, this.severity);
-}
-
-/// Acil durum kuralı (emergency_flags.json).
-class FlagRule {
-  final String id;
-  final String name;
-  final List<String> symptoms;
-  final int minMatch;
-  final String message;
-  final bool red;
-  const FlagRule(this.id, this.name, this.symptoms, this.minMatch, this.message, this.red);
 }
 
 /// Kullanıcının cihazdaki verilerinden bir anlık görüntü.
@@ -142,13 +136,32 @@ class AssistantEngine {
     'headache': ['bas agr', 'basim agr', 'kafa agr', 'migren'],
     'dizziness': ['bas don', 'basim don', 'sersem'],
     'vision_blur': ['bulanik gor', 'gorme bulan', 'gozum bulan', 'cift gor'],
-    'facial_droop': ['yuz kay', 'yuzum kay', 'yuz sark', 'agiz kay', 'yuzde kay'],
+    'facial_droop': [
+      'yuz kay',
+      'yuzum kay',
+      'yuz sark',
+      'agiz kay',
+      'yuzde kay',
+    ],
     'eye_pain': ['goz agr', 'gozum agr', 'gozlerim agr'],
     'ear_pain': ['kulak agr', 'kulagim agr'],
-    'chest_pain': ['gogus agr', 'gogsum agr', 'gogus sikis', 'gogsum sikis', 'gogsumde agr', 'gogus bask'],
+    'chest_pain': [
+      'gogus agr',
+      'gogsum agr',
+      'gogus sikis',
+      'gogsum sikis',
+      'gogsumde agr',
+      'gogus bask',
+    ],
     'arm_pain_left': ['sol kol'],
     'palpitation': ['carpint', 'kalbim hizli', 'kalbim carp', 'kalp carp'],
-    'shortness_breath': ['nefes darl', 'nefes alamiyorum', 'nefesim daral', 'nefes almakta zorl', 'soluk alamiyorum'],
+    'shortness_breath': [
+      'nefes darl',
+      'nefes alamiyorum',
+      'nefesim daral',
+      'nefes almakta zorl',
+      'soluk alamiyorum',
+    ],
     'cough': ['oksur'],
     'wheezing': ['hirilt'],
     'abdominal_pain': ['karin agr', 'karnim agr', 'mide agr', 'midem agr'],
@@ -162,19 +175,34 @@ class AssistantEngine {
     'muscle_pain': ['kas agr', 'kaslarim agr', 'vucudum agr'],
     'swelling': ['sislik', 'sisti', 'sismis', 'odem'],
     'leg_numbness': ['bacak uyus', 'bacagim uyus'],
-    'arm_weakness': ['kol gucsuz', 'kolum gucsuz', 'kolumu kaldiramiyorum', 'kolumda gucsuz'],
+    'arm_weakness': [
+      'kol gucsuz',
+      'kolum gucsuz',
+      'kolumu kaldiramiyorum',
+      'kolumda gucsuz',
+    ],
     'fever': ['ates', 'atesim'],
     'fatigue': ['yorgun', 'halsiz', 'bitkin'],
     'weight_loss': ['kilo kayb', 'istemeden kilo'],
     'appetite_loss': ['istahsiz', 'istah kayb', 'istahim yok'],
     'night_sweats': ['gece terle'],
     'rash': ['dokunt', 'kurdesen'],
-    'speech_difficulty': ['konusma guc', 'konusamiyor', 'konusmam bozul', 'dilim dolas'],
+    'speech_difficulty': [
+      'konusma guc',
+      'konusamiyor',
+      'konusmam bozul',
+      'dilim dolas',
+    ],
     'confusion': ['bilinc bulan', 'bilincim', 'kafa karis'],
     'seizure': ['nobet', 'kasilma', 'sara'],
     'fainting': ['bayil', 'bayg'],
     'tingling': ['karincal'],
-    'painful_urination': ['idrar yaparken yan', 'idrarda yanma', 'idrar yanm', 'cis yaparken yan'],
+    'painful_urination': [
+      'idrar yaparken yan',
+      'idrarda yanma',
+      'idrar yanm',
+      'cis yaparken yan',
+    ],
     'frequent_urination': ['sik idrar', 'sik tuvalet', 'sik cis'],
     'blood_urine': ['idrarda kan', 'kanli idrar'],
     'dark_urine': ['koyu idrar', 'idrarim koyu'],
@@ -185,12 +213,21 @@ class AssistantEngine {
   };
 
   static const List<String> _crisisStems = [
-    'intihar', 'kendimi oldur', 'olmek istiyorum', 'yasamak istemiyorum',
-    'kendime zarar', 'canima kiy',
+    'intihar',
+    'kendimi oldur',
+    'olmek istiyorum',
+    'yasamak istemiyorum',
+    'kendime zarar',
+    'canima kiy',
   ];
   static const List<String> _poisonStems = [
-    'zehirlen', 'yanlislikla ictim', 'cocuk yuttu', 'ilac yuttu', 'fazla ilac ictim',
-    'camasir suyu', 'yuttu',
+    'zehirlen',
+    'yanlislikla ictim',
+    'cocuk yuttu',
+    'ilac yuttu',
+    'fazla ilac ictim',
+    'camasir suyu',
+    'yuttu',
   ];
 
   static String _norm(String s) => InputUtils.normalizeForSearch(s)
@@ -233,7 +270,11 @@ class AssistantEngine {
     r'^(|i|u|im|um|in|un|imda|umda|imde|umde|ler|lar|lerim|larim|leri|lari)$',
   );
 
-  static bool _firstPartMatches(String word, String part, {required bool multi}) {
+  static bool _firstPartMatches(
+    String word,
+    String part, {
+    required bool multi,
+  }) {
     if (!word.startsWith(part)) return false;
     if (!multi || part.length > 3) return true;
     return _shortSuffix.hasMatch(word.substring(part.length));
@@ -263,7 +304,10 @@ class AssistantEngine {
   AssistantReply respond(String input) {
     final text = _norm(input);
     if (text.isEmpty) {
-      return const AssistantReply('Size nasıl yardımcı olabilirim?', quickReplies: defaultSuggestions);
+      return const AssistantReply(
+        'Size nasıl yardımcı olabilirim?',
+        quickReplies: defaultSuggestions,
+      );
     }
     final words = text.split(' ');
 
@@ -277,7 +321,10 @@ class AssistantEngine {
         urgent: true,
         actions: [
           AssistantAction.call('112 Acil Çağrı', '112'),
-          AssistantAction.route('Ruh sağlığı desteği', AppConstants.routeMental),
+          AssistantAction.route(
+            'Ruh sağlığı desteği',
+            AppConstants.routeMental,
+          ),
         ],
       );
     }
@@ -321,14 +368,30 @@ class AssistantEngine {
     if (kbHit != null) return _kbReply(kbHit);
 
     // 6) Sohbet
-    if (_any(words, ['merhaba', 'selam', 'gunaydin', 'iyi aksam', 'iyi gun'])) return greeting();
+    if (_any(words, ['merhaba', 'selam', 'gunaydin', 'iyi aksam', 'iyi gun'])) {
+      return greeting();
+    }
     if (_any(words, ['baska bir sorum', 'bir sorum var', 'soru sorabilir'])) {
-      return const AssistantReply('Tabii, sorunuzu yazın.', quickReplies: defaultSuggestions);
+      return const AssistantReply(
+        'Tabii, sorunuzu yazın.',
+        quickReplies: defaultSuggestions,
+      );
     }
     if (_any(words, ['tesekkur', 'sagol', 'sag ol', 'eyvallah'])) {
-      return const AssistantReply('Rica ederim, sağlıklı günler dilerim!', quickReplies: defaultSuggestions);
+      return const AssistantReply(
+        'Rica ederim, sağlıklı günler dilerim!',
+        quickReplies: defaultSuggestions,
+      );
     }
-    if (_any(words, ['sen kimsin', 'yapay zeka', 'chatgpt', 'robot mu', 'neler yapabilir', 'ne yapabilir', 'yardim'])) {
+    if (_any(words, [
+      'sen kimsin',
+      'yapay zeka',
+      'chatgpt',
+      'robot mu',
+      'neler yapabilir',
+      'ne yapabilir',
+      'yardim',
+    ])) {
       return const AssistantReply(
         'Ben VitaCoach\'un kural tabanlı sağlık asistanıyım. İnternete veya bir yapay '
         'zekâ servisine bağlanmam; cevaplarımı bilimsel kaynaklara dayalı bir bilgi '
@@ -356,9 +419,22 @@ class AssistantEngine {
       stems.any((s) => _hasStem(words, s));
 
   static bool _isInfoQuestion(List<String> words) => _any(words, [
-    'nedir', 'normal', 'olmali', 'belirtileri', 'belirtisi', 'nasil yapilir',
-    'ne yapmali', 'ne yapmaliyim', 'kac saat', 'ne kadar', 'kac bardak', 'neler',
-    'nasil dusur', 'nasil gecer', 'ne iyi gelir', 'nasil olcul',
+    'nedir',
+    'normal',
+    'olmali',
+    'belirtileri',
+    'belirtisi',
+    'nasil yapilir',
+    'ne yapmali',
+    'ne yapmaliyim',
+    'kac saat',
+    'ne kadar',
+    'kac bardak',
+    'neler',
+    'nasil dusur',
+    'nasil gecer',
+    'ne iyi gelir',
+    'nasil olcul',
   ]);
 
   KbEntry? _bestKb(List<String> words, String text) {
@@ -367,7 +443,9 @@ class AssistantEngine {
     for (final e in kb) {
       var score = 0;
       for (final k in e.keywords) {
-        final match = k.contains(' ') ? text.contains(k) : words.any((w) => w.startsWith(k));
+        final match = k.contains(' ')
+            ? text.contains(k)
+            : words.any((w) => w.startsWith(k));
         if (match) score += k.contains(' ') ? 3 : 1;
       }
       if (score > bestScore) {
@@ -380,7 +458,9 @@ class AssistantEngine {
 
   AssistantReply _kbReply(KbEntry e) => AssistantReply(
     e.answer,
-    actions: [if (e.route != null) AssistantAction.route('İlgili bölüme git', e.route!)],
+    actions: [
+      if (e.route != null) AssistantAction.route('İlgili bölüme git', e.route!),
+    ],
     quickReplies: const ['Genel durumum nasıl?', 'Başka bir sorum var'],
   );
 
@@ -394,7 +474,7 @@ class AssistantEngine {
 
   List<FlagRule> _matchingFlags(Set<String> ids, {required bool red}) => [
     for (final f in flags)
-      if (f.red == red && f.symptoms.where(ids.contains).length >= f.minMatch) f,
+      if (f.red == red && f.matches(ids)) f,
   ];
 
   AssistantReply _startFlow(List<SymptomDef> found) {
@@ -426,7 +506,9 @@ class AssistantEngine {
   }
 
   static bool? _yesNo(List<String> words) {
-    if (_any(words, ['evet', 'var', 'oldu', 'aynen', 'dogru', 'maalesef'])) return true;
+    if (_any(words, ['evet', 'var', 'oldu', 'aynen', 'dogru', 'maalesef'])) {
+      return true;
+    }
     if (_any(words, ['hayir', 'yok', 'olmadi', 'degil'])) return false;
     return null;
   }
@@ -454,11 +536,17 @@ class AssistantEngine {
           quickReplies: ['Bugün başladı', '1-3 gündür', '3 günden fazla'],
         );
       case _FlowStep.duration:
-        final numbers = RegExp(r'\d+').allMatches(text).map((m) => int.parse(m.group(0)!)).toList();
+        final numbers = RegExp(
+          r'\d+',
+        ).allMatches(text).map((m) => int.parse(m.group(0)!)).toList();
         int? days;
-        if (_any(words, ['bugun', 'az once', 'simdi', 'sabah', 'saat'])) days = 0;
+        if (_any(words, ['bugun', 'az once', 'simdi', 'sabah', 'saat'])) {
+          days = 0;
+        }
         if (_any(words, ['fazla', 'hafta', 'ay', 'uzun'])) days = 4;
-        if (days == null && numbers.isNotEmpty) days = numbers.reduce((a, b) => a > b ? a : b);
+        if (days == null && numbers.isNotEmpty) {
+          days = numbers.reduce((a, b) => a > b ? a : b);
+        }
         if (days == null && _any(words, ['dun', 'gun'])) days = 2;
         if (days == null) return null;
         return _finishFlow(days: days);
@@ -472,7 +560,8 @@ class AssistantEngine {
     final names = _flowSymptoms.map((s) => s.name.toLowerCase()).join(', ');
     final urgent = _sudden || _redSigns;
     final yellowFlags = _matchingFlags(ids, red: false);
-    final yellow = yellowFlags.isNotEmpty ||
+    final yellow =
+        yellowFlags.isNotEmpty ||
         _flowSymptoms.any((s) => s.severity == 'yellow') ||
         days > 3;
     _resetFlow();
@@ -497,7 +586,10 @@ class AssistantEngine {
         '24 saat içinde aile hekiminize veya bir sağlık kuruluşuna başvurmanızı öneririm. '
         'Belirtiler ağırlaşırsa beklemeden acile gidin.',
         actions: const [
-          AssistantAction.route('Randevu ve yakın tesisler', AppConstants.routeAccess),
+          AssistantAction.route(
+            'Randevu ve yakın tesisler',
+            AppConstants.routeAccess,
+          ),
           AssistantAction.route('Belirti ekranı', AppConstants.routeSymptom),
         ],
         quickReplies: const ['Ateş nasıl düşürülür?', 'Genel durumum nasıl?'],
@@ -516,7 +608,14 @@ class AssistantEngine {
     final checker = context.drugs;
     if (checker == null) return null;
     final mentioned = checker.mentionsIn(raw);
-    final asks = _any(words, ['etkiles', 'birlikte', 'beraber', 'ayni anda', 'ile alin', 'kullanabilir']);
+    final asks = _any(words, [
+      'etkiles',
+      'birlikte',
+      'beraber',
+      'ayni anda',
+      'ile alin',
+      'kullanabilir',
+    ]);
     if (mentioned.length >= 2) {
       final warnings = <InteractionWarning>[];
       for (var i = 0; i < mentioned.length; i++) {
@@ -527,7 +626,10 @@ class AssistantEngine {
       return _interactionReply(mentioned.join(' + '), warnings);
     }
     if (mentioned.length == 1 && asks && context.medications.isNotEmpty) {
-      final warnings = checker.checkNew(mentioned.first, context.medications.map((m) => m.name));
+      final warnings = checker.checkNew(
+        mentioned.first,
+        context.medications.map((m) => m.name),
+      );
       return _interactionReply(
         '${mentioned.first} ve kullandığınız ilaçlar',
         warnings,
@@ -542,17 +644,25 @@ class AssistantEngine {
     return null;
   }
 
-  AssistantReply _interactionReply(String subject, List<InteractionWarning> warnings) {
+  AssistantReply _interactionReply(
+    String subject,
+    List<InteractionWarning> warnings,
+  ) {
     if (warnings.isEmpty) {
       return AssistantReply(
         '$subject için veri tabanımda bilinen sık bir etkileşim bulunmuyor. Bu, hiçbir '
         'etkileşim olmadığı anlamına gelmez; ilaçları birlikte kullanmadan önce eczacınıza '
         'danışın.',
-        actions: const [AssistantAction.route('İlaçlarım', AppConstants.routeChronic)],
+        actions: const [
+          AssistantAction.route('İlaçlarım', AppConstants.routeChronic),
+        ],
       );
     }
     final lines = warnings
-        .map((w) => '• ${w.drugA} + ${w.drugB} (${w.severity.label}): ${w.message}')
+        .map(
+          (w) =>
+              '• ${w.drugA} + ${w.drugB} (${w.severity.label}): ${w.message}',
+        )
         .join('\n');
     final high = warnings.any((w) => w.severity == InteractionSeverity.high);
     return AssistantReply(
@@ -560,7 +670,9 @@ class AssistantEngine {
       'İlaçlarınızı kendiniz bırakmayın veya değiştirmeyin; doktorunuza ya da '
       'eczacınıza danışın.',
       urgent: high,
-      actions: const [AssistantAction.route('İlaçlarım', AppConstants.routeChronic)],
+      actions: const [
+        AssistantAction.route('İlaçlarım', AppConstants.routeChronic),
+      ],
     );
   }
 
@@ -582,29 +694,53 @@ class AssistantEngine {
         return const AssistantReply(
           'Henüz yorumlayabileceğim kadar veri yok. Birkaç gün tansiyon, şeker, uyku ve '
           'ruh hali kaydı girdikçe size kişisel eğilimlerinizi anlatabilirim.',
-          actions: [AssistantAction.route('Ölçüm ekle', AppConstants.routeChronic)],
+          actions: [
+            AssistantAction.route('Ölçüm ekle', AppConstants.routeChronic),
+          ],
         );
       }
-      final top = c.insights.take(3).map((i) => '• ${i.title}: ${i.message}').join('\n');
+      final top = c.insights
+          .take(3)
+          .map((i) => '• ${i.title}: ${i.message}')
+          .join('\n');
       return AssistantReply(
         'Verilerinizde öne çıkanlar:\n$top',
-        actions: const [AssistantAction.route('Tüm analiz', AppConstants.routeInsights)],
-        quickReplies: const ['Tansiyonum nasıl?', 'Uykum nasıl?', 'İlaç uyumum'],
+        actions: const [
+          AssistantAction.route('Tüm analiz', AppConstants.routeInsights),
+        ],
+        quickReplies: const [
+          'Tansiyonum nasıl?',
+          'Uykum nasıl?',
+          'İlaç uyumum',
+        ],
       );
     }
-    if (_any(words, ['tansiyonum', 'kan basincim', 'tansiyon deger', 'tansiyon durum', 'tansiyon olcumlerim'])) {
+    if (_any(words, [
+      'tansiyonum',
+      'kan basincim',
+      'tansiyon deger',
+      'tansiyon durum',
+      'tansiyon olcumlerim',
+    ])) {
       final bp = c.lastBp;
       if (bp == null) {
         return const AssistantReply(
           'Henüz tansiyon ölçümünüz yok. Kronik Hastalık ekranından ekleyebilirsiniz.',
-          actions: [AssistantAction.route('Tansiyon ekle', AppConstants.routeChronic)],
+          actions: [
+            AssistantAction.route('Tansiyon ekle', AppConstants.routeChronic),
+          ],
         );
       }
       return AssistantReply(
         'Son tansiyon ölçümünüz ${_date(bp.date)} tarihinde ${bp.display} '
         '(${bp.category}).${_insightLine('bp_')}',
-        actions: const [AssistantAction.route('Tansiyon geçmişi', AppConstants.routeChronic)],
-        quickReplies: const ['Normal tansiyon kaç?', 'Doğru tansiyon ölçümü nasıl yapılır?'],
+        actions: const [
+          AssistantAction.route('Tansiyon geçmişi', AppConstants.routeChronic),
+        ],
+        quickReplies: const [
+          'Normal tansiyon kaç?',
+          'Doğru tansiyon ölçümü nasıl yapılır?',
+        ],
       );
     }
     if (_any(words, ['sekerim', 'seker deger', 'seker olcum', 'glikozum']) &&
@@ -613,21 +749,33 @@ class AssistantEngine {
       if (s == null) {
         return const AssistantReply(
           'Henüz kan şekeri ölçümünüz yok.',
-          actions: [AssistantAction.route('Şeker ekle', AppConstants.routeChronic)],
+          actions: [
+            AssistantAction.route('Şeker ekle', AppConstants.routeChronic),
+          ],
         );
       }
       return AssistantReply(
         'Son kan şekeri ölçümünüz ${_date(s.date)} tarihinde ${s.value.round()} mg/dL.'
         '${_insightLine('sugar_')}',
-        actions: const [AssistantAction.route('Şeker geçmişi', AppConstants.routeChronic)],
+        actions: const [
+          AssistantAction.route('Şeker geçmişi', AppConstants.routeChronic),
+        ],
         quickReplies: const ['Normal şeker kaç olmalı?'],
       );
     }
-    if (_any(words, ['kilom', 'agirligim', 'bmi', 'kilo durum', 'vucut kitle indeksim'])) {
+    if (_any(words, [
+      'kilom',
+      'agirligim',
+      'bmi',
+      'kilo durum',
+      'vucut kitle indeksim',
+    ])) {
       final w = c.lastWeight;
       if (w == null) return null;
       final h = c.heightCm;
-      final bmi = h == null || h <= 0 ? null : w.value / ((h / 100) * (h / 100));
+      final bmi = h == null || h <= 0
+          ? null
+          : w.value / ((h / 100) * (h / 100));
       final cat = bmi == null
           ? ''
           : bmi < 18.5
@@ -641,7 +789,9 @@ class AssistantEngine {
         'Son kilonuz ${w.value.toStringAsFixed(1).replaceAll('.', ',')} kg'
         '${bmi == null ? '' : ', vücut kitle indeksiniz ${bmi.toStringAsFixed(1).replaceAll('.', ',')} ($cat)'}.'
         '${_insightLine('weight_')}',
-        actions: const [AssistantAction.route('Profil', AppConstants.routeProfile)],
+        actions: const [
+          AssistantAction.route('Profil', AppConstants.routeProfile),
+        ],
       );
     }
     if (_any(words, ['uyku', 'uykum', 'uyudum', 'uyuyabil'])) {
@@ -649,7 +799,9 @@ class AssistantEngine {
       if (s == null) {
         return const AssistantReply(
           'Henüz uyku kaydınız yok.',
-          actions: [AssistantAction.route('Uyku ekle', AppConstants.routeSleep)],
+          actions: [
+            AssistantAction.route('Uyku ekle', AppConstants.routeSleep),
+          ],
         );
       }
       final avg = c.sleepAvg7;
@@ -657,7 +809,9 @@ class AssistantEngine {
         'Son uykunuz ${s.durationLabel} (${_date(s.wakeTime)}).'
         '${avg == null ? '' : ' Son 7 gecenin ortalaması ${avg.toStringAsFixed(1).replaceAll('.', ',')} saat; önerilen 7-9 saat.'}'
         '${_insightLine('sleep_')}',
-        actions: const [AssistantAction.route('Uyku takibi', AppConstants.routeSleep)],
+        actions: const [
+          AssistantAction.route('Uyku takibi', AppConstants.routeSleep),
+        ],
         quickReplies: const ['Kaç saat uyumalıyım?'],
       );
     }
@@ -667,13 +821,17 @@ class AssistantEngine {
         return const AssistantReply(
           'Henüz nabız ölçümünüz yok. Telefonunuzun kamerasıyla 30 saniyede nabzınızı '
           've stres göstergenizi (HRV) ölçebilirsiniz.',
-          actions: [AssistantAction.route('Nabız ölç', AppConstants.routeHeart)],
+          actions: [
+            AssistantAction.route('Nabız ölç', AppConstants.routeHeart),
+          ],
         );
       }
       return AssistantReply(
         'Son ölçümünüz (${_date(h.date)}): nabız ${h.bpm} atım/dk, HRV ${h.rmssdMs.round()} ms, '
         'stres göstergesi ${h.stress.label.toLowerCase()}.${_insightLine('hrv_')}',
-        actions: const [AssistantAction.route('Yeniden ölç', AppConstants.routeHeart)],
+        actions: const [
+          AssistantAction.route('Yeniden ölç', AppConstants.routeHeart),
+        ],
         quickReplies: const ['HRV nedir?', 'Normal nabız kaç?'],
       );
     }
@@ -682,27 +840,39 @@ class AssistantEngine {
       if (a == null || a.percent == null) {
         return const AssistantReply(
           'İlaç uyumunuzu hesaplamak için dozlarınızı "Aldım" ile işaretlemeniz gerekiyor.',
-          actions: [AssistantAction.route('İlaçlarım', AppConstants.routeChronic)],
+          actions: [
+            AssistantAction.route('İlaçlarım', AppConstants.routeChronic),
+          ],
         );
       }
-      final pattern = a.patterns.isEmpty ? '' : '\n\n${a.patterns.first.message} ${a.patterns.first.suggestion}';
+      final pattern = a.patterns.isEmpty
+          ? ''
+          : '\n\n${a.patterns.first.message} ${a.patterns.first.suggestion}';
       return AssistantReply(
         'Son ${a.days} günde ${a.taken}/${a.scheduled} dozu aldınız: uyumunuz %${a.percent}.'
         '${a.percent! >= 80 ? ' Harika gidiyorsunuz!' : ' Hedef en az %80.'}$pattern',
-        actions: const [AssistantAction.route('İlaçlarım', AppConstants.routeChronic)],
+        actions: const [
+          AssistantAction.route('İlaçlarım', AppConstants.routeChronic),
+        ],
       );
     }
     if (_any(words, ['ilaclarim', 'ilac listem', 'hangi ilac', 'ilaclarimi'])) {
       if (c.medications.isEmpty) {
         return const AssistantReply(
           'Kayıtlı ilacınız yok.',
-          actions: [AssistantAction.route('İlaç ekle', AppConstants.routeChronic)],
+          actions: [
+            AssistantAction.route('İlaç ekle', AppConstants.routeChronic),
+          ],
         );
       }
-      final list = c.medications.map((m) => '• ${m.name} ${m.dosage} — ${m.timeDisplay}').join('\n');
+      final list = c.medications
+          .map((m) => '• ${m.name} ${m.dosage} — ${m.timeDisplay}')
+          .join('\n');
       return AssistantReply(
         'Kayıtlı ilaçlarınız:\n$list',
-        actions: const [AssistantAction.route('İlaçlarım', AppConstants.routeChronic)],
+        actions: const [
+          AssistantAction.route('İlaçlarım', AppConstants.routeChronic),
+        ],
         quickReplies: const ['İlaç uyumum', 'İlacımı almayı unuttum'],
       );
     }
@@ -710,27 +880,38 @@ class AssistantEngine {
       return AssistantReply(
         'Bugün ${c.waterGlassesToday} bardak (${c.waterGlassesToday * AppConstants.waterGlassMl} ml) '
         'su içtiniz; hedef ${AppConstants.dailyWaterGoalMl} ml.',
-        actions: const [AssistantAction.route('Su ekle', AppConstants.routeNutrition)],
+        actions: const [
+          AssistantAction.route('Su ekle', AppConstants.routeNutrition),
+        ],
       );
     }
     if (_any(words, ['adim', 'adimim'])) {
       return AssistantReply(
         'Bugün ${c.stepsToday} adım attınız; günlük hedef ${AppConstants.dailyStepGoal}.',
-        actions: const [AssistantAction.route('Fitness', AppConstants.routeFitness)],
+        actions: const [
+          AssistantAction.route('Fitness', AppConstants.routeFitness),
+        ],
       );
     }
     if (_any(words, ['rapor', 'pdf'])) {
       return const AssistantReply(
         'Doktorunuza götürebileceğiniz, son 30 günün ölçümlerini, ilaçlarınızı ve risk '
         'skorlarınızı içeren PDF raporu hazırlayabilirim.',
-        actions: [AssistantAction.route('PDF rapor oluştur', AppConstants.routeReport)],
+        actions: [
+          AssistantAction.route('PDF rapor oluştur', AppConstants.routeReport),
+        ],
       );
     }
     if (_any(words, ['acil kart', 'kan grub', 'qr'])) {
       return const AssistantReply(
         'Kan grubunuz, alerjileriniz ve acil kişileriniz Acil Sağlık Kartı\'nda; sağlık '
         'personeli QR kodu okutarak bilgilere ulaşabilir.',
-        actions: [AssistantAction.route('Acil sağlık kartı', AppConstants.routeEmergencyCard)],
+        actions: [
+          AssistantAction.route(
+            'Acil sağlık kartı',
+            AppConstants.routeEmergencyCard,
+          ),
+        ],
       );
     }
     return null;

@@ -51,8 +51,12 @@ class NotificationVisuals {
       const rect = Rect.fromLTWH(0, 0, size, size);
       final base = colorOf(kind);
       final hsl = HSLColor.fromColor(base);
-      final light = hsl.withLightness((hsl.lightness + 0.12).clamp(0, 1)).toColor();
-      final dark = hsl.withLightness((hsl.lightness - 0.10).clamp(0, 1)).toColor();
+      final light = hsl
+          .withLightness((hsl.lightness + 0.12).clamp(0, 1))
+          .toColor();
+      final dark = hsl
+          .withLightness((hsl.lightness - 0.10).clamp(0, 1))
+          .toColor();
       canvas.drawCircle(
         rect.center,
         size / 2,

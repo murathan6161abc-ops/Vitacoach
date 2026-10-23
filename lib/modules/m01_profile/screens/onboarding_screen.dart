@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/input_utils.dart';
 import '../../../services/hive_service.dart';
 import '../../../services/notification_service.dart';
 import '../../../shared/widgets/vc_button.dart';
+import '../../m03_chronic/providers/chronic_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -78,9 +80,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (_currentStep == 1) {
       final error = _validatePersonalInfo();
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
         return;
       }
     }
@@ -108,6 +110,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     final hiveService = HiveService();
     final box = hiveService.getProfileBox();
+    final chronic = context.read<ChronicProvider>();
 
     await box.put('name', _nameController.text.trim());
     await box.put('birth_date', _birthDate?.toIso8601String());
@@ -118,10 +121,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'height',
       InputUtils.parseDecimal(_heightController.text) ?? 0.0,
     );
-    await box.put(
-      'weight',
-      InputUtils.parseDecimal(_weightController.text) ?? 0.0,
-    );
+    final weight = InputUtils.parseDecimal(_weightController.text) ?? 0.0;
+    await box.put('weight', weight);
+    // İlk kilo, kilo trendinin başlangıç noktasıdır.
+    if (weight > 0) await chronic.addWeight(weight);
     await box.put('conditions', _selectedConditions);
     await box.put('goals', _selectedGoals);
 
@@ -244,9 +247,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Yapay zeka destekli kişisel sağlık koçunuz ile daha sağlıklı bir yaşama adım atın.',
+            'Kişisel sağlık koçunuz ile daha sağlıklı bir yaşama adım atın. '
+            'Verileriniz yalnızca bu telefonda, şifreli olarak saklanır.',
             style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'VitaCoach tanı veya tedavi aracı değildir. Acil durumda 112\'yi '
+            'arayın.',
+            style: TextStyle(fontSize: 13, color: AppColors.textHint),
+            textAlign: TextAlign.center,
+          ),
+          TextButton(
+            onPressed: () => context.push(AppConstants.routePrivacy),
+            child: const Text('Gizlilik ve veri kullanımı'),
           ),
         ],
       ),

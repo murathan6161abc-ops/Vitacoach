@@ -97,28 +97,36 @@ class ReportData {
     );
 
     bool recent(DateTime d) => d.isAfter(since);
-    final pressures = _parse(
-      healthBox.get('blood_pressure'),
-      BloodPressureEntry.fromMap,
-    ).where((e) => recent(e.date)).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-    final sugars = _parse(healthBox.get('blood_sugar'), HealthEntry.fromMap)
-        .where((e) => recent(e.date))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-    final weights = _parse(healthBox.get('weight_history'), HealthEntry.fromMap)
-        .where((e) => recent(e.date))
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-    final sleep = SleepEntry.parseList(
-      healthBox.get('sleep_log'),
-    ).where((e) => e.wakeTime.isAfter(now.subtract(const Duration(days: 7)))).toList();
+    final pressures =
+        _parse(
+            healthBox.get('blood_pressure'),
+            BloodPressureEntry.fromMap,
+          ).where((e) => recent(e.date)).toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+    final sugars =
+        _parse(
+            healthBox.get('blood_sugar'),
+            HealthEntry.fromMap,
+          ).where((e) => recent(e.date)).toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+    final weights =
+        _parse(
+            healthBox.get('weight_history'),
+            HealthEntry.fromMap,
+          ).where((e) => recent(e.date)).toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+    final sleep = SleepEntry.parseList(healthBox.get('sleep_log'))
+        .where((e) => e.wakeTime.isAfter(now.subtract(const Duration(days: 7))))
+        .toList();
 
     final moodBox = hive.getMoodBox();
     var moodSum = 0.0;
     var moodDays = 0;
     for (var i = 0; i < 14; i++) {
-      final key = now.subtract(Duration(days: i)).toIso8601String().substring(0, 10);
+      final key = now
+          .subtract(Duration(days: i))
+          .toIso8601String()
+          .substring(0, 10);
       final raw = moodBox.get(key);
       final value = raw is int
           ? raw
@@ -128,25 +136,30 @@ class ReportData {
         moodDays++;
       }
     }
-    final tests = (moodBox.get('test_history') is List
-            ? moodBox.get('test_history') as List
-            : const [])
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList()
-      ..sort((a, b) => '${b['date']}'.compareTo('${a['date']}'));
-    final risks = (healthBox.get('risk_history') is List
-            ? healthBox.get('risk_history') as List
-            : const [])
-        .whereType<Map>()
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList()
-      ..sort((a, b) => '${b['date']}'.compareTo('${a['date']}'));
+    final tests =
+        (moodBox.get('test_history') is List
+                ? moodBox.get('test_history') as List
+                : const [])
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList()
+          ..sort((a, b) => '${b['date']}'.compareTo('${a['date']}'));
+    final risks =
+        (healthBox.get('risk_history') is List
+                ? healthBox.get('risk_history') as List
+                : const [])
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList()
+          ..sort((a, b) => '${b['date']}'.compareTo('${a['date']}'));
 
     final fitnessBox = hive.getFitnessBox();
     var steps = 0;
     for (var i = 0; i < 7; i++) {
-      final key = now.subtract(Duration(days: i)).toIso8601String().substring(0, 10);
+      final key = now
+          .subtract(Duration(days: i))
+          .toIso8601String()
+          .substring(0, 10);
       steps += (fitnessBox.get('steps_$key') as num?)?.toInt() ?? 0;
     }
 
@@ -207,7 +220,11 @@ class ReportService {
       ),
       child: pw.Text(
         text,
-        style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: green),
+        style: pw.TextStyle(
+          fontSize: 13,
+          fontWeight: pw.FontWeight.bold,
+          color: green,
+        ),
       ),
     );
 
@@ -243,7 +260,8 @@ class ReportService {
       // X ekseninde en fazla 8 etiket göster.
       final every = (dates.length / 8).ceil();
       final labels = [
-        for (var i = 0; i < dates.length; i++) i % every == 0 ? _dm(dates[i]) : '',
+        for (var i = 0; i < dates.length; i++)
+          i % every == 0 ? _dm(dates[i]) : '',
       ];
       return pw.SizedBox(
         height: 150,
@@ -290,7 +308,11 @@ class ReportService {
           children: [
             pw.Text(
               'VitaCoach Sağlık Raporu',
-              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: green),
+              style: pw.TextStyle(
+                fontSize: 16,
+                fontWeight: pw.FontWeight.bold,
+                color: green,
+              ),
             ),
             pw.Text(
               'Oluşturma: ${date(data.generatedAt)}',
@@ -301,8 +323,10 @@ class ReportService {
         footer: (context) => pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
-            muted('Bu rapor kullanıcının kendi girdiği verilerden oluşturulmuştur; '
-                'tanı amacı taşımaz.'),
+            muted(
+              'Bu rapor kullanıcının kendi girdiği verilerden oluşturulmuştur; '
+              'tanı amacı taşımaz.',
+            ),
             muted('Sayfa ${context.pageNumber}/${context.pagesCount}'),
           ],
         ),
@@ -311,8 +335,18 @@ class ReportService {
           table(
             ['Bilgi', 'Değer', 'Bilgi', 'Değer'],
             [
-              ['Ad', p.name.isEmpty ? '-' : p.name, 'Yaş', p.age > 0 ? '${p.age}' : '-'],
-              ['Cinsiyet', p.gender.isEmpty ? '-' : p.gender, 'Kan grubu', data.emergency.bloodType],
+              [
+                'Ad',
+                p.name.isEmpty ? '-' : p.name,
+                'Yaş',
+                p.age > 0 ? '${p.age}' : '-',
+              ],
+              [
+                'Cinsiyet',
+                p.gender.isEmpty ? '-' : p.gender,
+                'Kan grubu',
+                data.emergency.bloodType,
+              ],
               [
                 'Boy / Kilo',
                 p.height > 0 && p.weight > 0
@@ -325,7 +359,9 @@ class ReportService {
                 'Kronik hastalık',
                 conditions.isEmpty ? '-' : conditions.join(', '),
                 'Alerji',
-                data.emergency.allergies.trim().isEmpty ? '-' : data.emergency.allergies.trim(),
+                data.emergency.allergies.trim().isEmpty
+                    ? '-'
+                    : data.emergency.allergies.trim(),
               ],
             ],
           ),
@@ -337,7 +373,14 @@ class ReportService {
             table(
               ['İlaç', 'Doz', 'Saat', 'Hatırlatıcı'],
               data.medications
-                  .map((m) => [m.name, m.dosage.isEmpty ? '-' : m.dosage, m.timeDisplay, m.isActive ? 'Açık' : 'Kapalı'])
+                  .map(
+                    (m) => [
+                      m.name,
+                      m.dosage.isEmpty ? '-' : m.dosage,
+                      m.timeDisplay,
+                      m.isActive ? 'Açık' : 'Kapalı',
+                    ],
+                  )
                   .toList(),
             ),
           if (data.interactions.isNotEmpty) ...[
@@ -353,7 +396,11 @@ class ReportService {
                 children: [
                   pw.Text(
                     'Olası ilaç etkileşimleri (uygulama tarafından saptanan)',
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9, color: PdfColors.red800),
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 9,
+                      color: PdfColors.red800,
+                    ),
                   ),
                   ...data.interactions.map(
                     (w) => pw.Text(
@@ -399,7 +446,14 @@ class ReportService {
               ['Tarih', 'Saat', 'Tansiyon', 'Sınıflandırma'],
               data.pressures.reversed
                   .take(12)
-                  .map((e) => [date(e.date), '${_two(e.date.hour)}:${_two(e.date.minute)}', e.display, e.category])
+                  .map(
+                    (e) => [
+                      date(e.date),
+                      '${_two(e.date.hour)}:${_two(e.date.minute)}',
+                      e.display,
+                      e.category,
+                    ],
+                  )
                   .toList(),
             ),
           ],
@@ -466,7 +520,12 @@ class ReportService {
               ['Tarih', 'Test', 'Puan', 'Değerlendirme'],
               data.tests.take(6).map((t) {
                 final d = DateTime.tryParse('${t['date']}');
-                return [d == null ? '-' : date(d), '${t['test_type']}', '${t['score']}', '${t['severity']}'];
+                return [
+                  d == null ? '-' : date(d),
+                  '${t['test_type']}',
+                  '${t['score']}',
+                  '${t['severity']}',
+                ];
               }).toList(),
             ),
           ],
@@ -481,7 +540,9 @@ class ReportService {
                 return [
                   d == null ? '-' : date(d),
                   isFramingham ? 'Framingham KVH (10 yıl)' : 'FINDRISC diyabet',
-                  isFramingham ? '%${_num(r['score'] as num, 1)}' : '${r['score']} / 26',
+                  isFramingham
+                      ? '%${_num(r['score'] as num, 1)}'
+                      : '${r['score']} / 26',
                   '${r['level']}',
                 ];
               }).toList(),
@@ -495,31 +556,33 @@ class ReportService {
               'tanı amacı taşımaz.',
             ),
             pw.SizedBox(height: 4),
-            ...data.insights.take(7).map(
-              (i) => pw.Padding(
-                padding: const pw.EdgeInsets.only(bottom: 3),
-                child: pw.RichText(
-                  text: pw.TextSpan(
-                    style: const pw.TextStyle(fontSize: 9),
-                    children: [
-                      pw.TextSpan(
-                        text: '[${i.severity.label}] ${i.title}: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          color: switch (i.severity) {
-                            InsightSeverity.alert => PdfColors.red800,
-                            InsightSeverity.warning => PdfColors.orange800,
-                            InsightSeverity.info => PdfColors.blue800,
-                            InsightSeverity.positive => PdfColors.green800,
-                          },
-                        ),
+            ...data.insights
+                .take(7)
+                .map(
+                  (i) => pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 3),
+                    child: pw.RichText(
+                      text: pw.TextSpan(
+                        style: const pw.TextStyle(fontSize: 9),
+                        children: [
+                          pw.TextSpan(
+                            text: '[${i.severity.label}] ${i.title}: ',
+                            style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              color: switch (i.severity) {
+                                InsightSeverity.alert => PdfColors.red800,
+                                InsightSeverity.warning => PdfColors.orange800,
+                                InsightSeverity.info => PdfColors.blue800,
+                                InsightSeverity.positive => PdfColors.green800,
+                              },
+                            ),
+                          ),
+                          pw.TextSpan(text: i.message),
+                        ],
                       ),
-                      pw.TextSpan(text: i.message),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
           ],
 
           pw.SizedBox(height: 6),
@@ -530,7 +593,9 @@ class ReportService {
     return doc.save();
   }
 
-  static List<Map<String, dynamic>> _latestPerType(List<Map<String, dynamic>> risks) {
+  static List<Map<String, dynamic>> _latestPerType(
+    List<Map<String, dynamic>> risks,
+  ) {
     final seen = <String>{};
     return [
       for (final r in risks)

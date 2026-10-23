@@ -35,7 +35,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Parmağınızla kamerayı kapatarak nabız ve stres ölçümü yapmak için. Görüntüler kaydedilmez ve telefondan çıkmaz.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Acil durumda konumunuzu acil kişilerinize mesajla gönderebilmek için kullanılır. Konum yalnızca siz istediğinizde alınır.</string>
+	<string>Acil durumda konumunuzu acil kişilerinize mesajla göndermek ve bulunduğunuz bölgenin hava kalitesini göstermek için kullanılır. Konum yalnızca siz istediğinizde alınır; hava kalitesi için yalnızca yaklaşık konum (yaklaşık 10 km) gönderilir.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>VitaCoach günlük adımlarınızı otomatik takip etmek için hareket sensörüne ihtiyaç duyar.</string>
 	<key>UIApplicationSceneManifest</key>

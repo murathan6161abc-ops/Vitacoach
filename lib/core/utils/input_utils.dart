@@ -56,15 +56,26 @@ class InputUtils {
 
   static String normalizeForSearch(String input) {
     const map = {
-      'İ': 'i', 'I': 'i', 'ı': 'i', 'i̇': 'i',
-      'Ş': 's', 'ş': 's',
-      'Ğ': 'g', 'ğ': 'g',
-      'Ü': 'u', 'ü': 'u',
-      'Ö': 'o', 'ö': 'o',
-      'Ç': 'c', 'ç': 'c',
-      'Â': 'a', 'â': 'a',
-      'Î': 'i', 'î': 'i',
-      'Û': 'u', 'û': 'u',
+      'İ': 'i',
+      'I': 'i',
+      'ı': 'i',
+      'i̇': 'i',
+      'Ş': 's',
+      'ş': 's',
+      'Ğ': 'g',
+      'ğ': 'g',
+      'Ü': 'u',
+      'ü': 'u',
+      'Ö': 'o',
+      'ö': 'o',
+      'Ç': 'c',
+      'ç': 'c',
+      'Â': 'a',
+      'â': 'a',
+      'Î': 'i',
+      'î': 'i',
+      'Û': 'u',
+      'û': 'u',
     };
     final buffer = StringBuffer();
     for (final rune in input.runes) {

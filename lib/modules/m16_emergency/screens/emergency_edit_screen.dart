@@ -62,7 +62,9 @@ class _EmergencyEditScreenState extends State<EmergencyEditScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(existing == null ? 'Acil Kişi Ekle' : 'Acil Kişiyi Düzenle'),
+          title: Text(
+            existing == null ? 'Acil Kişi Ekle' : 'Acil Kişiyi Düzenle',
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -162,7 +164,8 @@ class _EmergencyEditScreenState extends State<EmergencyEditScreen> {
                   items: EmergencyInfo.bloodTypes
                       .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                       .toList(),
-                  onChanged: (v) => setState(() => _bloodType = v ?? _bloodType),
+                  onChanged: (v) =>
+                      setState(() => _bloodType = v ?? _bloodType),
                 ),
                 const SizedBox(height: 12),
                 TextField(
