@@ -810,13 +810,15 @@ class ChronicScreen extends StatelessWidget {
           if (provider.medications.isNotEmpty) ...[
             const _ExactAlarmBanner(),
             AdherenceSummary(provider: provider),
-            ...provider.medications.asMap().entries.map(
-              (entry) => MedicationRow(
-                provider: provider,
-                medication: entry.value,
-                onDelete: () => provider.removeMedication(entry.key),
-              ),
-            ),
+            // Günde birden çok dozu olan ilacın her saati ayrı satırdır.
+            for (final (index, medication) in provider.medications.indexed)
+              for (final dose in medication.doses)
+                MedicationRow(
+                  provider: provider,
+                  medication: medication,
+                  dose: dose,
+                  onDelete: () => provider.removeMedication(index),
+                ),
           ] else
             Padding(
               padding: EdgeInsets.all(16),

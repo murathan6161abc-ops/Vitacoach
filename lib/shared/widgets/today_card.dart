@@ -36,10 +36,7 @@ class TodayCard extends StatelessWidget {
     final chronic = context.watch<ChronicProvider>();
     final nutrition = context.watch<NutritionProvider>();
     final fitness = context.watch<FitnessProvider>();
-    final meds = chronic.medications.where((m) => m.isActive).toList()
-      ..sort(
-        (a, b) => (a.hour * 60 + a.minute).compareTo(b.hour * 60 + b.minute),
-      );
+    final doses = chronic.activeDoses;
 
     return VcCard(
       child: Column(
@@ -54,8 +51,9 @@ class TodayCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          for (final med in meds) _MedicationRow(medication: med),
-          if (meds.isNotEmpty) const Divider(),
+          for (final (medication, dose) in doses)
+            _MedicationRow(medication: medication, dose: dose),
+          if (doses.isNotEmpty) const Divider(),
           Row(
             children: [
               Icon(Icons.water_drop, color: AppColors.secondary),
@@ -97,17 +95,19 @@ class TodayCard extends StatelessWidget {
   }
 }
 
+/// Bir ilacın tek dozu; günde iki dozlu ilaç iki satırda görünür.
 class _MedicationRow extends StatelessWidget {
   final MedicationReminder medication;
+  final MedicationDose dose;
 
-  const _MedicationRow({required this.medication});
+  const _MedicationRow({required this.medication, required this.dose});
 
   @override
   Widget build(BuildContext context) {
     final chronic = context.read<ChronicProvider>();
-    final dose = chronic.todayDose(medication);
+    final record = chronic.todayDose(dose);
     final Widget status;
-    if (dose?.status == DoseStatus.taken) {
+    if (record?.status == DoseStatus.taken) {
       status = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -116,16 +116,16 @@ class _MedicationRow extends StatelessWidget {
           Text('Alındı', style: TextStyle(color: AppColors.success)),
         ],
       );
-    } else if (dose?.status == DoseStatus.skipped) {
+    } else if (record?.status == DoseStatus.skipped) {
       status = Text('Atlandı', style: TextStyle(color: AppColors.textHint));
-    } else if (chronic.isDoseDue(medication)) {
+    } else if (chronic.isDoseDue(dose)) {
       status = FilledButton.tonal(
-        onPressed: () => chronic.markDose(medication, DoseStatus.taken),
+        onPressed: () => chronic.markDose(dose, DoseStatus.taken),
         child: const Text('Aldım'),
       );
     } else {
       status = Text(
-        medication.timeDisplay,
+        dose.timeDisplay,
         style: TextStyle(color: AppColors.textSecondary),
       );
     }
@@ -138,7 +138,7 @@ class _MedicationRow extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              '${medication.name} · ${medication.timeDisplay}',
+              '${medication.name} · ${dose.timeDisplay}',
               overflow: TextOverflow.ellipsis,
             ),
           ),

@@ -122,8 +122,7 @@ void main() {
         MedicationReminder(
           name: 'Coraspin',
           dosage: '100 mg',
-          hour: 13,
-          minute: 0,
+          doses: [MedicationDose(hour: 13, minute: 0)],
         ),
       ],
       drugs: drugs,

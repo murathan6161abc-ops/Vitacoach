@@ -33,11 +33,9 @@ void main() {
   ) async {
     // 00:00 dozu günün her anında "vakti gelmiş" sayılır.
     final med = MedicationReminder(
-      notificationId: 10123,
       name: 'Metformin',
       dosage: '500 mg',
-      hour: 0,
-      minute: 0,
+      doses: [MedicationDose(notificationId: 10123, hour: 0, minute: 0)],
       createdAt: DateTime(2026, 1, 1),
     );
     await HiveService().getMedicationBox().put('medications', [med.toMap()]);
@@ -53,6 +51,40 @@ void main() {
       HiveService().getMedicationBox().get('dose_log'),
     );
     expect(log.get(DateTime.now(), 10123)?.status, DoseStatus.taken);
+  });
+
+  testWidgets('iki dozlu ilacın her dozu ayrı satırda "Aldım" ile görünür', (
+    tester,
+  ) async {
+    // Kayıtlı biçimdeki iki dozlu ilaç. 00:00 dozunun vakti her an gelmiştir
+    // ve saate göre sıralı satırların ilkidir.
+    await HiveService().getMedicationBox().put('medications', [
+      {
+        'notification_id': 10201,
+        'name': 'Metformin',
+        'dosage': '500 mg',
+        'hour': 0,
+        'minute': 0,
+        'doses': [
+          {'notification_id': 10201, 'hour': 0, 'minute': 0},
+          {'notification_id': 10202, 'hour': 23, 'minute': 59},
+        ],
+        'created_at': '2026-01-01T00:00:00.000',
+      },
+    ]);
+
+    await _pump(tester);
+    expect(find.text('Metformin · 00:00'), findsOneWidget);
+    expect(find.text('Metformin · 23:59'), findsOneWidget);
+
+    await tester.tap(find.text('Aldım').first);
+    await tester.pumpAndSettle();
+
+    final log = DoseLog.fromRaw(
+      HiveService().getMedicationBox().get('dose_log'),
+    );
+    expect(log.get(DateTime.now(), 10201)?.status, DoseStatus.taken);
+    expect(log.get(DateTime.now(), 10202), isNull);
   });
 
   testWidgets('su ve adım bugünün kaydını gösterir', (tester) async {
