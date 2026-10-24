@@ -90,10 +90,16 @@ class MedicationDose {
   final int hour;
   final int minute;
 
+  /// Doz ilaca sonradan (saatler düzenlenirken) eklendiyse eklendiği an;
+  /// uyum bu dozu bu andan itibaren sayar. İlaçla birlikte eklenen dozlarda
+  /// yoktur (null).
+  final DateTime? addedAt;
+
   MedicationDose({
     int? notificationId,
     required this.hour,
     required this.minute,
+    this.addedAt,
   }) : notificationId =
            notificationId ?? MedicationReminder.createNotificationId();
 
@@ -110,12 +116,19 @@ class MedicationDose {
     'notification_id': notificationId,
     'hour': hour,
     'minute': minute,
+    if (addedAt != null) 'added_at': addedAt!.toIso8601String(),
   };
 
-  MedicationDose copyWith({int? notificationId}) => MedicationDose(
+  MedicationDose copyWith({
+    int? notificationId,
+    int? hour,
+    int? minute,
+    DateTime? addedAt,
+  }) => MedicationDose(
     notificationId: notificationId ?? this.notificationId,
-    hour: hour,
-    minute: minute,
+    hour: hour ?? this.hour,
+    minute: minute ?? this.minute,
+    addedAt: addedAt ?? this.addedAt,
   );
 }
 
@@ -183,9 +196,11 @@ class MedicationReminder {
     'name': name,
     'dosage': dosage,
     'doses': [for (final dose in doses) dose.toMap()],
-    // Tek saatli eski sürümler de okuyabilsin diye ilk doz üst düzeyde
-    // tekrarlanır; bu sürüm yalnızca 'doses' listesini okur.
-    ...doses.first.toMap(),
+    // Tek saatli eski sürümler de okuyabilsin diye ilk dozun kimliği ve
+    // saati üst düzeyde tekrarlanır; bu sürüm yalnızca 'doses' listesini okur.
+    'notification_id': doses.first.notificationId,
+    'hour': doses.first.hour,
+    'minute': doses.first.minute,
     'is_active': isActive,
     if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
   };
@@ -207,6 +222,7 @@ class MedicationReminder {
                 _legacyNotificationId(map, dose),
             hour: (dose['hour'] as num).toInt(),
             minute: (dose['minute'] as num).toInt(),
+            addedAt: DateTime.tryParse('${dose['added_at'] ?? ''}'),
           ),
       ],
       isActive: map['is_active'] ?? true,

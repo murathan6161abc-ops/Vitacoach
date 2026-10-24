@@ -78,6 +78,33 @@ void main() {
       expect(restored.doses.map((d) => d.notificationId), [20001, 20002]);
     });
 
+    test('sonradan eklenen dozun eklenme anı saklanır', () {
+      final addedAt = DateTime(2026, 10, 24, 12);
+      final medication = MedicationReminder(
+        name: 'Metformin',
+        dosage: '500 mg',
+        doses: [
+          MedicationDose(notificationId: 20001, hour: 8, minute: 0),
+          MedicationDose(
+            notificationId: 20002,
+            hour: 7,
+            minute: 0,
+            addedAt: addedAt,
+          ),
+        ],
+      );
+
+      final map = medication.toMap();
+      // Üst düzeydeki ilk doz yalnızca eski sürümlerin okuduğu alanlardır.
+      expect(map.containsKey('added_at'), isFalse);
+
+      final restored = MedicationReminder.fromMap(map);
+      expect(restored.doses.map((d) => (d.notificationId, d.addedAt)), [
+        (20002, addedAt),
+        (20001, null),
+      ]);
+    });
+
     test('assigns a stable id to legacy records', () {
       final legacy = <String, dynamic>{
         'name': 'Eski kayıt',
