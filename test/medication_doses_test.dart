@@ -51,6 +51,11 @@ var _pendingIds = <int>[];
 List<MethodCall> get _scheduled =>
     _calls.where((c) => c.method == 'zonedSchedule').toList();
 
+List<Object?> get _cancelledIds => [
+  for (final c in _calls)
+    if (c.method == 'cancel') (c.arguments as Map)['id'],
+];
+
 NotificationResponse _press(String actionId, String payload) =>
     NotificationResponse(
       notificationResponseType:
@@ -67,6 +72,16 @@ List<Map<dynamic, dynamic>> _storedMedications() => [
     m as Map,
 ];
 
+/// Dozun bugün "Aldım" ile işaretlendiğini doz günlüğüne yazar.
+Future<void> _takenToday(int doseId) {
+  final today = DateTime.now();
+  return HiveService().getMedicationBox().put('dose_log', {
+    DoseLog.dayKey(today): {
+      '$doseId': {'status': 'taken', 'at': today.toIso8601String()},
+    },
+  });
+}
+
 /// Beklenmeden başlatılan işin (ör. açılışta bildirim kurulumu) bitmesini
 /// bekler; koşul hiç sağlanmazsa yaklaşık bir saniye sonra döner.
 Future<void> _until(bool Function() done) async {
@@ -75,6 +90,18 @@ Future<void> _until(bool Function() done) async {
   }
   await pumpEventQueue();
 }
+
+Widget _chronicScreen() => MultiProvider(
+  providers: [
+    ChangeNotifierProvider<ProfileProvider>(
+      create: (_) => ProfileProvider()..loadProfile(),
+    ),
+    ChangeNotifierProvider<ChronicProvider>(
+      create: (_) => ChronicProvider()..loadData(),
+    ),
+  ],
+  child: const MaterialApp(home: ChronicScreen()),
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -257,22 +284,170 @@ void main() {
     );
   });
 
+  group('Saatleri düzenleme', () {
+    /// Kayıtlı Parol ile sağlayıcıyı açar; açılıştaki bildirim denetimi
+    /// bittikten sonra kanal çağrıları sıfırlanır.
+    Future<ChronicProvider> openParol() async {
+      await HiveService().getMedicationBox().put('medications', [_parol()]);
+      _pendingIds = [20001, 20002];
+      final provider = ChronicProvider()..loadData();
+      await _until(
+        () => _calls.any((c) => c.method == 'pendingNotificationRequests'),
+      );
+      _calls.clear();
+      return provider;
+    }
+
+    test(
+      'kalan dozlar kimliğini ve geçmişini korur; yeni saat yeni kimlik alır',
+      () async {
+        await _takenToday(20001);
+        final provider = await openParol();
+
+        await provider.updateMedicationDoses(0, [
+          ...provider.medications.single.doses,
+          MedicationDose(hour: 20, minute: 0),
+        ]);
+
+        final doses = provider.medications.single.doses;
+        final ids = [for (final d in doses) d.notificationId];
+        expect(ids.take(2), [20001, 20002]);
+        expect(ids.last, isNot(anyOf(20001, 20002)));
+        expect(doses.last.timeDisplay, '20:00');
+        expect([
+          for (final d in _storedMedications().single['doses'] as List)
+            (d as Map)['notification_id'],
+        ], ids);
+        // Bugünkü "Aldım" kaydı 08:00 dozunda kalır.
+        expect(provider.todayDose(doses.first)?.status, DoseStatus.taken);
+        // Yalnızca yeni saat kurulur; kalan dozların bildirimine dokunulmaz.
+        expect(_scheduled.map((c) => c.arguments['id']), [ids.last]);
+        expect(
+          _scheduled.single.arguments['scheduledDateTime'],
+          endsWith('T20:00:00'),
+        );
+        expect(_cancelledIds, isEmpty);
+      },
+    );
+
+    test(
+      'kaldırılan dozun günlük bildirimi ve ertelenen hatırlatması iptal edilir',
+      () async {
+        final provider = await openParol();
+
+        await provider.updateMedicationDoses(0, [
+          provider.medications.single.doses.first,
+        ]);
+
+        expect(provider.medications.single.doses.map((d) => d.notificationId), [
+          20001,
+        ]);
+        expect(_storedMedications().single['doses'], [
+          {'notification_id': 20001, 'hour': 8, 'minute': 0},
+        ]);
+        expect(
+          _cancelledIds,
+          unorderedEquals([20002, NotificationIds.snoozeFor(20002)]),
+        );
+        expect(_scheduled, isEmpty);
+      },
+    );
+
+    test(
+      'saati değişen doz kimliğini ve bugünkü kaydını korur, yeni saatle kurulur',
+      () async {
+        await _takenToday(20002);
+        final provider = await openParol();
+        final [morning, noon] = provider.medications.single.doses;
+
+        await provider.updateMedicationDoses(0, [
+          morning,
+          noon.copyWith(hour: 13, minute: 30),
+        ]);
+
+        final moved = provider.medications.single.doses.last;
+        expect((moved.notificationId, moved.timeDisplay), (20002, '13:30'));
+        // Bugün alınmış doz yeni saatinde yeniden "bekliyor" görünmez; aynı
+        // gün ikinci kez alınmasın.
+        expect(provider.todayDose(moved)?.status, DoseStatus.taken);
+        // Aynı kimlikle kurulan bildirim 12:00 bildiriminin yerini alır.
+        expect(_scheduled.map((c) => c.arguments['id']), [20002]);
+        expect(
+          _scheduled.single.arguments['scheduledDateTime'],
+          endsWith('T13:30:00'),
+        );
+        final payload =
+            jsonDecode(_scheduled.single.arguments['payload'] as String) as Map;
+        expect((payload['id'], payload['h'], payload['m']), (20002, 13, 30));
+        expect(_cancelledIds, isEmpty);
+      },
+    );
+
+    test(
+      'hatırlatıcılar kapalıyken yeni saat için bildirim kurulmaz',
+      () async {
+        await HiveService().getProfileBox().put(
+          'medication_reminder_enabled',
+          false,
+        );
+        final provider = await openParol();
+
+        final ok = await provider.updateMedicationDoses(0, [
+          ...provider.medications.single.doses,
+          MedicationDose(hour: 20, minute: 0),
+        ]);
+
+        expect(ok, isTrue);
+        expect(provider.medications.single.doses, hasLength(3));
+        expect(_scheduled, isEmpty);
+      },
+    );
+
+    test(
+      'sonradan eklenen saat, eklenmeden önceki günlerde kaçırılmış sayılmaz',
+      () async {
+        // Parol 1 Ekim'den beri kayıtlı; akşam dozu 24 Ekim öğlen eklenir.
+        final provider = await openParol();
+        final editedAt = DateTime(2026, 10, 24, 12);
+
+        await provider.updateMedicationDoses(0, [
+          ...provider.medications.single.doses,
+          MedicationDose(hour: 20, minute: 0),
+        ], now: editedAt);
+
+        final medication = provider.medications.single;
+        final evening = medication.doses.last;
+        final night = DateTime(2026, 10, 24, 21);
+        final stats = provider
+            .adherence(now: night)
+            .perDose
+            .singleWhere(
+              (d) => d.dose.notificationId == evening.notificationId,
+            );
+        // Yalnızca eklendiği günün 20:00 dozu planlanmış sayılır.
+        expect(stats.scheduled, 1);
+        expect(
+          provider.doseState(
+            medication,
+            evening,
+            DateTime(2026, 10, 23),
+            now: night,
+          ),
+          DoseCellState.notScheduled,
+        );
+        // Eklenme anı saklanır; uygulama yeniden açıldığında da geçerlidir.
+        final stored = _storedMedications().single['doses'] as List;
+        expect((stored.last as Map)['added_at'], editedAt.toIso8601String());
+      },
+    );
+  });
+
   testWidgets('kronik ekranında her doz ayrı satırda "Aldım" ile görünür', (
     tester,
   ) async {
     await HiveService().getMedicationBox().put('medications', [_parol()]);
 
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (_) => ProfileProvider()..loadProfile(),
-          ),
-          ChangeNotifierProvider(create: (_) => ChronicProvider()..loadData()),
-        ],
-        child: const MaterialApp(home: ChronicScreen()),
-      ),
-    );
+    await tester.pumpWidget(_chronicScreen());
     final noon = find.text('500 mg · 12:00');
     await tester.scrollUntilVisible(noon, 300);
 
@@ -287,5 +462,36 @@ void main() {
     expect(_doseLog().get(today, 20002)?.status, DoseStatus.taken);
     expect(_doseLog().get(today, 20001), isNull);
     expect(find.text('Aldım'), findsOneWidget);
+  });
+
+  testWidgets('"Saatleri düzenle" pencereyi kayıtlı saatlerle açar', (
+    tester,
+  ) async {
+    await HiveService().getMedicationBox().put('medications', [_parol()]);
+    _pendingIds = [20001, 20002];
+
+    await tester.pumpWidget(_chronicScreen());
+    await tester.scrollUntilVisible(find.text('500 mg · 12:00'), 300);
+    // Satırlar saate göre sıralı: ikinci menü 12:00 dozunundur.
+    await tester.tap(find.byTooltip('Diğer').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Saatleri düzenle'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Saatleri Düzenle'), findsOneWidget);
+    expect(find.widgetWithText(InputChip, '08:00'), findsOneWidget);
+    expect(find.widgetWithText(InputChip, '12:00'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('12:00 saatini kaldır'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Güncelle'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('500 mg · 12:00'), findsNothing);
+    expect(find.text('500 mg · 08:00'), findsOneWidget);
+    expect(_storedMedications().single['doses'], [
+      {'notification_id': 20001, 'hour': 8, 'minute': 0},
+    ]);
+    expect(_cancelledIds, contains(20002));
   });
 }

@@ -153,6 +153,41 @@ void main() {
       expect(r.patterns.single.message, contains('Metformin (20:00)'));
     });
 
+    test('ilaca sonradan eklenen doz, eklendiği andan itibaren sayılır', () {
+      final m = MedicationReminder(
+        name: 'Metformin',
+        dosage: '500 mg',
+        doses: [
+          MedicationDose(notificationId: 11, hour: 8, minute: 0),
+          // Akşam dozu 29 Eylül öğlen eklendi.
+          MedicationDose(
+            notificationId: 12,
+            hour: 20,
+            minute: 0,
+            addedAt: DateTime(2026, 9, 29, 12),
+          ),
+        ],
+        createdAt: started,
+      );
+      final r = AdherenceCalculator.compute(
+        medications: [m],
+        log: DoseLog.empty(),
+        now: now,
+      );
+      // Sabah dozu yedi gün, akşam dozu yalnızca 29 ve 30 Eylül.
+      expect(r.perDose.map((d) => d.scheduled), [7, 2]);
+      expect(
+        AdherenceCalculator.cellState(
+          medication: m,
+          dose: m.doses.last,
+          log: DoseLog.empty(),
+          day: DateTime(2026, 9, 28),
+          now: now,
+        ),
+        DoseCellState.notScheduled,
+      );
+    });
+
     test('doz kaydı Hive biçimine gidip gelir ve bozuk girdiyi atlar', () {
       final log = DoseLog.empty();
       log.set(

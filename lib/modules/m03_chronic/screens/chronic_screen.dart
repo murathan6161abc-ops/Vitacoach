@@ -817,6 +817,8 @@ class ChronicScreen extends StatelessWidget {
                   provider: provider,
                   medication: medication,
                   dose: dose,
+                  onEditTimes: () =>
+                      _editMedicationTimes(context, provider, index),
                   onDelete: () => provider.removeMedication(index),
                 ),
           ] else
@@ -832,6 +834,31 @@ class ChronicScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Kayıtlı ilacın doz saatlerini düzenler. Silip yeniden eklemenin aksine
+  /// kalan saatlerin uyum geçmişi korunur.
+  Future<void> _editMedicationTimes(
+    BuildContext context,
+    ChronicProvider provider,
+    int index,
+  ) async {
+    final result = await showDialog<MedicationReminder>(
+      context: context,
+      builder: (_) => MedicationDialog(initial: provider.medications[index]),
+    );
+    if (result == null) return;
+    final scheduled = await provider.updateMedicationDoses(index, result.doses);
+    if (!scheduled && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Saatler kaydedildi ancak hatırlatmalar kurulamadı. Bildirim '
+            'iznini kontrol edin.',
+          ),
+        ),
+      );
+    }
   }
 
   /// Android 12+ tam zamanlı alarm izni yoksa, sistem ayarlarına

@@ -172,8 +172,9 @@ class AdherenceCalculator {
     final stats = <DoseAdherence>[];
 
     for (final med in medications.where((m) => m.isActive)) {
-      final start = _startMoment(med, log, trackingSince, now);
+      final medicationStart = _startMoment(med, log, trackingSince, now);
       for (final dose in med.doses) {
+        final start = _doseStart(dose, medicationStart);
         var scheduled = 0, taken = 0, skipped = 0;
         final delays = <double>[];
         final missedDays = <DateTime>[];
@@ -236,10 +237,20 @@ class AdherenceCalculator {
     if (record?.status == DoseStatus.taken) return DoseCellState.taken;
     if (record?.status == DoseStatus.skipped) return DoseCellState.skipped;
     final due = dose.dueOn(d);
-    if (due.isBefore(_startMoment(medication, log, trackingSince, now))) {
-      return DoseCellState.notScheduled;
-    }
+    final start = _doseStart(
+      dose,
+      _startMoment(medication, log, trackingSince, now),
+    );
+    if (due.isBefore(start)) return DoseCellState.notScheduled;
     return due.isAfter(now) ? DoseCellState.upcoming : DoseCellState.missed;
+  }
+
+  /// İlaca sonradan eklenen doz, eklendiği andan önce kaçırılmış sayılmaz.
+  static DateTime _doseStart(MedicationDose dose, DateTime medicationStart) {
+    final addedAt = dose.addedAt;
+    return addedAt != null && addedAt.isAfter(medicationStart)
+        ? addedAt
+        : medicationStart;
   }
 
   /// Uyum sayımının başladığı an: ilacın eklendiği an; yoksa (eski

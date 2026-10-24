@@ -552,11 +552,16 @@ class NotificationService {
     );
   }
 
+  /// Dozun günlük bildirimini ve ertelenmiş hatırlatmasını kaldırır.
+  Future<void> cancelMedicationDose(MedicationDose dose) async {
+    await cancelNotification(dose.notificationId);
+    await cancelNotification(NotificationIds.snoozeFor(dose.notificationId));
+  }
+
   /// İlacın tüm doz bildirimlerini ve ertelenmiş hatırlatmalarını kaldırır.
   Future<void> cancelMedicationReminders(MedicationReminder medication) async {
     for (final dose in medication.doses) {
-      await cancelNotification(dose.notificationId);
-      await cancelNotification(NotificationIds.snoozeFor(dose.notificationId));
+      await cancelMedicationDose(dose);
     }
   }
 

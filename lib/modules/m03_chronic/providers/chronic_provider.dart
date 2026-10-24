@@ -370,6 +370,85 @@ class ChronicProvider extends ChangeNotifier {
     return notificationScheduled;
   }
 
+  /// Kayıtlı ilacın doz saatlerini değiştirir: saat ekler, çıkarır veya
+  /// değiştirir. [doses] içinde bu ilaca ait kimliği taşıyan doz, kayıtlı
+  /// dozun kendisidir ve kimliğiyle birlikte doz günlüğündeki geçmişini
+  /// korur; diğerleri yeni saattir ve tekil yeni kimlik alır. Yalnızca
+  /// kaldırılan, eklenen ve saati değişen dozların bildirimine dokunulur.
+  /// Hatırlatmalar kurulamadıysa (izin yok, hata) false döner.
+  ///
+  /// Saati değişen doz kimliğini korur. Böylece bugün "Aldım" denmiş doz
+  /// yeni saatinde yeniden "bekliyor" görünmez (aynı gün ikinci kez alınma
+  /// riski) ve dozun geçmişi uyum tablosundan düşmez. Bedeli: değişiklikten
+  /// önceki kayıtların gecikmesi yeni saate göre hesaplanır. Bu yalnızca
+  /// "geç alıyorsunuz" önerisini etkiler ve o kayıtlar 7 günlük pencereden
+  /// çıkınca kendiliğinden düzelir.
+  Future<bool> updateMedicationDoses(
+    int index,
+    List<MedicationDose> doses, {
+    DateTime? now,
+  }) async {
+    if (index < 0 || index >= _medications.length) return true;
+    final previous = _medications[index];
+    final previousById = {
+      for (final dose in previous.doses) dose.notificationId: dose,
+    };
+    final incomingIds = {for (final dose in doses) dose.notificationId};
+    final removed = [
+      for (final dose in previous.doses)
+        if (!incomingIds.contains(dose.notificationId)) dose,
+    ];
+    // Yeni saat başka bir dozun kimliğini alamaz; kaldırılan dozunkini de
+    // alamaz ki onun geçmişi yeni saate geçmesin.
+    final usedIds = {
+      for (final (i, medication) in _medications.indexed)
+        if (i != index)
+          for (final dose in medication.doses) dose.notificationId,
+      for (final dose in removed) dose.notificationId,
+    };
+    final unique = _withUniqueDoseIds(
+      previous.copyWith(doses: doses),
+      usedIds,
+      salt: index,
+    );
+    final addedAt = now ?? DateTime.now();
+    final medication = unique.copyWith(
+      doses: [
+        for (final dose in unique.doses)
+          previousById.containsKey(dose.notificationId)
+              ? dose
+              : dose.copyWith(addedAt: addedAt),
+      ],
+    );
+    _medications[index] = medication;
+    await _saveMedications();
+    notifyListeners();
+
+    // Kalan dozlardan yalnızca saati değişenler yeniden kurulur; aynı
+    // kimlikle kurulan bildirim eskisinin yerini alır.
+    final changed = [
+      for (final dose in medication.doses)
+        if (previousById[dose.notificationId]?.minuteOfDay != dose.minuteOfDay)
+          dose,
+    ];
+    try {
+      for (final dose in removed) {
+        await NotificationService().cancelMedicationDose(dose);
+      }
+      if (changed.isEmpty || !medication.isActive || !_remindersEnabled) {
+        return true;
+      }
+      if (!await NotificationService().requestPermissions()) return false;
+      for (final dose in changed) {
+        await NotificationService().scheduleMedicationDose(medication, dose);
+      }
+      return true;
+    } catch (error) {
+      debugPrint('İlaç bildirimleri güncellenemedi: $error');
+      return false;
+    }
+  }
+
   Future<void> removeMedication(int index) async {
     if (index >= 0 && index < _medications.length) {
       final medication = _medications.removeAt(index);
@@ -386,15 +465,18 @@ class ChronicProvider extends ChangeNotifier {
     );
   }
 
+  /// Ayarlardaki ilaç hatırlatıcıları açık mı? Ayar hiç kaydedilmediyse
+  /// ilaç varken açık sayılır.
+  bool get _remindersEnabled =>
+      _hiveService.getProfileBox().get(
+            'medication_reminder_enabled',
+            defaultValue: _medications.isNotEmpty,
+          )
+          as bool;
+
   Future<void> _restoreMedicationNotifications() async {
     try {
-      final profileBox = _hiveService.getProfileBox();
-      final enabled =
-          profileBox.get(
-                'medication_reminder_enabled',
-                defaultValue: _medications.isNotEmpty,
-              )
-              as bool;
+      final enabled = _remindersEnabled;
       final pendingIds = await NotificationService().pendingNotificationIds();
 
       for (final medication in _medications) {

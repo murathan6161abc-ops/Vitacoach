@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../models/health_entry.dart';
 
+/// Yeni ilaç ekleme ya da kayıtlı ilacın doz saatlerini düzenleme penceresi.
 class MedicationDialog extends StatefulWidget {
-  const MedicationDialog({super.key});
+  /// Saatleri düzenlenecek kayıtlı ilaç; yoksa yeni ilaç eklenir.
+  final MedicationReminder? initial;
+
+  const MedicationDialog({super.key, this.initial});
 
   @override
   State<MedicationDialog> createState() => _MedicationDialogState();
@@ -13,8 +17,11 @@ class _MedicationDialogState extends State<MedicationDialog> {
   final _nameController = TextEditingController();
   final _dosageController = TextEditingController();
 
-  /// Günlük doz saatleri; sıralı, tekrarsız ve en az bir tane.
-  List<TimeOfDay> _times = const [TimeOfDay(hour: 8, minute: 0)];
+  /// Günlük dozlar; saate göre sıralı, saatleri tekrarsız ve en az bir tane.
+  /// Düzenlemede kayıtlı dozlar kimlikleriyle gelir: saati değiştirilen doz
+  /// kimliğini korur, eklenen saat yeni kimlik alır.
+  late List<MedicationDose> _doses =
+      widget.initial?.doses ?? [MedicationDose(hour: 8, minute: 0)];
 
   @override
   void dispose() {
@@ -25,15 +32,10 @@ class _MedicationDialogState extends State<MedicationDialog> {
 
   static const _minutesPerDay = 24 * 60;
 
-  static int _minutesOf(TimeOfDay t) => t.hour * 60 + t.minute;
-
-  static String _format(TimeOfDay t) =>
-      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-
   /// Yeni saat önerisi: saatler arasındaki en uzun boşluğun ortası (08:00
   /// için 20:00; 08:00 ve 20:00 için 14:00). Var olan saatle çakışmaz.
   TimeOfDay _suggestNextTime() {
-    final minutes = [for (final t in _times) _minutesOf(t)];
+    final minutes = [for (final d in _doses) d.minuteOfDay];
     var start = minutes.first, longest = 0;
     for (var i = 0; i < minutes.length; i++) {
       final next = i + 1 < minutes.length
@@ -48,13 +50,13 @@ class _MedicationDialogState extends State<MedicationDialog> {
     return TimeOfDay(hour: suggested ~/ 60, minute: suggested % 60);
   }
 
-  /// Aynı saat iki kez eklenmez; saatler sıralı tutulur.
-  void _setTimes(Iterable<TimeOfDay> times) {
-    final unique = {for (final t in times) _minutesOf(t): t};
+  static bool _hasTime(Iterable<MedicationDose> doses, TimeOfDay time) =>
+      doses.any((d) => d.hour == time.hour && d.minute == time.minute);
+
+  /// Dozlar saate göre sıralı tutulur.
+  void _setDoses(List<MedicationDose> doses) {
     setState(() {
-      _times = [
-        for (final minutes in unique.keys.toList()..sort()) unique[minutes]!,
-      ];
+      _doses = doses..sort((a, b) => a.minuteOfDay.compareTo(b.minuteOfDay));
     });
   }
 
@@ -63,44 +65,106 @@ class _MedicationDialogState extends State<MedicationDialog> {
       context: context,
       initialTime: _suggestNextTime(),
     );
-    if (time != null) _setTimes([..._times, time]);
+    // Aynı saat iki kez eklenmez.
+    if (time == null || _hasTime(_doses, time)) return;
+    _setDoses([
+      ..._doses,
+      MedicationDose(hour: time.hour, minute: time.minute),
+    ]);
   }
 
+  /// Saati değişen doz kimliğini korur; başka bir dozun saatine alınırsa o
+  /// dozla birleşir.
   Future<void> _changeTime(int index) async {
+    final dose = _doses[index];
     final time = await showTimePicker(
       context: context,
-      initialTime: _times[index],
+      initialTime: TimeOfDay(hour: dose.hour, minute: dose.minute),
     );
-    if (time != null) _setTimes([..._times]..[index] = time);
+    if (time == null) return;
+    final others = [..._doses]..removeAt(index);
+    _setDoses([
+      ...others,
+      if (!_hasTime(others, time))
+        dose.copyWith(hour: time.hour, minute: time.minute),
+    ]);
+  }
+
+  void _save() {
+    final initial = widget.initial;
+    if (initial != null) {
+      Navigator.pop(context, initial.copyWith(doses: _doses));
+      return;
+    }
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    final medication = MedicationReminder(
+      name: name,
+      dosage: _dosageController.text.trim(),
+      doses: _doses,
+      createdAt: DateTime.now(),
+    );
+    Navigator.pop(context, medication);
   }
 
   @override
   Widget build(BuildContext context) {
+    final initial = widget.initial;
     return AlertDialog(
-      title: const Text('İlaç Hatırlatıcı Ekle'),
+      title: Text(
+        initial == null ? 'İlaç Hatırlatıcı Ekle' : 'Saatleri Düzenle',
+      ),
       scrollable: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'İlaç adı',
-              prefixIcon: Icon(Icons.medication),
+          if (initial == null) ...[
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'İlaç adı',
+                prefixIcon: Icon(Icons.medication),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _dosageController,
-            decoration: const InputDecoration(
-              labelText: 'Doz (örn: 1 tablet)',
-              prefixIcon: Icon(Icons.numbers),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _dosageController,
+              decoration: const InputDecoration(
+                labelText: 'Doz (örn: 1 tablet)',
+                prefixIcon: Icon(Icons.numbers),
+              ),
             ),
-          ),
+          ] else
+            // Düzenlemede yalnızca saatler değişir; ad ve doz bilgi içindir.
+            Row(
+              children: [
+                Icon(Icons.medication, color: AppColors.secondary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        initial.name,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      if (initial.dosage.trim().isNotEmpty)
+                        Text(
+                          initial.dosage.trim(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           const SizedBox(height: 16),
           Text(
-            _times.length == 1 ? 'Doz saati' : 'Günde ${_times.length} doz',
+            _doses.length == 1 ? 'Doz saati' : 'Günde ${_doses.length} doz',
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
@@ -112,20 +176,21 @@ class _MedicationDialogState extends State<MedicationDialog> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final (index, time) in _times.indexed)
+              for (final (index, dose) in _doses.indexed)
                 InputChip(
                   avatar: Icon(
                     Icons.access_time,
                     size: 18,
                     color: AppColors.primary,
                   ),
-                  label: Text(_format(time)),
+                  label: Text(dose.timeDisplay),
                   onPressed: () => _changeTime(index),
                   // İlacın en az bir doz saati olmalı.
-                  onDeleted: _times.length > 1
-                      ? () => _setTimes([..._times]..removeAt(index))
+                  onDeleted: _doses.length > 1
+                      ? () => _setDoses([..._doses]..removeAt(index))
                       : null,
-                  deleteButtonTooltipMessage: '${_format(time)} saatini kaldır',
+                  deleteButtonTooltipMessage:
+                      '${dose.timeDisplay} saatini kaldır',
                 ),
               ActionChip(
                 avatar: const Icon(Icons.add, size: 18),
@@ -142,21 +207,8 @@ class _MedicationDialogState extends State<MedicationDialog> {
           child: const Text('İptal'),
         ),
         ElevatedButton(
-          onPressed: () {
-            final name = _nameController.text.trim();
-            if (name.isEmpty) return;
-            final medication = MedicationReminder(
-              name: name,
-              dosage: _dosageController.text.trim(),
-              doses: [
-                for (final time in _times)
-                  MedicationDose(hour: time.hour, minute: time.minute),
-              ],
-              createdAt: DateTime.now(),
-            );
-            Navigator.pop(context, medication);
-          },
-          child: const Text('Kaydet'),
+          onPressed: _save,
+          child: Text(initial == null ? 'Kaydet' : 'Güncelle'),
         ),
       ],
     );

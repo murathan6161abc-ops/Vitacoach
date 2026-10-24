@@ -99,6 +99,7 @@ class MedicationRow extends StatelessWidget {
   final ChronicProvider provider;
   final MedicationReminder medication;
   final MedicationDose dose;
+  final VoidCallback onEditTimes;
   final VoidCallback onDelete;
 
   const MedicationRow({
@@ -106,6 +107,7 @@ class MedicationRow extends StatelessWidget {
     required this.provider,
     required this.medication,
     required this.dose,
+    required this.onEditTimes,
     required this.onDelete,
   });
 
@@ -194,6 +196,8 @@ class MedicationRow extends StatelessWidget {
                   provider.markDose(dose, DoseStatus.skipped);
                 case 'undo':
                   provider.markDose(dose, null);
+                case 'edit':
+                  onEditTimes();
                 case 'delete':
                   onDelete();
               }
@@ -209,6 +213,10 @@ class MedicationRow extends StatelessWidget {
                   value: 'undo',
                   child: Text('İşareti kaldır'),
                 ),
+              const PopupMenuItem(
+                value: 'edit',
+                child: Text('Saatleri düzenle'),
+              ),
               PopupMenuItem(
                 value: 'delete',
                 child: Text(
@@ -381,7 +389,8 @@ class _AdherenceDetails extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           'Nasıl hesaplanır? Uyum = alınan doz ÷ planlanan doz. Saati henüz '
-          'gelmemiş dozlar ve ilacın eklendiği günden önceki günler sayılmaz. '
+          'gelmemiş dozlar ve ilaç ya da saat eklenmeden önceki dozlar '
+          'sayılmaz. '
           'Örüntüler, kaçırılan dozların gün ve saatlerine bakılarak cihazınızda '
           'çıkarılır.',
           style: TextStyle(fontSize: 12, color: AppColors.textHint),
