@@ -43,7 +43,11 @@ class NotificationActionIds {
 class NotificationPayload {
   final NotificationKind kind;
   final String? route;
-  final int? medicationId;
+
+  /// İlaç bildiriminde dozun bildirim kimliği. Eski tek saatli ilacın
+  /// kimliği göçte ilk dozuna geçtiği için önceden kurulan bildirimler de
+  /// doğru doza işlenir.
+  final int? doseId;
   final String? name;
   final String? dosage;
   final int? hour;
@@ -52,7 +56,7 @@ class NotificationPayload {
   const NotificationPayload({
     required this.kind,
     this.route,
-    this.medicationId,
+    this.doseId,
     this.name,
     this.dosage,
     this.hour,
@@ -62,7 +66,7 @@ class NotificationPayload {
   String encode() => jsonEncode({
     'k': kind.name,
     if (route != null) 'r': route,
-    if (medicationId != null) 'id': medicationId,
+    if (doseId != null) 'id': doseId,
     if (name != null) 'n': name,
     if (dosage != null) 'd': dosage,
     if (hour != null) 'h': hour,
@@ -80,7 +84,7 @@ class NotificationPayload {
       return NotificationPayload(
         kind: kind,
         route: map['r'] as String?,
-        medicationId: (map['id'] as num?)?.toInt(),
+        doseId: (map['id'] as num?)?.toInt(),
         name: map['n'] as String?,
         dosage: map['d'] as String?,
         hour: (map['h'] as num?)?.toInt(),
@@ -110,8 +114,11 @@ class NotificationContent {
     required this.payload,
   });
 
+  /// İlacın tek bir dozunun bildirimi; "Aldım" ve "10 dk sonra" dozu
+  /// bildirim verisindeki kimlik ve saatten tanır.
   factory NotificationContent.medication(
-    MedicationReminder med, {
+    MedicationReminder med,
+    MedicationDose dose, {
     bool snoozed = false,
   }) {
     final dosage = med.dosage.trim();
@@ -119,17 +126,17 @@ class NotificationContent {
       kind: NotificationKind.medication,
       title: snoozed ? 'Hatırlatma: ${med.name}' : 'İlaç zamanı: ${med.name}',
       body:
-          '${dosage.isEmpty ? '' : '$dosage · '}${med.timeDisplay} dozu. '
+          '${dosage.isEmpty ? '' : '$dosage · '}${dose.timeDisplay} dozu. '
           'Aldıysanız "Aldım"a dokunun; ilaç uyumunuza işlenir.',
       summary: 'İlaç hatırlatıcısı',
       payload: NotificationPayload(
         kind: NotificationKind.medication,
         route: AppConstants.routeChronic,
-        medicationId: med.notificationId,
+        doseId: dose.notificationId,
         name: med.name,
         dosage: dosage,
-        hour: med.hour,
-        minute: med.minute,
+        hour: dose.hour,
+        minute: dose.minute,
       ),
     );
   }
@@ -516,17 +523,41 @@ class NotificationService {
     );
   }
 
+  /// Her doz saati, kimliği dozun kimliği olan ayrı bir günlük bildirimdir.
   Future<void> scheduleMedicationReminder(
     MedicationReminder medication, {
     bool requestExactPermission = false,
+  }) async {
+    for (final (index, dose) in medication.doses.indexed) {
+      await scheduleMedicationDose(
+        medication,
+        dose,
+        // Sistem izin sayfası ilaç başına bir kez açılır.
+        requestExactPermission: requestExactPermission && index == 0,
+      );
+    }
+  }
+
+  Future<void> scheduleMedicationDose(
+    MedicationReminder medication,
+    MedicationDose dose, {
+    bool requestExactPermission = false,
   }) {
     return scheduleDailyContent(
-      id: medication.notificationId,
-      content: NotificationContent.medication(medication),
-      hour: medication.hour,
-      minute: medication.minute,
+      id: dose.notificationId,
+      content: NotificationContent.medication(medication, dose),
+      hour: dose.hour,
+      minute: dose.minute,
       requestExactPermission: requestExactPermission,
     );
+  }
+
+  /// İlacın tüm doz bildirimlerini ve ertelenmiş hatırlatmalarını kaldırır.
+  Future<void> cancelMedicationReminders(MedicationReminder medication) async {
+    for (final dose in medication.doses) {
+      await cancelNotification(dose.notificationId);
+      await cancelNotification(NotificationIds.snoozeFor(dose.notificationId));
+    }
   }
 
   Future<void> scheduleDailyContent({
@@ -567,21 +598,25 @@ class NotificationService {
     );
   }
 
-  /// Ertelenen ilaç hatırlatması (10 dakika sonra, tek seferlik).
+  /// Ertelenen ilaç hatırlatması (10 dakika sonra, tek seferlik). Aynı dozun
+  /// kimliğini ve saatini taşır; "Aldım"ı yine o doza işlenir.
   Future<void> snoozeMedication(
     NotificationPayload payload, {
     Duration delay = const Duration(minutes: 10),
   }) async {
-    final id = payload.medicationId;
+    final id = payload.doseId;
     if (id == null || payload.name == null) return;
-    final med = MedicationReminder(
+    final dose = MedicationDose(
       notificationId: id,
-      name: payload.name!,
-      dosage: payload.dosage ?? '',
       hour: payload.hour ?? 0,
       minute: payload.minute ?? 0,
     );
-    final content = NotificationContent.medication(med, snoozed: true);
+    final med = MedicationReminder(
+      name: payload.name!,
+      dosage: payload.dosage ?? '',
+      doses: [dose],
+    );
+    final content = NotificationContent.medication(med, dose, snoozed: true);
     // Arka plan motorunda görsel çizimi desteklenmeyebilir; simgesiz göster.
     await _scheduleWithFallback(
       id: NotificationIds.snoozeFor(id),
@@ -675,15 +710,19 @@ class NotificationService {
     final med =
         medication ??
         MedicationReminder(
-          notificationId: 999999,
           name: 'Örnek ilaç',
           dosage: '1 tablet',
-          hour: TimeOfDay.now().hour,
-          minute: TimeOfDay.now().minute,
+          doses: [
+            MedicationDose(
+              notificationId: 999999,
+              hour: TimeOfDay.now().hour,
+              minute: TimeOfDay.now().minute,
+            ),
+          ],
         );
     await showContent(
       NotificationIds.preview[0],
-      NotificationContent.medication(med),
+      NotificationContent.medication(med, med.doses.first),
     );
     await showContent(NotificationIds.preview[1], NotificationContent.water(1));
     await showContent(

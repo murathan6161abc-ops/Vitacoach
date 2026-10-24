@@ -82,12 +82,49 @@ class BloodPressureEntry {
       );
 }
 
-class MedicationReminder {
+/// İlacın günlük doz saatlerinden biri. Her dozun kendi kalıcı bildirim
+/// kimliği vardır: günlük bildirim, "Aldım" eylemi ve doz günlüğü dozu bu
+/// kimlikle tanır.
+class MedicationDose {
   final int notificationId;
-  final String name;
-  final String dosage;
   final int hour;
   final int minute;
+
+  MedicationDose({
+    int? notificationId,
+    required this.hour,
+    required this.minute,
+  }) : notificationId =
+           notificationId ?? MedicationReminder.createNotificationId();
+
+  int get minuteOfDay => hour * 60 + minute;
+
+  String get timeDisplay =>
+      '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+
+  /// Dozun [day] günündeki vakti.
+  DateTime dueOn(DateTime day) =>
+      DateTime(day.year, day.month, day.day, hour, minute);
+
+  Map<String, dynamic> toMap() => {
+    'notification_id': notificationId,
+    'hour': hour,
+    'minute': minute,
+  };
+
+  MedicationDose copyWith({int? notificationId}) => MedicationDose(
+    notificationId: notificationId ?? this.notificationId,
+    hour: hour,
+    minute: minute,
+  );
+}
+
+class MedicationReminder {
+  final String name;
+  final String dosage;
+
+  /// Günlük doz saatleri; saate göre sıralı, en az bir doz.
+  final List<MedicationDose> doses;
   final bool isActive;
 
   /// İlacın eklendiği an; uyum skoru bu tarihten itibaren hesaplanır.
@@ -95,14 +132,21 @@ class MedicationReminder {
   final DateTime? createdAt;
 
   MedicationReminder({
-    int? notificationId,
     required this.name,
     required this.dosage,
-    required this.hour,
-    required this.minute,
+    required List<MedicationDose> doses,
     this.isActive = true,
     this.createdAt,
-  }) : notificationId = notificationId ?? createNotificationId();
+  }) : doses = _sorted(doses);
+
+  static List<MedicationDose> _sorted(List<MedicationDose> doses) {
+    if (doses.isEmpty) {
+      throw ArgumentError.value(doses, 'doses', 'En az bir doz saati gerekir');
+    }
+    return List.unmodifiable(
+      [...doses]..sort((a, b) => a.minuteOfDay.compareTo(b.minuteOfDay)),
+    );
+  }
 
   static int createNotificationId({int salt = 0}) {
     final value = DateTime.now().microsecondsSinceEpoch + salt;
@@ -110,10 +154,13 @@ class MedicationReminder {
         (value % NotificationIdsRange.availableCount);
   }
 
-  static int _legacyNotificationId(Map<dynamic, dynamic> map) {
+  static int _legacyNotificationId(
+    Map<dynamic, dynamic> medication,
+    Map<dynamic, dynamic> dose,
+  ) {
     final source =
-        '${map['name'] ?? ''}|${map['dosage'] ?? ''}|'
-        '${map['hour'] ?? 0}|${map['minute'] ?? 0}';
+        '${medication['name'] ?? ''}|${medication['dosage'] ?? ''}|'
+        '${dose['hour'] ?? 0}|${dose['minute'] ?? 0}';
     var hash = 0x811c9dc5;
     for (final codeUnit in source.codeUnits) {
       hash ^= codeUnit;
@@ -123,39 +170,55 @@ class MedicationReminder {
         (hash % NotificationIdsRange.availableCount);
   }
 
-  String get timeDisplay =>
-      '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  /// "08:00, 20:00"
+  String get timesDisplay => doses.map((d) => d.timeDisplay).join(', ');
+
+  /// Kayıt eski sürümün tek saatli biçiminde mi (doz listesi yok)?
+  static bool isLegacyMap(Map<dynamic, dynamic> map) {
+    final doses = map['doses'];
+    return doses is! List || doses.isEmpty;
+  }
 
   Map<String, dynamic> toMap() => {
-    'notification_id': notificationId,
     'name': name,
     'dosage': dosage,
-    'hour': hour,
-    'minute': minute,
+    'doses': [for (final dose in doses) dose.toMap()],
+    // Tek saatli eski sürümler de okuyabilsin diye ilk doz üst düzeyde
+    // tekrarlanır; bu sürüm yalnızca 'doses' listesini okur.
+    ...doses.first.toMap(),
     'is_active': isActive,
     if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
   };
 
-  factory MedicationReminder.fromMap(Map<dynamic, dynamic> map) =>
-      MedicationReminder(
-        notificationId:
-            (map['notification_id'] as num?)?.toInt() ??
-            _legacyNotificationId(map),
-        name: map['name'],
-        dosage: map['dosage'] ?? '',
-        hour: map['hour'],
-        minute: map['minute'],
-        isActive: map['is_active'] ?? true,
-        createdAt: DateTime.tryParse('${map['created_at'] ?? ''}'),
-      );
-
-  MedicationReminder copyWith({int? notificationId, bool? isActive}) {
+  /// Eski tek saatli kayıt, üst düzeydeki saat ve bildirim kimliğiyle tek
+  /// doza dönüşür; doz günlüğündeki eski kayıtlar böylece bu doza ait kalır.
+  factory MedicationReminder.fromMap(Map<dynamic, dynamic> map) {
+    final doseMaps = isLegacyMap(map)
+        ? [map]
+        : (map['doses'] as List).whereType<Map<dynamic, dynamic>>();
     return MedicationReminder(
-      notificationId: notificationId ?? this.notificationId,
+      name: map['name'],
+      dosage: map['dosage'] ?? '',
+      doses: [
+        for (final dose in doseMaps)
+          MedicationDose(
+            notificationId:
+                (dose['notification_id'] as num?)?.toInt() ??
+                _legacyNotificationId(map, dose),
+            hour: (dose['hour'] as num).toInt(),
+            minute: (dose['minute'] as num).toInt(),
+          ),
+      ],
+      isActive: map['is_active'] ?? true,
+      createdAt: DateTime.tryParse('${map['created_at'] ?? ''}'),
+    );
+  }
+
+  MedicationReminder copyWith({List<MedicationDose>? doses, bool? isActive}) {
+    return MedicationReminder(
       name: name,
       dosage: dosage,
-      hour: hour,
-      minute: minute,
+      doses: doses ?? this.doses,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt,
     );

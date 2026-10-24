@@ -244,27 +244,25 @@ class DemoDataService {
     final started = today.subtract(const Duration(days: 14));
     final meds = [
       MedicationReminder(
-        notificationId: 20001,
         name: 'Delix (Ramipril)',
         dosage: '5 mg',
-        hour: 8,
-        minute: 0,
+        doses: [MedicationDose(notificationId: 20001, hour: 8, minute: 0)],
         createdAt: started,
       ),
       MedicationReminder(
-        notificationId: 20002,
         name: 'Coraspin',
         dosage: '100 mg',
-        hour: 13,
-        minute: 0,
+        doses: [MedicationDose(notificationId: 20002, hour: 13, minute: 0)],
         createdAt: started,
       ),
+      // Günde iki doz: her saat uyumda ayrı izlenir.
       MedicationReminder(
-        notificationId: 20003,
         name: 'Nurofen',
         dosage: '400 mg',
-        hour: 20,
-        minute: 0,
+        doses: [
+          MedicationDose(notificationId: 20004, hour: 8, minute: 0),
+          MedicationDose(notificationId: 20003, hour: 20, minute: 0),
+        ],
         createdAt: started,
       ),
     ];
@@ -272,7 +270,7 @@ class DemoDataService {
       for (final m in meds) m.toMap(),
     ]);
 
-    // İlaç uyumu: sabah ilacı düzenli; akşam ilacı 2 kez kaçırılmış ve
+    // İlaç uyumu: sabah dozları düzenli; akşam dozu 2 kez kaçırılmış ve
     // genelde ~1,5 saat geç alınmış (örüntü önerisini göstermek için).
     final doseLog = DoseLog.empty();
     for (var i = 6; i >= 0; i--) {
@@ -281,22 +279,15 @@ class DemoDataService {
         today.month,
         today.day,
       ).subtract(Duration(days: i));
-      for (final m in meds) {
-        final due = DateTime(day.year, day.month, day.day, m.hour, m.minute);
+      for (final dose in meds.expand((m) => m.doses)) {
+        final id = dose.notificationId;
         final missed =
-            (m.notificationId == 20002 && i == 4) ||
-            (m.notificationId == 20003 && (i == 2 || i == 5));
+            (id == 20002 && i == 4) || (id == 20003 && (i == 2 || i == 5));
         if (missed) continue;
-        final delay = m.notificationId == 20003
-            ? 80 + rnd.nextInt(20)
-            : 5 + rnd.nextInt(20);
-        final at = due.add(Duration(minutes: delay));
+        final delay = id == 20003 ? 80 + rnd.nextInt(20) : 5 + rnd.nextInt(20);
+        final at = dose.dueOn(day).add(Duration(minutes: delay));
         if (at.isAfter(today)) continue; // henüz gerçekleşmemiş doz
-        doseLog.set(
-          day,
-          m.notificationId,
-          DoseRecord(status: DoseStatus.taken, at: at),
-        );
+        doseLog.set(day, id, DoseRecord(status: DoseStatus.taken, at: at));
       }
     }
     await hive.getMedicationBox().put('dose_log', doseLog.toRaw());

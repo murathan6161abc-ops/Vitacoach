@@ -93,23 +93,26 @@ class AdherenceSummary extends StatelessWidget {
   }
 }
 
-/// Tek bir ilaç satırı: bugünkü durum ve "Aldım" düğmesi.
+/// İlacın tek bir dozunun satırı: bugünkü durum ve "Aldım" düğmesi. Günde
+/// birden çok dozu olan ilacın her saati ayrı satırdır.
 class MedicationRow extends StatelessWidget {
   final ChronicProvider provider;
   final MedicationReminder medication;
+  final MedicationDose dose;
   final VoidCallback onDelete;
 
   const MedicationRow({
     super.key,
     required this.provider,
     required this.medication,
+    required this.dose,
     required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final record = provider.todayDose(medication);
-    final due = provider.isDoseDue(medication);
+    final record = provider.todayDose(dose);
+    final due = provider.isDoseDue(dose);
     final dosage = medication.dosage.trim();
 
     String status;
@@ -126,7 +129,7 @@ class MedicationRow extends StatelessWidget {
       status = 'Bugünkü doz bekliyor';
       statusColor = AppColors.danger;
     } else {
-      status = 'Bugün ${medication.timeDisplay}';
+      status = 'Bugün ${dose.timeDisplay}';
       statusColor = AppColors.textHint;
     }
 
@@ -149,7 +152,7 @@ class MedicationRow extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  '${dosage.isEmpty ? '' : '$dosage · '}${medication.timeDisplay}',
+                  '${dosage.isEmpty ? '' : '$dosage · '}${dose.timeDisplay}',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -172,7 +175,7 @@ class MedicationRow extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
               ),
-              onPressed: () => provider.markDose(medication, DoseStatus.taken),
+              onPressed: () => provider.markDose(dose, DoseStatus.taken),
               icon: const Icon(Icons.check, size: 18),
               label: const Text('Aldım'),
             )
@@ -188,9 +191,9 @@ class MedicationRow extends StatelessWidget {
             onSelected: (value) {
               switch (value) {
                 case 'skip':
-                  provider.markDose(medication, DoseStatus.skipped);
+                  provider.markDose(dose, DoseStatus.skipped);
                 case 'undo':
-                  provider.markDose(medication, null);
+                  provider.markDose(dose, null);
                 case 'delete':
                   onDelete();
               }
@@ -206,7 +209,14 @@ class MedicationRow extends StatelessWidget {
                   value: 'undo',
                   child: Text('İşareti kaldır'),
                 ),
-              const PopupMenuItem(value: 'delete', child: Text('İlacı sil')),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(
+                  medication.doses.length > 1
+                      ? 'İlacı sil (tüm saatler)'
+                      : 'İlacı sil',
+                ),
+              ),
             ],
           ),
         ],
@@ -297,31 +307,35 @@ class _AdherenceDetails extends StatelessWidget {
                     ),
                 ],
               ),
+              // Günde birden çok dozu olan ilacın her saati ayrı satırdır.
               for (final med in provider.medications.where((m) => m.isActive))
-                TableRow(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        right: 8,
-                        top: 8,
-                        bottom: 8,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 120),
-                        child: Text(
-                          '${med.name}\n${med.timeDisplay}',
-                          style: const TextStyle(fontSize: 12),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                for (final dose in med.doses)
+                  TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          right: 8,
+                          top: 8,
+                          bottom: 8,
+                        ),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 120),
+                          child: Text(
+                            '${med.name}\n${dose.timeDisplay}',
+                            style: const TextStyle(fontSize: 12),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
-                    ),
-                    for (final d in days)
-                      Center(
-                        child: _Cell(provider.doseState(med, d, now: now)),
-                      ),
-                  ],
-                ),
+                      for (final d in days)
+                        Center(
+                          child: _Cell(
+                            provider.doseState(med, dose, d, now: now),
+                          ),
+                        ),
+                    ],
+                  ),
             ],
           ),
         ),

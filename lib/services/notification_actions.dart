@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../modules/m03_chronic/models/health_entry.dart';
 import '../modules/m03_chronic/models/medication_adherence.dart';
 import 'hive_service.dart';
 import 'notification_service.dart';
@@ -13,7 +14,9 @@ import 'notification_service.dart';
 /// uygulama öne gelince ana isolate'te veritabanına işlenir.
 class PendingNotificationAction {
   final String action;
-  final int? medicationId;
+
+  /// İlaç eylemlerinde dozun bildirim kimliği.
+  final int? doseId;
   final int? hour;
   final int? minute;
   final DateTime at;
@@ -21,7 +24,7 @@ class PendingNotificationAction {
   const PendingNotificationAction({
     required this.action,
     required this.at,
-    this.medicationId,
+    this.doseId,
     this.hour,
     this.minute,
   });
@@ -29,7 +32,7 @@ class PendingNotificationAction {
   Map<String, dynamic> toJson() => {
     'a': action,
     't': at.toIso8601String(),
-    if (medicationId != null) 'id': medicationId,
+    if (doseId != null) 'id': doseId,
     if (hour != null) 'h': hour,
     if (minute != null) 'm': minute,
   };
@@ -42,7 +45,7 @@ class PendingNotificationAction {
       return PendingNotificationAction(
         action: map['a'] as String,
         at: at,
-        medicationId: (map['id'] as num?)?.toInt(),
+        doseId: (map['id'] as num?)?.toInt(),
         hour: (map['h'] as num?)?.toInt(),
         minute: (map['m'] as num?)?.toInt(),
       );
@@ -142,7 +145,7 @@ class NotificationActions {
           PendingNotificationAction(
             action: NotificationActionIds.medicationTaken,
             at: now,
-            medicationId: payload?.medicationId,
+            doseId: payload?.doseId,
             hour: payload?.hour,
             minute: payload?.minute,
           ),
@@ -172,15 +175,14 @@ class NotificationActions {
     // Silinmiş ilaçlara veya önizleme bildirimine ait eylemler yok sayılır.
     final knownIds = <int>{
       for (final m in (medBox.get('medications') as List? ?? const []))
-        if (m is Map && m['notification_id'] is num)
-          (m['notification_id'] as num).toInt(),
+        if (m is Map) ..._doseIdsOf(m),
     };
     var doseChanged = false;
 
     for (final action in actions) {
       switch (action.action) {
         case NotificationActionIds.medicationTaken:
-          final id = action.medicationId;
+          final id = action.doseId;
           if (id == null || !knownIds.contains(id)) continue;
           final day = action.doseDay;
           if (log.get(day, id)?.status == DoseStatus.taken) continue;
@@ -196,5 +198,15 @@ class NotificationActions {
     if (doseChanged) await medBox.put('dose_log', log.toRaw());
     onDataChanged?.call();
     return actions.length;
+  }
+
+  /// Kayıtlı ilacın doz kimlikleri; eski tek saatli kayıtta ilacın kimliği.
+  static Iterable<int> _doseIdsOf(Map<dynamic, dynamic> raw) {
+    try {
+      final medication = MedicationReminder.fromMap(raw);
+      return medication.doses.map((dose) => dose.notificationId);
+    } catch (_) {
+      return const [];
+    }
   }
 }

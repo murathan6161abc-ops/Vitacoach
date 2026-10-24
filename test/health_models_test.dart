@@ -27,18 +27,55 @@ void main() {
   group('MedicationReminder', () {
     test('keeps its notification id through persistence', () {
       final medication = MedicationReminder(
-        notificationId: 123456,
         name: 'Test ilacı',
         dosage: '1 tablet',
-        hour: 8,
-        minute: 30,
+        doses: [MedicationDose(notificationId: 123456, hour: 8, minute: 30)],
       );
 
       final restored = MedicationReminder.fromMap(medication.toMap());
 
-      expect(restored.notificationId, 123456);
-      expect(restored.timeDisplay, '08:30');
+      expect(restored.doses.single.notificationId, 123456);
+      expect(restored.timesDisplay, '08:30');
       expect(restored.name, medication.name);
+    });
+
+    test('eski tek saatli kayıt, kimliğini koruyan tek doz olur', () {
+      final medication = MedicationReminder.fromMap({
+        'notification_id': 45678,
+        'name': 'Delix',
+        'dosage': '5 mg',
+        'hour': 9,
+        'minute': 15,
+        'is_active': false,
+        'created_at': '2026-09-01T10:00:00.000',
+      });
+
+      expect(medication.doses.single.notificationId, 45678);
+      expect(medication.doses.single.timeDisplay, '09:15');
+      expect(medication.isActive, isFalse);
+      expect(medication.createdAt, DateTime(2026, 9, 1, 10));
+    });
+
+    test('doz saatleri sıralanır ve kimlikleriyle saklanır', () {
+      final medication = MedicationReminder(
+        name: 'Metformin',
+        dosage: '500 mg',
+        doses: [
+          MedicationDose(notificationId: 20002, hour: 20, minute: 0),
+          MedicationDose(notificationId: 20001, hour: 8, minute: 0),
+        ],
+      );
+
+      final map = medication.toMap();
+      // Tek saatli eski sürümler kaydı ilk dozuyla okuyabilir.
+      expect(
+        (map['notification_id'], map['hour'], map['minute']),
+        (20001, 8, 0),
+      );
+
+      final restored = MedicationReminder.fromMap(map);
+      expect(restored.timesDisplay, '08:00, 20:00');
+      expect(restored.doses.map((d) => d.notificationId), [20001, 20002]);
     });
 
     test('assigns a stable id to legacy records', () {
@@ -50,8 +87,8 @@ void main() {
         'is_active': true,
       };
 
-      final first = MedicationReminder.fromMap(legacy);
-      final second = MedicationReminder.fromMap(legacy);
+      final first = MedicationReminder.fromMap(legacy).doses.single;
+      final second = MedicationReminder.fromMap(legacy).doses.single;
 
       expect(first.notificationId, second.notificationId);
       expect(first.notificationId, greaterThanOrEqualTo(10000));

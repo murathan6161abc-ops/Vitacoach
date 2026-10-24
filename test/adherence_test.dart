@@ -6,11 +6,9 @@ import 'package:vitacoach/services/notification_service.dart';
 
 MedicationReminder med(int id, int hour, {DateTime? createdAt}) =>
     MedicationReminder(
-      notificationId: id,
       name: 'İlaç $id',
       dosage: '1 tablet',
-      hour: hour,
-      minute: 0,
+      doses: [MedicationDose(notificationId: id, hour: hour, minute: 0)],
       createdAt: createdAt,
     );
 
@@ -98,7 +96,7 @@ void main() {
         log: log,
         now: now,
       );
-      expect(r.perMedication.single.missed, 3); // 2 gün + bugünkü 20:00
+      expect(r.perDose.single.missed, 3); // 2 gün + bugünkü 20:00
       expect(
         r.patterns.map((p) => p.message).join(' '),
         contains('kaçırdınız'),
@@ -106,6 +104,53 @@ void main() {
       final late = r.patterns.firstWhere((p) => p.message.contains('geç'));
       expect(late.message, contains('90 dakika'));
       expect(late.suggestion, contains('21:30'));
+    });
+
+    test('iki dozlu ilacın her dozu ayrı sayılır', () {
+      // Kayıtlı biçimdeki ilaç: 08:00 ve 20:00.
+      final m = MedicationReminder.fromMap({
+        'notification_id': 11,
+        'name': 'Metformin',
+        'dosage': '500 mg',
+        'hour': 8,
+        'minute': 0,
+        'doses': [
+          {'notification_id': 11, 'hour': 8, 'minute': 0},
+          {'notification_id': 12, 'hour': 20, 'minute': 0},
+        ],
+        'created_at': started.toIso8601String(),
+      });
+      final log = DoseLog.empty();
+      for (var i = 0; i < 7; i++) {
+        final day = DateTime(2026, 9, 30 - i);
+        log.set(
+          day,
+          11,
+          DoseRecord(
+            status: DoseStatus.taken,
+            at: day.add(const Duration(hours: 8, minutes: 5)),
+          ),
+        );
+        // Akşam dozu son üç gün kaçırıldı.
+        if (i < 3) continue;
+        log.set(
+          day,
+          12,
+          DoseRecord(
+            status: DoseStatus.taken,
+            at: day.add(const Duration(hours: 20, minutes: 5)),
+          ),
+        );
+      }
+      final r = AdherenceCalculator.compute(
+        medications: [m],
+        log: log,
+        now: now,
+      );
+      // Saat 21:00: iki dozun da yedişer günlük vakti geçti.
+      expect(r.scheduled, 14);
+      expect(r.taken, 11);
+      expect(r.patterns.single.message, contains('Metformin (20:00)'));
     });
 
     test('doz kaydı Hive biçimine gidip gelir ve bozuk girdiyi atlar', () {
@@ -132,6 +177,7 @@ void main() {
       DoseCellState cell(DateTime d, {DateTime? at}) =>
           AdherenceCalculator.cellState(
             medication: m,
+            dose: m.doses.single,
             log: log,
             day: d,
             now: at ?? now,
@@ -151,7 +197,7 @@ void main() {
       final action = PendingNotificationAction(
         action: NotificationActionIds.medicationTaken,
         at: DateTime(2026, 10, 1, 0, 30),
-        medicationId: 1,
+        doseId: 1,
         hour: 23,
         minute: 0,
       );
@@ -159,7 +205,7 @@ void main() {
       final morning = PendingNotificationAction(
         action: NotificationActionIds.medicationTaken,
         at: DateTime(2026, 10, 1, 8, 20),
-        medicationId: 1,
+        doseId: 1,
         hour: 8,
         minute: 0,
       );
@@ -177,9 +223,10 @@ void main() {
       expect(back?.action, action.action);
       expect(PendingNotificationAction.fromJson('bozuk'), isNull);
 
-      final content = NotificationContent.medication(med(42, 8));
+      final m = med(42, 8);
+      final content = NotificationContent.medication(m, m.doses.single);
       final payload = NotificationPayload.decode(content.payload.encode());
-      expect(payload?.medicationId, 42);
+      expect(payload?.doseId, 42);
       expect(payload?.route, '/chronic');
       expect(NotificationPayload.decode('{bozuk'), isNull);
     });

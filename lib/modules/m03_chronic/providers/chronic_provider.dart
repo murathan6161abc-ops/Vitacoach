@@ -22,6 +22,12 @@ class ChronicProvider extends ChangeNotifier {
   List<HealthEntry> get weightEntries => _weightEntries;
   List<MedicationReminder> get medications => _medications;
 
+  /// Etkin ilaçların her dozu ayrı satır olarak, saate göre sıralı.
+  List<(MedicationReminder, MedicationDose)> get activeDoses => [
+    for (final medication in _medications.where((m) => m.isActive))
+      for (final dose in medication.doses) (medication, dose),
+  ]..sort((a, b) => a.$2.minuteOfDay.compareTo(b.$2.minuteOfDay));
+
   /// Son 7 günün ilaç uyumu (cihaz içinde hesaplanır).
   AdherenceReport adherence({DateTime? now, int days = 7}) =>
       AdherenceCalculator.compute(
@@ -34,30 +40,26 @@ class ChronicProvider extends ChangeNotifier {
 
   DoseCellState doseState(
     MedicationReminder medication,
+    MedicationDose dose,
     DateTime day, {
     DateTime? now,
   }) => AdherenceCalculator.cellState(
     medication: medication,
+    dose: dose,
     log: _doseLog,
     day: day,
     now: now ?? DateTime.now(),
     trackingSince: _trackingSince,
   );
 
-  /// Bugünkü doz kaydı (yoksa null).
-  DoseRecord? todayDose(MedicationReminder medication, {DateTime? now}) =>
-      _doseLog.get(now ?? DateTime.now(), medication.notificationId);
+  /// Dozun bugünkü kaydı (yoksa null).
+  DoseRecord? todayDose(MedicationDose dose, {DateTime? now}) =>
+      _doseLog.get(now ?? DateTime.now(), dose.notificationId);
 
-  /// Bugünkü dozun vakti geldi mi?
-  bool isDoseDue(MedicationReminder medication, {DateTime? now}) {
+  /// Dozun bugünkü vakti geldi mi?
+  bool isDoseDue(MedicationDose dose, {DateTime? now}) {
     final t = now ?? DateTime.now();
-    return !DateTime(
-      t.year,
-      t.month,
-      t.day,
-      medication.hour,
-      medication.minute,
-    ).isAfter(t);
+    return !dose.dueOn(t).isAfter(t);
   }
 
   // Last 7 days data
@@ -134,14 +136,11 @@ class ChronicProvider extends ChangeNotifier {
     _medications = [];
     for (var index = 0; index < medData.length; index++) {
       final raw = Map<dynamic, dynamic>.from(medData[index] as Map);
-      var medication = MedicationReminder.fromMap(raw);
-      if (!raw.containsKey('notification_id')) needsMigration = true;
-      while (!usedIds.add(medication.notificationId)) {
-        medication = medication.copyWith(
-          notificationId: MedicationReminder.createNotificationId(salt: index),
-        );
-        needsMigration = true;
-      }
+      // Eski tek saatli kayıt doz listesine taşınıp yeniden yazılır.
+      if (MedicationReminder.isLegacyMap(raw)) needsMigration = true;
+      final parsed = MedicationReminder.fromMap(raw);
+      final medication = _withUniqueDoseIds(parsed, usedIds, salt: index);
+      if (!identical(medication, parsed)) needsMigration = true;
       _medications.add(medication);
     }
 
@@ -163,36 +162,53 @@ class ChronicProvider extends ChangeNotifier {
     return now;
   }
 
+  /// Her dozun bildirim kimliği tüm ilaçlar arasında tekil olmalı: çakışan
+  /// doza yeni kimlik verilir. Kimlik değişmediyse aynı nesne döner.
+  static MedicationReminder _withUniqueDoseIds(
+    MedicationReminder medication,
+    Set<int> usedIds, {
+    required int salt,
+  }) {
+    var changed = false;
+    final doses = <MedicationDose>[];
+    for (var dose in medication.doses) {
+      while (!usedIds.add(dose.notificationId)) {
+        dose = dose.copyWith(
+          notificationId: MedicationReminder.createNotificationId(
+            salt: salt + doses.length,
+          ),
+        );
+        changed = true;
+      }
+      doses.add(dose);
+    }
+    return changed ? medication.copyWith(doses: doses) : medication;
+  }
+
   /// Bildirimden gelen "Aldım" işlendikten sonra çağrılır.
   void reloadDoseLog() {
     _doseLog = DoseLog.fromRaw(_hiveService.getMedicationBox().get('dose_log'));
     notifyListeners();
   }
 
-  /// Bugünkü dozu alındı/atlandı olarak işaretler; [status] null ise
-  /// işaret kaldırılır.
+  /// Dozun bugünkü kaydını alındı/atlandı olarak işaretler; [status] null
+  /// ise işaret kaldırılır.
   Future<void> markDose(
-    MedicationReminder medication,
+    MedicationDose dose,
     DoseStatus? status, {
     DateTime? now,
   }) async {
     final t = now ?? DateTime.now();
     if (status == null) {
-      _doseLog.remove(t, medication.notificationId);
+      _doseLog.remove(t, dose.notificationId);
     } else {
-      _doseLog.set(
-        t,
-        medication.notificationId,
-        DoseRecord(status: status, at: t),
-      );
+      _doseLog.set(t, dose.notificationId, DoseRecord(status: status, at: t));
       // Uygulamadan işaretlendiyse ertelenmiş hatırlatma artık gereksiz.
       // Beklenmeden çalışır; hata olursa yakalanmayan bir hataya dönüşmesin
       // (doz kaydı zaten yazıldı).
       unawaited(
         NotificationService()
-            .cancelNotification(
-              NotificationIds.snoozeFor(medication.notificationId),
-            )
+            .cancelNotification(NotificationIds.snoozeFor(dose.notificationId))
             .catchError(
               (Object e) =>
                   debugPrint('Ertelenen hatırlatma iptal edilemedi: $e'),
@@ -325,15 +341,15 @@ class ChronicProvider extends ChangeNotifier {
     MedicationReminder medication, {
     bool requestExactPermission = false,
   }) async {
-    while (_medications.any(
-      (item) => item.notificationId == medication.notificationId,
-    )) {
-      medication = medication.copyWith(
-        notificationId: MedicationReminder.createNotificationId(
-          salt: _medications.length,
-        ),
-      );
-    }
+    final usedIds = {
+      for (final m in _medications)
+        for (final dose in m.doses) dose.notificationId,
+    };
+    medication = _withUniqueDoseIds(
+      medication,
+      usedIds,
+      salt: _medications.length,
+    );
     _medications.add(medication);
     await _saveMedications();
     await _hiveService.getProfileBox().put('medication_reminder_enabled', true);
@@ -357,7 +373,7 @@ class ChronicProvider extends ChangeNotifier {
   Future<void> removeMedication(int index) async {
     if (index >= 0 && index < _medications.length) {
       final medication = _medications.removeAt(index);
-      await NotificationService().cancelNotification(medication.notificationId);
+      await NotificationService().cancelMedicationReminders(medication);
       await _saveMedications();
       notifyListeners();
     }
@@ -383,11 +399,13 @@ class ChronicProvider extends ChangeNotifier {
 
       for (final medication in _medications) {
         if (!enabled || !medication.isActive) {
-          await NotificationService().cancelNotification(
-            medication.notificationId,
-          );
-        } else if (!pendingIds.contains(medication.notificationId)) {
-          await _scheduleMedication(medication);
+          await NotificationService().cancelMedicationReminders(medication);
+          continue;
+        }
+        // Her doz ayrı bildirimdir; yalnızca kurulu olmayanlar kurulur.
+        for (final dose in medication.doses) {
+          if (pendingIds.contains(dose.notificationId)) continue;
+          await NotificationService().scheduleMedicationDose(medication, dose);
         }
       }
     } catch (error) {
@@ -403,11 +421,7 @@ class ChronicProvider extends ChangeNotifier {
 
     if (!enabled) {
       await Future.wait(
-        _medications.map(
-          (medication) => NotificationService().cancelNotification(
-            medication.notificationId,
-          ),
-        ),
+        _medications.map(NotificationService().cancelMedicationReminders),
       );
       return true;
     }

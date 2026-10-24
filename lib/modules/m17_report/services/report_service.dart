@@ -377,7 +377,7 @@ class ReportService {
                     (m) => [
                       m.name,
                       m.dosage.isEmpty ? '-' : m.dosage,
-                      m.timeDisplay,
+                      m.timesDisplay,
                       m.isActive ? 'Açık' : 'Kapalı',
                     ],
                   )

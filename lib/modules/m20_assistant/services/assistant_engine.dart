@@ -866,7 +866,7 @@ class AssistantEngine {
         );
       }
       final list = c.medications
-          .map((m) => '• ${m.name} ${m.dosage} — ${m.timeDisplay}')
+          .map((m) => '• ${m.name} ${m.dosage} — ${m.timesDisplay}')
           .join('\n');
       return AssistantReply(
         'Kayıtlı ilaçlarınız:\n$list',

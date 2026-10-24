@@ -4,7 +4,9 @@ import 'health_entry.dart';
 enum DoseStatus { taken, skipped }
 
 /// Tek bir doz kaydı. Hive'da `dose_log` altında
-/// `{ 'YYYY-MM-DD': { '<notificationId>': {status, at} } }` biçiminde tutulur.
+/// `{ 'YYYY-MM-DD': { '<doz bildirim kimliği>': {status, at} } }` biçiminde
+/// tutulur. Eski tek saatli ilacın kimliği göçte ilk dozuna geçtiği için
+/// önceki kayıtlar olduğu gibi geçerlidir.
 class DoseRecord {
   final DoseStatus status;
   final DateTime at;
@@ -25,7 +27,7 @@ class DoseRecord {
   }
 }
 
-/// Doz kayıtlarını gün + ilaç kimliğine göre tutan değiştirilebilir yapı.
+/// Doz kayıtlarını gün + doz kimliğine göre tutan değiştirilebilir yapı.
 class DoseLog {
   final Map<String, Map<int, DoseRecord>> _days;
 
@@ -61,24 +63,25 @@ class DoseLog {
       },
   };
 
-  DoseRecord? get(DateTime day, int medicationId) =>
-      _days[dayKey(day)]?[medicationId];
+  DoseRecord? get(DateTime day, int doseId) => _days[dayKey(day)]?[doseId];
 
-  void set(DateTime day, int medicationId, DoseRecord record) {
-    (_days[dayKey(day)] ??= {})[medicationId] = record;
+  void set(DateTime day, int doseId, DoseRecord record) {
+    (_days[dayKey(day)] ??= {})[doseId] = record;
   }
 
-  void remove(DateTime day, int medicationId) {
+  void remove(DateTime day, int doseId) {
     final key = dayKey(day);
-    _days[key]?.remove(medicationId);
+    _days[key]?.remove(doseId);
     if (_days[key]?.isEmpty ?? false) _days.remove(key);
   }
 
-  /// Bu ilaç için kaydedilmiş ilk gün (eski ilaçlarda başlangıç tarihi yok).
-  DateTime? firstDayFor(int medicationId) {
+  /// Bu dozlardan herhangi biri için kaydedilmiş ilk gün (eski ilaçlarda
+  /// başlangıç tarihi yok).
+  DateTime? firstDayFor(Iterable<int> doseIds) {
+    final ids = doseIds.toSet();
     final days =
         _days.entries
-            .where((e) => e.value.containsKey(medicationId))
+            .where((e) => e.value.keys.any(ids.contains))
             .map((e) => DateTime.tryParse(e.key))
             .whereType<DateTime>()
             .toList()
@@ -93,9 +96,10 @@ class DoseLog {
   }
 }
 
-/// Bir ilacın dönem içindeki uyum istatistiği.
-class MedicationAdherence {
+/// Bir dozun (ilaç + saat) dönem içindeki uyum istatistiği.
+class DoseAdherence {
   final MedicationReminder medication;
+  final MedicationDose dose;
   final int scheduled;
   final int taken;
   final int skipped;
@@ -104,8 +108,9 @@ class MedicationAdherence {
   final double? averageDelayMinutes;
   final List<DateTime> missedDays;
 
-  const MedicationAdherence({
+  const DoseAdherence({
     required this.medication,
+    required this.dose,
     required this.scheduled,
     required this.taken,
     required this.skipped,
@@ -126,17 +131,19 @@ class AdherencePattern {
 
 class AdherenceReport {
   final int days;
-  final List<MedicationAdherence> perMedication;
+
+  /// Günde birden çok dozu olan ilacın her saati ayrı satırdır.
+  final List<DoseAdherence> perDose;
   final List<AdherencePattern> patterns;
 
   const AdherenceReport({
     required this.days,
-    required this.perMedication,
+    required this.perDose,
     required this.patterns,
   });
 
-  int get scheduled => perMedication.fold(0, (a, m) => a + m.scheduled);
-  int get taken => perMedication.fold(0, (a, m) => a + m.taken);
+  int get scheduled => perDose.fold(0, (a, d) => a + d.scheduled);
+  int get taken => perDose.fold(0, (a, d) => a + d.taken);
 
   /// 0-1 arası uyum oranı; planlanmış doz yoksa null.
   double? get rate => scheduled == 0 ? null : taken / scheduled;
@@ -162,55 +169,52 @@ class AdherenceCalculator {
     DateTime? trackingSince,
   }) {
     final today = DateTime(now.year, now.month, now.day);
-    final stats = <MedicationAdherence>[];
+    final stats = <DoseAdherence>[];
 
     for (final med in medications.where((m) => m.isActive)) {
       final start = _startMoment(med, log, trackingSince, now);
-      var scheduled = 0, taken = 0, skipped = 0;
-      final delays = <double>[];
-      final missedDays = <DateTime>[];
+      for (final dose in med.doses) {
+        var scheduled = 0, taken = 0, skipped = 0;
+        final delays = <double>[];
+        final missedDays = <DateTime>[];
 
-      for (var i = days - 1; i >= 0; i--) {
-        final day = today.subtract(Duration(days: i));
-        final due = DateTime(
-          day.year,
-          day.month,
-          day.day,
-          med.hour,
-          med.minute,
-        );
-        final record = log.get(day, med.notificationId);
-        // İlaç eklenmeden / takip başlamadan önceki dozlar sayılmaz.
-        if (record == null && due.isBefore(start)) continue;
-        // Bugünün henüz vakti gelmemiş ve işaretlenmemiş dozu sayılmaz.
-        if (record == null && due.isAfter(now)) continue;
-        scheduled++;
-        if (record?.status == DoseStatus.taken) {
-          taken++;
-          delays.add(record!.at.difference(due).inMinutes.toDouble());
-        } else {
-          if (record?.status == DoseStatus.skipped) skipped++;
-          missedDays.add(day);
+        for (var i = days - 1; i >= 0; i--) {
+          final day = today.subtract(Duration(days: i));
+          final due = dose.dueOn(day);
+          final record = log.get(day, dose.notificationId);
+          // İlaç eklenmeden / takip başlamadan önceki dozlar sayılmaz.
+          if (record == null && due.isBefore(start)) continue;
+          // Bugünün henüz vakti gelmemiş ve işaretlenmemiş dozu sayılmaz.
+          if (record == null && due.isAfter(now)) continue;
+          scheduled++;
+          if (record?.status == DoseStatus.taken) {
+            taken++;
+            delays.add(record!.at.difference(due).inMinutes.toDouble());
+          } else {
+            if (record?.status == DoseStatus.skipped) skipped++;
+            missedDays.add(day);
+          }
         }
-      }
 
-      stats.add(
-        MedicationAdherence(
-          medication: med,
-          scheduled: scheduled,
-          taken: taken,
-          skipped: skipped,
-          averageDelayMinutes: delays.isEmpty
-              ? null
-              : delays.reduce((a, b) => a + b) / delays.length,
-          missedDays: missedDays,
-        ),
-      );
+        stats.add(
+          DoseAdherence(
+            medication: med,
+            dose: dose,
+            scheduled: scheduled,
+            taken: taken,
+            skipped: skipped,
+            averageDelayMinutes: delays.isEmpty
+                ? null
+                : delays.reduce((a, b) => a + b) / delays.length,
+            missedDays: missedDays,
+          ),
+        );
+      }
     }
 
     return AdherenceReport(
       days: days,
-      perMedication: stats,
+      perDose: stats,
       patterns: _patterns(stats),
     );
   }
@@ -219,6 +223,7 @@ class AdherenceCalculator {
   /// ile aynı kuralları kullanır.
   static DoseCellState cellState({
     required MedicationReminder medication,
+    required MedicationDose dose,
     required DoseLog log,
     required DateTime day,
     required DateTime now,
@@ -227,16 +232,10 @@ class AdherenceCalculator {
     final today = DateTime(now.year, now.month, now.day);
     final d = DateTime(day.year, day.month, day.day);
     if (d.isAfter(today)) return DoseCellState.notScheduled;
-    final record = log.get(d, medication.notificationId);
+    final record = log.get(d, dose.notificationId);
     if (record?.status == DoseStatus.taken) return DoseCellState.taken;
     if (record?.status == DoseStatus.skipped) return DoseCellState.skipped;
-    final due = DateTime(
-      d.year,
-      d.month,
-      d.day,
-      medication.hour,
-      medication.minute,
-    );
+    final due = dose.dueOn(d);
     if (due.isBefore(_startMoment(medication, log, trackingSince, now))) {
       return DoseCellState.notScheduled;
     }
@@ -252,16 +251,16 @@ class AdherenceCalculator {
     DateTime now,
   ) {
     if (med.createdAt != null) return med.createdAt!;
-    final first = log.firstDayFor(med.notificationId);
+    final first = log.firstDayFor(med.doses.map((d) => d.notificationId));
     if (first != null) return DateTime(first.year, first.month, first.day);
     return trackingSince ?? now;
   }
 
-  static List<AdherencePattern> _patterns(List<MedicationAdherence> stats) {
+  static List<AdherencePattern> _patterns(List<DoseAdherence> stats) {
     final patterns = <AdherencePattern>[];
     for (final s in stats) {
       final name = s.medication.name;
-      final time = s.medication.timeDisplay;
+      final time = s.dose.timeDisplay;
       if (s.scheduled >= 3 && s.missed >= 2) {
         patterns.add(
           AdherencePattern(
@@ -272,10 +271,11 @@ class AdherenceCalculator {
       }
       final delay = s.averageDelayMinutes;
       if (delay != null && s.taken >= 3 && delay >= lateThresholdMinutes) {
-        final suggested = _shift(s.medication, delay);
+        final suggested = _shift(s.dose, delay);
         patterns.add(
           AdherencePattern(
-            '$name dozunu ortalama ${delay.round()} dakika geç alıyorsunuz.',
+            '$name ($time) dozunu ortalama ${delay.round()} dakika geç '
+                'alıyorsunuz.',
             'Hatırlatma saatini $suggested olarak güncellemeyi düşünebilirsiniz '
                 '(ilacın saatini değiştirmeden önce doktorunuza danışın).',
           ),
@@ -285,7 +285,7 @@ class AdherenceCalculator {
     return patterns;
   }
 
-  static String _missSuggestion(MedicationAdherence s) {
+  static String _missSuggestion(DoseAdherence s) {
     final weekendMisses = s.missedDays
         .where(
           (d) => d.weekday == DateTime.saturday || d.weekday == DateTime.sunday,
@@ -295,16 +295,16 @@ class AdherenceCalculator {
       return 'Kaçırılan dozların çoğu hafta sonuna denk geliyor; hafta sonu '
           'rutininize uygun bir hatırlatma belirleyin.';
     }
-    if (s.medication.hour >= 19) {
+    if (s.dose.hour >= 19) {
       return 'Akşam dozlarında ilacı akşam yemeği gibi sabit bir alışkanlığa '
           'bağlamak (ör. masaya koymak) unutmayı azaltır.';
     }
     return "Bildirimdeki 'Aldım' düğmesini kullanmak takibi kolaylaştırır.";
   }
 
-  static String _shift(MedicationReminder med, double delayMinutes) {
+  static String _shift(MedicationDose dose, double delayMinutes) {
     final rounded = (delayMinutes / 15).round() * 15;
-    final total = (med.hour * 60 + med.minute + rounded) % (24 * 60);
+    final total = (dose.minuteOfDay + rounded) % (24 * 60);
     final h = (total ~/ 60).toString().padLeft(2, '0');
     final m = (total % 60).toString().padLeft(2, '0');
     return '$h:$m';

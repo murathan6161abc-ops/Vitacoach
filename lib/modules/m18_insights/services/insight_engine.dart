@@ -658,8 +658,10 @@ class InsightEngine {
     }
     final evidence = [
       'Son ${report.days} gün: ${report.taken}/${report.scheduled} doz alındı',
-      for (final m in report.perMedication)
-        if (m.scheduled > 0) '${m.medication.name}: ${m.taken}/${m.scheduled}',
+      for (final d in report.perDose)
+        if (d.scheduled > 0)
+          '${d.medication.name} ${d.dose.timeDisplay}: '
+              '${d.taken}/${d.scheduled}',
     ];
     const method =
         'Uyum = alınan doz ÷ planlanan doz. Örüntüler kaçırılan dozların gün ve '
